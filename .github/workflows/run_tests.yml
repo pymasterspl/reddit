@@ -47,7 +47,6 @@ jobs:
 
       - name: Check pyproject.toml validity
         run: |
-          cd Dshop
           poetry check --no-interaction
 
       - name: Cache dependencies
@@ -61,13 +60,11 @@ jobs:
       - name: Install deps
         if: steps.cache-deps.cache-hit != 'true'
         run: |
-          cd Dshop
           poetry config virtualenvs.in-project true
           poetry install --no-interaction
 
       - name: Create .env file
         run: |
-          cd Dshop
           echo "SECRET_KEY=default_secret_key" > .env
           echo "DEBUG=False" >> .env
           echo "ALLOWED_HOSTS=[]" >> .env
