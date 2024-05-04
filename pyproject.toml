@@ -19,7 +19,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
-exclude = ["tests/", "scripts/"]
+exclude = ["scripts/", "manage.py", "urls.py", "asgi.py", "wsgi.py", "migrations/"]
 line-length = 120
 
 indent-width = 4
@@ -27,6 +27,7 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["ALL"]
+ignore = ["D104", "D100", "D103", "D211", "D213"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -36,3 +37,11 @@ indent-style = "space"
 
 # Like Black, automatically detect the appropriate line ending.
 line-ending = "auto"
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**/*.py" = [
+    # at least this three should be fine in tests:
+    "S101", # asserts allowed in tests...
+    "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
+    "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
+]
