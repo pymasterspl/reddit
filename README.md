@@ -21,7 +21,14 @@ Good reading on working with code changes and pull request is https://google.git
 7. After pull request is approved and code quality + tests are passed, pull request is merged by the author.
 8. It is author responsibility to watch over pull request, bump if there is no code review done, fix issues and merge pull request.
 
-#### How to Set up
+### Code
+
+- Use class based views instead of function based views. A lot of examples and reading can be found on Jacek Blog: https://akademiait.com.pl/ and youtube: https://www.youtube.com/watch?v=2S9-pvFBlBc&ab_channel=AkademiaIT
+- for testing use pytest. Tests using Django Unit Testing will not be accepted. A lot of tests are in our previous project: https://github.com/pymasterspl/Dshop. Also please watch https://www.youtube.com/watch?v=xn3wSM82fnA&ab_channel=AkademiaIT
+- If you have questions, just ask on discord, reddit channel.
+
+
+## How to Set up
 
 Clone repository to specific folder (ex. reddit):
 ```
