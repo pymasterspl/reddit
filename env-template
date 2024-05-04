@@ -1,0 +1,16 @@
+# Enviroment .env  file template,, 
+# In django project install:   pip install python-decouple
+# ## Decouple import in settings.py   from decouple import config
+
+# Your Django app secret key without '' or " ", in Django  settings.py  should be as follow:
+# SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY=secret-key
+
+# Debug state, in Django  settings.py  should be as follow:
+# DEBUG = config('DEBUG')
+DEBUG=True
+
+# Allowed Hosts in Django  settings.py  should be as follow:
+# ALLOWED_HOSTS =  json.loads(config('ALLOWED_HOSTS'))
+ALLOWED_HOSTS='["127.0.0.1", "192.168.99.100", "localhost"]'
+
