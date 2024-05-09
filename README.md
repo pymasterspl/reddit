@@ -1,5 +1,6 @@
 # Reddit
 Reddit clone for educational purposes. Developed by PyMasters
+Want to join and work on it? https://pymasters.pl/spolecznosc
 
 ## Rules of engagement
 Good reading on working with code changes and pull request is https://google.github.io/eng-practices/. It contains both views - change author and reviewer.
@@ -9,7 +10,10 @@ Good reading on working with code changes and pull request is https://google.git
 1. Do not commit directly to `master` or `dev`. Both branches are protected.
 2. Check your code with `ruff check` prior to creating pull requests. The code is checked against PEP8 using `ruff`. Violations will not allow merging.
     - fix can be applied by ruff automatically for some issues, check `ruff check --fix`.
-3. Use pull request to add your work. Make pull request to `dev` branch.
+3. Follow Git Flow approach while developing. 
+   - video explaing git flow is available for Pymasters members at: https://discord.com/channels/1035267230901997628/1135149223306858536/1136744608555089990
+       - you can join Pymasters at https://pymasters.pl/spolecznosc     
+   - Use pull request to add your work. Make pull request to `dev` branch.
    - After creating pull request use "reviewers" option on far right of the screen to request review from "pymasters/reddit" team, or you can request review from certain team member directly by mentioning their name.
       ![alt text](readme-image.png)
    - One of the team members (or multiple) will perform code review and approve the pull request or request changes.
