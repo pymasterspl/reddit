@@ -20,7 +20,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
-exclude = ["scripts/", "manage.py", "urls.py", "asgi.py", "wsgi.py", "migrations/"]
+exclude = ["scripts/", "manage.py", "asgi.py", "wsgi.py", "migrations/"]
 line-length = 120
 
 indent-width = 4
