@@ -16,12 +16,12 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_user(self, email, password=None, **extra_fields):  # noqa: ANN201, ANN101, ANN001, ANN003, D102
+    def create_user(self, email, password=None, **extra_fields):  # noqa: ANN201, ANN101, ANN001, ANN003
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
         return self._create_user(email, password, **extra_fields)
 
-    def create_superuser(self, email, password, **extra_fields):  # noqa: ANN201, ANN001, ANN003, ANN101, D102
+    def create_superuser(self, email, password, **extra_fields):  # noqa: ANN201, ANN001, ANN003, ANN101
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
 
