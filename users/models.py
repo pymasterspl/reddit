@@ -6,7 +6,7 @@ from django.db import models
 class UserManager(BaseUserManager):
     use_in_migrations: bool = True
 
-    def _create_user(self: "UserManager", email: str, password: str, **extra_fields) -> "User":
+    def _create_user(self: "UserManager", email: str, password: str, **extra_fields: int) -> "User":
         if not email:
             message: str = "Users must have an email address"
             raise ValueError(message)
