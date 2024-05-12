@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reddit</title>
+        <link rel="icon" href="{% static 'reddit/icons/reddit-logo.png' %}" type="image/x-icon">
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
+        {% block stripe %}
+        {% endblock %}
+    </head>
+    <body class="d-flex flex-column min-vh-100 bg-dark border-bottom-1">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark text-primary navbar-bottom">
+            <div class="container">
+                <div class="navbar-brand d-flex align-items-center justify-content-start">
+                    <img src="{% static 'reddit/images/logo.webp' %}" alt="Logo" style="height: 50px;">
+                    <a class="navbar-brand font-weight-bold text-decoration-none text-lowercase font-weight-bold" href="/">Reddit</a>
+                </div>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                {%  block nav %}
+                {%  endblock nav %}
+            </div>
+        </nav>
+        {% if messages %}
+            <ul class="alert alert-success">
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+
+        <footer class="mt-auto bg-dark text-light text-center py-3 navbar-top">
+            <p>&copy; 2024 PyMasters.pl. All rights reserved.</p>
+{#            <p><a href="{% url 'privacy-policy' %}" class="text-decoration-none link-light">Privacy policy</a></p>#}
+        </footer>
+
+    </body>
+</html>
