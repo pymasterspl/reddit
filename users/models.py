@@ -4,14 +4,14 @@ from django.db import models
 
 
 class UserManager(BaseUserManager):
-    use_in_migrations = True
+    use_in_migrations: bool = True
 
-    def _create_user(self, email, password, **extra_fields):  # noqa: ANN202, ANN101, ANN001, ANN003
+    def _create_user(self: "UserManager", email: str, password: str, **extra_fields) -> "User":
         if not email:
-            message = "Users must have an email address"
+            message: str = "Users must have an email address"
             raise ValueError(message)
-        email: str = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
+        email = self.normalize_email(email)
+        user: "User" = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
