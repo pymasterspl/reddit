@@ -1,8 +1,10 @@
 from django.urls import path
 
-from articles.views import home_view, privacy_policy
+from articles.views import HomeView, PrivacyPoliceView
 
 urlpatterns = [
-        path("", home_view, name="home-page"),
-        path('privacy-police', privacy_policy, name='privacy-policy')
+        path("", HomeView.as_view(), name="home-page"),
+        path("privacy-police/", PrivacyPoliceView.as_view(),
+             name="privacy-policy"),
+
 ]

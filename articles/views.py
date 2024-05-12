@@ -1,9 +1,9 @@
-from django.http import HttpRequest
-from django.shortcuts import render
+from django.views.generic import TemplateView
 
 
-def home_view(request: HttpRequest) -> HttpRequest:
-    return render(request, "base.html")
+class HomeView(TemplateView):
+    template_name = "base.html"
 
-def privacy_policy(request: HttpRequest) -> HttpRequest:
-    return render(request, "privacy-police.html")
+
+class PrivacyPoliceView(TemplateView):
+    template_name = "privacy-police.html"
