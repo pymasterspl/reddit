@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -16,26 +18,29 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_user(self, email, password=None, **extra_fields):  # noqa: ANN201, ANN101, ANN001, ANN003
+    def create_user(self: "UserManager", email: str, password: str, **extra_fields: int) -> "User":
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
         return self._create_user(email, password, **extra_fields)
 
-    def create_superuser(self, email, password, **extra_fields):  # noqa: ANN201, ANN001, ANN003, ANN101
+    def create_superuser(self: "UserManager", email: str, password: str, **extra_fields: int) -> "User":
+
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
 
         if extra_fields.get("is_staff") is not True:
-            raise ValueError("Superuser must have is_staff=True.")  # noqa: EM101, TRY003
+            message: str = "Superuser must have is_staff=True."
+            raise ValueError(message)
         if extra_fields.get("is_superuser") is not True:
-            raise ValueError("Superuser must have is_superuser=True.")  # noqa: EM101, TRY003
+            message: str = "Superuser must have is_superuser=True."
+            raise ValueError(message)
 
         return self._create_user(email, password, **extra_fields)
 
 
 class User(AbstractUser):
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []  # noqa: RUF012
+    REQUIRED_FIELDS: ClassVar[list[int]] = []
     objects = UserManager()
-    username = None
-    email = models.EmailField(unique=True)
+    username: None = None
+    email: str = models.EmailField(unique=True)
