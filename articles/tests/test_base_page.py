@@ -1,12 +1,10 @@
-import os
 
-import django
 import pytest
 from django.test import Client
 from django.urls import reverse
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_privacy_police_view() -> None:
     client = Client()
     url = reverse("home-page")
