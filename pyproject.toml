@@ -14,6 +14,7 @@ python-decouple = "^3.8"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
 ruff = "^0.3.7"
+pytest-django = "^4.8.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -46,3 +47,8 @@ line-ending = "auto"
     "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
     "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
 ]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "reddit.settings"
+# -- recommended but optional:
+python_files = ["test_*.py", "*_test.py", "testing/python/*.py"]
