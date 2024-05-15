@@ -61,23 +61,26 @@ class Post(GenericModel):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)  # Save the Post instance first
 
-        hashtags = re.findall(r"#(\w+)", self.content)
-        existing_tags = Tag.objects.filter(
-            name__in=hashtags,
-            content_type=ContentType.objects.get_for_model(self),
+        current_tags = set(re.findall(r"#(\w+)", self.content))
+        existing_tags = set(Tag.objects.filter(
+            content_type=self.get_content_type(),
             object_id=self.id,
-        )
-        new_tags = [
-            Tag(name=hashtag, content_object=self)
-            for hashtag in hashtags
-            if hashtag not in existing_tags.values_list("name", flat=True)
-        ]
-        Tag.objects.bulk_create(new_tags)
+        ).values_list("name", flat=True))
 
-        self.tags.add(*existing_tags)
-        self.tags.add(*new_tags)
+        # Remove tags that are no longer present in the content
+        tags_to_remove = existing_tags - current_tags
+        Tag.objects.filter(
+            name__in=tags_to_remove,
+            content_type=self.get_content_type(),
+            object_id=self.id,
+        ).delete()
 
-        if not self.created_at == self.updated_at:
+        # Add new tags
+        new_tags = current_tags - existing_tags
+        for tag in new_tags:
+            Tag.objects.create(name=tag, content_object=self)
+
+        if self.created_at != self.updated_at:
             self.version = self.generate_version()
 
     def generate_version(self):
@@ -97,6 +100,9 @@ class Post(GenericModel):
     @property
     def score(self):
         return self.up_votes - self.down_votes
+
+    def get_content_type(self):
+        return ContentType.objects.get_for_model(self)
 
 
 class PostVote(models.Model):
