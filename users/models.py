@@ -8,7 +8,9 @@ from django.db import models
 class UserManager(BaseUserManager):
     use_in_migrations: bool = True
 
-    def _create_user(self: "UserManager", email: str, password: str, **extra_fields: int) -> "User":
+    def _create_user(
+        self: "UserManager", email: str, password: str, **extra_fields: int
+    ) -> "User":
         if not email:
             message: str = "Users must have an email address"
             raise ValueError(message)
@@ -18,12 +20,16 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_user(self: "UserManager", email: str, password: str, **extra_fields: int) -> "User":
+    def create_user(
+        self: "UserManager", email: str, password: str, **extra_fields: int
+    ) -> "User":
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
         return self._create_user(email, password, **extra_fields)
 
-    def create_superuser(self: "UserManager", email: str, password: str, **extra_fields: int) -> "User":
+    def create_superuser(
+        self: "UserManager", email: str, password: str, **extra_fields: int
+    ) -> "User":
 
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
