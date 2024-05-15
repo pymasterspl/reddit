@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Community, Post, Tag, PostVote
+from .models import Community, Post, PostVote, Tag
 
 
 @admin.register(Community)
@@ -13,7 +13,7 @@ class CommunityAdmin(admin.ModelAdmin):
 class PostAdmin(admin.ModelAdmin):
     list_display = ("title", "user", "community", "score", "created_at", "updated_at")
     search_fields = ("title", "user__email", "community__name")
-    readonly_fields = ("version", )
+    readonly_fields = ("version",)
 
 
 @admin.register(PostVote)

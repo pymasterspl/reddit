@@ -9,12 +9,12 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
+    dependencies = [  # noqa: RUF012
         ("contenttypes", "0002_remove_content_type_name"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
-    operations = [
+    operations = [  # noqa: RUF012
         migrations.CreateModel(
             name="Community",
             fields=[
@@ -116,7 +116,8 @@ class Migration(migrations.Migration):
                 (
                     "user",
                     models.ManyToManyField(
-                        related_name="post_votes", to=settings.AUTH_USER_MODEL
+                        related_name="post_votes",
+                        to=settings.AUTH_USER_MODEL,
                     ),
                 ),
             ],
@@ -148,7 +149,7 @@ class Migration(migrations.Migration):
                     models.Index(
                         fields=["content_type", "object_id"],
                         name="core_tag_content_d03c4c_idx",
-                    )
+                    ),
                 ],
             },
         ),
