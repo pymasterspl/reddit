@@ -7,6 +7,7 @@ from django.urls import reverse
 def test_privacy_police_view() -> None:
     client = Client()
     url = reverse("privacy-policy")
+    http_ok = 200
     response = client.get(url)
-    assert response.status_code == "200"
+    assert response.status_code == http_ok
     assert "privacy-police.html" in [t.name for t in response.templates]
