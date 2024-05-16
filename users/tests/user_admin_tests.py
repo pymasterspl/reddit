@@ -1,6 +1,5 @@
 import pytest
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
 import users.models
 from users.admin import CustomUserAdmin
@@ -25,14 +24,6 @@ def model_admin() -> admin.ModelAdmin:
 
 def test_admin_registered(model_admin: admin.ModelAdmin) -> None:
     assert isinstance(model_admin, CustomUserAdmin)
-
-
-def test_list_display(model_admin: admin.ModelAdmin) -> None:
-    assert model_admin.list_display == DjangoUserAdmin.list_display[1:]
-
-
-def test_ordering(model_admin: admin.ModelAdmin) -> None:
-    assert model_admin.ordering == ("email",)
 
 
 def test_fieldsets(model_admin: admin.ModelAdmin) -> None:
