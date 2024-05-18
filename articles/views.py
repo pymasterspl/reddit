@@ -5,5 +5,5 @@ class HomeView(TemplateView):
     template_name = "base.html"
 
 
-class PrivacyPoliceView(TemplateView):
+class PrivacyPolicyView(TemplateView):
     template_name = "privacy-police.html"
