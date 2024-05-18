@@ -4,10 +4,10 @@ from django.urls import reverse
 
 
 @pytest.mark.django_db()
-def test_privacy_police_view() -> None:
+def test_privacy_policy_view() -> None:
     client = Client()
     url = reverse("privacy-policy")
     http_ok = 200
     response = client.get(url)
     assert response.status_code == http_ok
-    assert "privacy-police.html" in [t.name for t in response.templates]
+    assert "privacy-policy.html" in [t.name for t in response.templates]
