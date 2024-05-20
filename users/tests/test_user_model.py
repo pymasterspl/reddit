@@ -1,8 +1,6 @@
-import secrets
-import string
-
 import pytest
 from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import AuthenticationForm
 from django.test import Client
 from django.urls import reverse_lazy
 
@@ -11,42 +9,14 @@ User = get_user_model()
 HTTP_SUCCESS = 200
 
 
-def generate_random_password(length: int = 12) -> str:
-    characters = string.ascii_letters + string.digits + string.punctuation
-    secure_random = secrets.SystemRandom()
-    return "".join(secure_random.choice(characters) for _ in range(length))
-
-
-@pytest.fixture()
-def generated_password() -> str:
-    return generate_random_password()
-
-
-@pytest.fixture()
-def user(generated_password: str) -> User:
-    user = User.objects.create_user(email="test@example.com", password=generated_password)
-    user.plain_password = generated_password
-    return user
-
-
-@pytest.fixture()
-def admin_user(generated_password: str) -> User:
-    admin_user = User.objects.create_superuser(email="admin@example.com", password=generated_password)
-    admin_user.plain_password = generated_password
-    return admin_user
-
-
-@pytest.fixture()
-def client() -> Client:
-    return Client()
-
-
 @pytest.mark.django_db()
 def test_create_user(user: User) -> None:
     assert user.email == "test@example.com"
     assert user.is_staff is False
     assert user.is_superuser is False
     assert user.check_password(user.plain_password) is True
+    created_user = User.objects.filter(email="test@example.com").first()
+    assert created_user is not None
 
 
 @pytest.mark.django_db()
@@ -55,6 +25,8 @@ def test_create_superuser(admin_user: User) -> None:
     assert admin_user.is_staff is True
     assert admin_user.is_superuser is True
     assert admin_user.check_password(admin_user.plain_password) is True
+    created_user = User.objects.filter(email="admin@example.com").first()
+    assert created_user is not None
 
 
 @pytest.mark.django_db()
@@ -88,13 +60,6 @@ def test_login_user_view_get(client: Client) -> None:
 
 
 @pytest.mark.django_db()
-def test_login_user_view_post_success(client: Client, user: User) -> None:
-    data = {"email": "test@example.com", "password": "testpassword"}
-    response = client.post(reverse_lazy("login"), data=data)
-    assert response.status_code == HTTP_SUCCESS
-
-
-@pytest.mark.django_db()
 def test_login_user_view_post_success_authenticated(client: Client, user: User) -> None:
     data = {"email": "test@example.com", "password": "testpassword"}
     response = client.post(reverse_lazy("login"), data=data)
@@ -108,3 +73,7 @@ def test_login_user_view_post_missing_credentials(client: Client) -> None:
     data = {}
     response = client.post(reverse_lazy("login"), data=data)
     assert response.status_code == HTTP_SUCCESS
+    form = AuthenticationForm(data=data)
+    form.is_valid()
+    assert form.errors.get("username") == ["This field is required."]
+    assert form.errors.get("password") == ["This field is required."]
