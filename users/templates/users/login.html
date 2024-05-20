@@ -8,7 +8,6 @@
             <div class="mx-auto col-10 col-md-8 col-lg-6 vh-100 mt-lg-3">
                 <form method="POST" action=".">
                     {% csrf_token %}
-                    {{ form.error }}
                     {{ form.as_p }}
                     <div class="align-items-center">
                         <button type="submit" class="btn btn-primary mt-2 mb-2">Submit</button>
