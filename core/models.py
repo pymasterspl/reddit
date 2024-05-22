@@ -12,19 +12,20 @@ User = get_user_model()
 
 class GenericModel(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    parent = models.ForeignKey()
     is_active = models.BooleanField(default=True)
     is_locked = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:  # noqa: D106
+    class Meta:
         abstract = True
 
 
 class Community(GenericModel):
     name = models.CharField(max_length=255)
 
-    def __str__(self) -> str:  # noqa: ANN101, D105
+    def __str__(self: "Community") -> str:
         return str(self.name)
 
 
@@ -35,12 +36,12 @@ class Tag(models.Model):
     content_object = GenericForeignKey("content_type", "object_id")
     created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:  # noqa: D106
+    class Meta:
         indexes: ClassVar[list[tuple[str, ...]]] = [
             models.Index(fields=["content_type", "object_id"]),
         ]
 
-    def __str__(self) -> str:  # noqa: ANN101, D105
+    def __str__(self: "Tag") -> str:
         return str(self.name)
 
 
@@ -54,14 +55,14 @@ class Post(GenericModel):
     content = models.TextField()
 
     tags = GenericRelation(Tag, related_query_name="posts")
-    image = models.ImageField(blank=True)
+    image = models.ManyToManyField(blank=True, related_name="posts")
     parent = GenericRelation("self", related_query_name="children")
     version: str = models.CharField(max_length=32)
 
-    def __str__(self) -> str:  # noqa: ANN101, D105
+    def __str__(self: "Post") -> str:
         return f"@{self.user}: {self.title}"
 
-    def save(self, *args, **kwargs) -> None:  # noqa: ANN101, ANN002, ANN003
+    def save(self: "Post", *args: int, **kwargs: int) -> None:
         super().save(*args, **kwargs)
 
         current_tags: set[str] = set(re.findall(r"#(\w+)", self.content))
@@ -85,26 +86,24 @@ class Post(GenericModel):
         for tag in new_tags:
             Tag.objects.create(name=tag, content_object=self)
 
-        if self.created_at != self.updated_at:
-            self.version = self.generate_version()
-
-    def generate_version(self) -> str:  # noqa: ANN101
+    def generate_version(self: "Post") -> str:
+        # Generate hash of title and content to verify if content was overwritten already f.e in other browser
         data = f"{self.title}{self.content}"
         return hashlib.sha256(data.encode()).hexdigest()
 
     @property
-    def up_votes(self) -> int:  # noqa: ANN101
+    def up_votes(self: "Post") -> int:
         return self.post_votes.filter(type=PostVote.UPVOTE).count()
 
     @property
-    def down_votes(self) -> int:  # noqa: ANN101
+    def down_votes(self: "Post") -> int:
         return self.post_votes.filter(type=PostVote.DOWNVOTE).count()
 
     @property
-    def score(self) -> int:  # noqa: ANN101
+    def score(self: "Post") -> int:
         return self.up_votes - self.down_votes
 
-    def get_content_type(self) -> ContentType:  # noqa: ANN101
+    def get_content_type(self: "Post") -> ContentType:
         return ContentType.objects.get_for_model(self)
 
 
@@ -121,5 +120,20 @@ class PostVote(models.Model):
     type = models.CharField(max_length=20, choices=VOTE_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self) -> str:  # noqa: ANN101, D105
+    def __str__(self: "PostVote") -> str:
         return f"@{self.user}: {self.type} for post: {self.post}"
+
+
+class Image(models.Model):
+    image = models.ImageField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self: "Image") -> str:
+        return f"Image of {self.posts}"
+
+    def image_url(self: "Image") -> str:
+        try:
+            return self.image.url()
+        except ValueError:
+            return ""

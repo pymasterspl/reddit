@@ -25,7 +25,8 @@ def generate_random_password(length: int = 12) -> str:
 @pytest.fixture()
 def user() -> Generator[User, None, None]:
     return User.objects.create_user(
-        email="testuser@test.pl", password=generate_random_password(),
+        email="testuser@test.pl",
+        password=generate_random_password(),
     )
 
 
@@ -169,9 +170,7 @@ def test_duplicate_tags_not_created(user: User, community: Community) -> None:
     tag_names = tags.values_list("name", flat=True).distinct()
 
     assert tags.count() == SCORE_3
-    assert (
-        tags.count() == SCORE_3
-    )
+    assert tags.count() == SCORE_3
     assert "tag1" in tag_names
     assert "tag2" in tag_names
 
