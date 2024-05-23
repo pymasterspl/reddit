@@ -18,8 +18,8 @@ class PostAdmin(admin.ModelAdmin):
 
 @admin.register(PostVote)
 class PostVoteAdmin(admin.ModelAdmin):
-    list_display = ("type", "created_at")
-    list_filter = ("type",)
+    list_display = ("choice", "created_at")
+    list_filter = ("choice",)
 
 
 @admin.register(Tag)

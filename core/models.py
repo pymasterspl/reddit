@@ -9,10 +9,8 @@ from django.db import models
 
 User = get_user_model()
 
-
 class GenericModel(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    parent = models.ForeignKey()
     is_active = models.BooleanField(default=True)
     is_locked = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -21,13 +19,11 @@ class GenericModel(models.Model):
     class Meta:
         abstract = True
 
-
 class Community(GenericModel):
     name = models.CharField(max_length=255)
 
-    def __str__(self: "Community") -> str:
+    def __str__(self) -> str:
         return str(self.name)
-
 
 class Tag(models.Model):
     name = models.SlugField()
@@ -37,13 +33,26 @@ class Tag(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        indexes: ClassVar[list[tuple[str, ...]]] = [
+        indexes: ClassVar[list[models.Index]] = [
             models.Index(fields=["content_type", "object_id"]),
         ]
 
-    def __str__(self: "Tag") -> str:
+    def __str__(self) -> str:
         return str(self.name)
 
+class Image(models.Model):
+    image = models.ImageField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"Image of {self.posts}"
+
+    def image_url(self) -> str:
+        try:
+            return self.image.url
+        except ValueError:
+            return ""
 
 class Post(GenericModel):
     community = models.ForeignKey(
@@ -53,58 +62,62 @@ class Post(GenericModel):
     )
     title = models.CharField(max_length=255)
     content = models.TextField()
-
     tags = GenericRelation(Tag, related_query_name="posts")
-    image = models.ManyToManyField(blank=True, related_name="posts")
-    parent = GenericRelation("self", related_query_name="children")
-    version: str = models.CharField(max_length=32)
+    image = models.ManyToManyField(Image, blank=True, related_name="posts")
+    parent = models.ForeignKey("self", default=None, blank=True, null=True, on_delete=models.CASCADE, related_query_name="children")
+    up_votes = models.IntegerField(default=0)
+    down_votes = models.IntegerField(default=0)
+    version = models.CharField(
+        max_length=32,
+        help_text="Hash of the title + content to prevent overwriting already saved post",
+    )
 
-    def __str__(self: "Post") -> str:
+    _skip_version_check = False
+
+    def __str__(self) -> str:
         return f"@{self.user}: {self.title}"
 
-    def save(self: "Post", *args: int, **kwargs: int) -> None:
+    def save(self, *args, **kwargs) -> None:
+        if not self._skip_version_check:
+            if self.pk is not None and self.generate_version() == self.version:
+                raise ValueError("The post was already modified")
+            self.version = self.generate_version()
         super().save(*args, **kwargs)
+        self.update_tags()
 
-        current_tags: set[str] = set(re.findall(r"#(\w+)", self.content))
-        existing_tags: set[str] = set(
+    def generate_version(self) -> str:
+        data = f"{self.title}{self.content}"
+        return hashlib.sha256(data.encode()).hexdigest()
+
+    @property
+    def score(self) -> int:
+        return self.up_votes - self.down_votes
+
+    def get_content_type(self) -> ContentType:
+        return ContentType.objects.get_for_model(self)
+
+    def update_tags(self):
+        current_tags = set(re.findall(r"#(\w+)", self.content))
+        existing_tags = set(
             Tag.objects.filter(
                 content_type=self.get_content_type(),
                 object_id=self.id,
-            ).values_list("name", flat=True),
+            ).values_list("name", flat=True)
         )
-
-        # Remove tags that were removed in the content
         tags_to_remove = existing_tags - current_tags
         Tag.objects.filter(
             name__in=tags_to_remove,
             content_type=self.get_content_type(),
             object_id=self.id,
         ).delete()
-
-        # Add new tags
         new_tags = current_tags - existing_tags
         for tag in new_tags:
             Tag.objects.create(name=tag, content_object=self)
 
-    def generate_version(self: "Post") -> str:
-        # Generate hash of title and content to verify if content was overwritten already f.e in other browser
-        data = f"{self.title}{self.content}"
-        return hashlib.sha256(data.encode()).hexdigest()
-
-    @property
-    def up_votes(self: "Post") -> int:
-        return self.post_votes.filter(type=PostVote.UPVOTE).count()
-
-    @property
-    def down_votes(self: "Post") -> int:
-        return self.post_votes.filter(type=PostVote.DOWNVOTE).count()
-
-    @property
-    def score(self: "Post") -> int:
-        return self.up_votes - self.down_votes
-
-    def get_content_type(self: "Post") -> ContentType:
-        return ContentType.objects.get_for_model(self)
+    def vote(self, user: User, choice: str) -> None:
+        vote, _ = PostVote.objects.get_or_create(user=user, post=self)
+        vote.choice = choice
+        vote.save()
 
 
 class PostVote(models.Model):
@@ -115,25 +128,19 @@ class PostVote(models.Model):
         (DOWNVOTE, "Down Vote"),
     ]
 
-    user = models.ManyToManyField(User, related_name="post_votes")
-    post = models.ManyToManyField(Post, related_name="post_votes")
-    type = models.CharField(max_length=20, choices=VOTE_CHOICES)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="post_votes")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="post_votes")
+    choice = models.CharField(max_length=20, choices=VOTE_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self: "PostVote") -> str:
-        return f"@{self.user}: {self.type} for post: {self.post}"
+    def __str__(self) -> str:
+        return f"@{self.user}: {self.choice} for post: {self.post}"
 
-
-class Image(models.Model):
-    image = models.ImageField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self: "Image") -> str:
-        return f"Image of {self.posts}"
-
-    def image_url(self: "Image") -> str:
-        try:
-            return self.image.url()
-        except ValueError:
-            return ""
+    def save(self: "PostVote", *args: int, **kwargs: int):
+        super().save(*args, **kwargs)
+        post_vote = PostVote.objects.filter(post=self.post)
+        self.post.up_votes = post_vote.filter(choice=PostVote.UPVOTE).count()
+        self.post.down_votes = post_vote.filter(choice=PostVote.DOWNVOTE).count()
+        self.post._skip_version_check = True
+        self.post.save()
+        self.post._skip_version_check = False

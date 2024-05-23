@@ -9,12 +9,6 @@ from core.models import Community, Post, PostVote, Tag
 
 User = get_user_model()
 
-UPVOTE_SCORE = 1
-DOWNVOTE_SCORE = -1
-MULTIPLE_VOTES_SCORE = 2
-SCORE_3 = 3
-MIXED_VOTES_SCORE = 0
-
 
 def generate_random_password(length: int = 12) -> str:
     alphabet = string.ascii_letters + string.digits + string.punctuation
@@ -47,25 +41,21 @@ def post(user: User, community: Community) -> Generator[Post, None, None]:
 
 @pytest.mark.django_db()
 def test_post_score_initial(post: Post) -> None:
-    assert post.score == MIXED_VOTES_SCORE
+    assert post.score == 0
 
 
 @pytest.mark.django_db()
 def test_post_score_upvote(post: Post, user: User) -> None:
-    vote = PostVote.objects.create(type=PostVote.UPVOTE)
-    vote.user.add(user)
-    vote.post.add(post)
+    post.vote(user=user, choice=PostVote.UPVOTE)
     post.refresh_from_db()
-    assert post.score == UPVOTE_SCORE
+    assert post.score == 1
 
 
 @pytest.mark.django_db()
 def test_post_score_downvote(post: Post, user: User) -> None:
-    vote = PostVote.objects.create(type=PostVote.DOWNVOTE)
-    vote.user.add(user)
-    vote.post.add(post)
+    post.vote(user=user, choice=PostVote.DOWNVOTE)
     post.refresh_from_db()
-    assert post.score == DOWNVOTE_SCORE
+    assert post.score == -1
 
 
 @pytest.mark.django_db()
@@ -75,23 +65,17 @@ def test_post_score_multiple_votes(post: Post, user: User) -> None:
         password=generate_random_password(),
     )
 
-    vote1 = PostVote.objects.create(type=PostVote.UPVOTE)
-    vote1.user.add(user)
-    vote1.post.add(post)
-
-    vote2 = PostVote.objects.create(type=PostVote.UPVOTE)
-    vote2.user.add(another_user)
-    vote2.post.add(post)
-
+    post.vote(user=user, choice=PostVote.UPVOTE)
     post.refresh_from_db()
-    assert post.score == MULTIPLE_VOTES_SCORE
+    assert post.score == 1
 
-    vote3 = PostVote.objects.create(type=PostVote.DOWNVOTE)
-    vote3.user.add(user)
-    vote3.post.add(post)
-
+    post.vote(user=another_user, choice=PostVote.UPVOTE)
     post.refresh_from_db()
-    assert post.score == UPVOTE_SCORE
+    assert post.score == 2
+
+    post.vote(user=another_user, choice=PostVote.DOWNVOTE)
+    post.refresh_from_db()
+    assert post.score == 0
 
 
 @pytest.mark.django_db()
@@ -101,16 +85,11 @@ def test_post_score_mixed_votes(post: Post, user: User) -> None:
         password=generate_random_password(),
     )
 
-    vote1 = PostVote.objects.create(type=PostVote.UPVOTE)
-    vote1.user.add(user)
-    vote1.post.add(post)
-
-    vote2 = PostVote.objects.create(type=PostVote.DOWNVOTE)
-    vote2.user.add(another_user)
-    vote2.post.add(post)
+    post.vote(user=user, choice=PostVote.UPVOTE)
+    post.vote(user=another_user, choice=PostVote.DOWNVOTE)
 
     post.refresh_from_db()
-    assert post.score == MIXED_VOTES_SCORE
+    assert post.score == 0
 
 
 @pytest.mark.django_db()
@@ -126,7 +105,7 @@ def test_tags_created_on_post_save(user: User, community: Community) -> None:
     tags = Tag.objects.filter(content_type=post.get_content_type(), object_id=post.id)
     tag_names = tags.values_list("name", flat=True)
 
-    assert tags.count() == MULTIPLE_VOTES_SCORE
+    assert tags.count() == 2
     assert "tag1" in tag_names
     assert "tag2" in tag_names
 
@@ -144,7 +123,7 @@ def test_tags_associated_with_post(user: User, community: Community) -> None:
     tags = post.tags.all()
     tag_names = tags.values_list("name", flat=True)
 
-    assert tags.count() == UPVOTE_SCORE
+    assert tags.count() == 1
     assert "tag1" in tag_names
 
 
@@ -169,8 +148,8 @@ def test_duplicate_tags_not_created(user: User, community: Community) -> None:
     tags = Tag.objects.filter(content_type=post1.get_content_type())
     tag_names = tags.values_list("name", flat=True).distinct()
 
-    assert tags.count() == SCORE_3
-    assert tags.count() == SCORE_3
+    assert tags.count() == 3
+    assert tags.count() == 3
     assert "tag1" in tag_names
     assert "tag2" in tag_names
 
@@ -191,7 +170,7 @@ def test_tags_removed_on_post_update(user: User, community: Community) -> None:
     tags = Tag.objects.filter(content_type=post.get_content_type(), object_id=post.id)
     tag_names = tags.values_list("name", flat=True)
 
-    assert tags.count() == UPVOTE_SCORE
+    assert tags.count() == 1
     assert "tag3" in tag_names
     assert "tag1" not in tag_names
     assert "tag2" not in tag_names
