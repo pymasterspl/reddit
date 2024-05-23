@@ -75,7 +75,9 @@ class Migration(migrations.Migration):
             model_name="post",
             name="image",
             field=models.ManyToManyField(
-                blank=True, related_name="posts", to="core.image"
+                blank=True,
+                related_name="posts",
+                to="core.image",
             ),
         ),
         migrations.AddField(

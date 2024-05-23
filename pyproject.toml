@@ -10,6 +10,7 @@ readme = "README.md"
 python = "^3.11"
 Django = "^5.0.4"
 python-decouple = "^3.8"
+pytest-django = "^4.8.0"
 pillow = "^10.3.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -47,5 +48,5 @@ line-ending = "auto"
     "S101", # asserts allowed in tests...
     "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
     "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
-    "PLR2004", # int constants are making core less readable
+    "PLR2004", # Ruff is requesting to replace asserted integers for a constants
 ]
