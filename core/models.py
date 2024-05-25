@@ -44,21 +44,6 @@ class Tag(models.Model):
         return str(self.name)
 
 
-class Image(models.Model):
-    image = models.ImageField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self: "Image") -> str:
-        return f"Image of {self.posts}"
-
-    def image_url(self: "Image") -> str:
-        try:
-            return self.image.url
-        except ValueError:
-            return ""
-
-
 class Post(GenericModel):
     community = models.ForeignKey(
         Community,
@@ -68,7 +53,6 @@ class Post(GenericModel):
     title = models.CharField(max_length=255)
     content = models.TextField()
     tags = GenericRelation(Tag, related_query_name="posts")
-    image = models.ManyToManyField(Image, blank=True, related_name="posts")
     parent = models.ForeignKey(
         "self",
         default=None,
@@ -84,17 +68,14 @@ class Post(GenericModel):
         help_text="Hash of the title + content to prevent overwriting already saved post",
     )
 
-    _skip_version_check = False
-
     def __str__(self: "Post") -> str:
         return f"@{self.user}: {self.title}"
 
     def save(self: "Post", *args: int, **kwargs: int) -> None:
-        if not self._skip_version_check:
-            if self.pk is not None and self.generate_version() == self.version:
-                msg = "The post was already modified"
-                raise ValueError(msg)
-            self.version = self.generate_version()
+        if self.pk is not None and self.generate_version() == self.version:
+            msg = "The post was already modified"
+            raise ValueError(msg)
+        self.version = self.generate_version()
         super().save(*args, **kwargs)
         self.update_tags()
 
@@ -132,13 +113,8 @@ class Post(GenericModel):
         vote.choice = choice
         vote.save()
 
-    @property
-    def skip_version_check(self: "Post") -> bool:
-        return self._skip_version_check
-
-    @skip_version_check.setter
-    def skip_version_check(self: "Post", value: bool) -> None:
-        self._skip_version_check = value
+    def get_images(self):
+        return self.images.all()
 
 
 class PostVote(models.Model):
@@ -162,10 +138,27 @@ class PostVote(models.Model):
 
     def save(self: "PostVote", *args: int, **kwargs: int) -> None:
         super().save(*args, **kwargs)
-        post_vote = PostVote.objects.filter(post=self.post)
-        self.post.up_votes = post_vote.filter(choice=PostVote.UPVOTE).count()
-        self.post.down_votes = post_vote.filter(choice=PostVote.DOWNVOTE).count()
-        self.post.skip_version_check = True
-        self.post.save()
-        self.post.skip_version_check = False
+        post_votes = PostVote.objects.filter(post=self.post)
+        up_votes = post_votes.filter(choice=PostVote.UPVOTE).count()
+        down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
+        Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
 
+
+class Image(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'created_at']
+
+    def __str__(self: "Image") -> str:
+        return f"Image of {self.posts}"
+
+    def image_url(self: "Image") -> str:
+        try:
+            return self.image.url
+        except ValueError:
+            return ""
