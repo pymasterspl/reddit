@@ -113,8 +113,8 @@ class Post(GenericModel):
         vote.choice = choice
         vote.save()
 
-    def get_images(self):
-        return self.images.all()
+    def get_images(self: "Post") -> models.QuerySet:
+        return Image.objects.filter(post=self)
 
 
 class PostVote(models.Model):
@@ -145,14 +145,14 @@ class PostVote(models.Model):
 
 
 class Image(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="images")
     image = models.ImageField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
-        ordering = ['order', 'created_at']
+        ordering: ClassVar[list[str, str]] = ["order", "created_at"]
 
     def __str__(self: "Image") -> str:
         return f"Image of {self.posts}"
