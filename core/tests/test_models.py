@@ -1,5 +1,3 @@
-from collections.abc import Generator
-
 import pytest
 from django.contrib.auth import get_user_model
 

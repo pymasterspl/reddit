@@ -1,6 +1,6 @@
 import secrets
 import string
-from typing import Generator
+from collections.abc import Generator
 
 import pytest
 from django.contrib.auth import get_user_model
