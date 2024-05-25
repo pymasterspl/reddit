@@ -1,5 +1,3 @@
-import secrets
-import string
 from collections.abc import Generator
 
 import pytest
@@ -8,35 +6,6 @@ from django.contrib.auth import get_user_model
 from core.models import Community, Post, PostVote, Tag
 
 User = get_user_model()
-
-
-def generate_random_password(length: int = 12) -> str:
-    alphabet = string.ascii_letters + string.digits + string.punctuation
-
-    return "".join(secrets.choice(alphabet) for i in range(length))
-
-
-@pytest.fixture()
-def user() -> Generator[User, None, None]:
-    return User.objects.create_user(
-        email="testuser@test.pl",
-        password=generate_random_password(),
-    )
-
-
-@pytest.fixture()
-def community(user: User) -> Generator[Community, None, None]:
-    return Community.objects.create(user=user, name="Test Community")
-
-
-@pytest.fixture()
-def post(user: User, community: Community) -> Generator[Post, None, None]:
-    return Post.objects.create(
-        user=user,
-        community=community,
-        title="Test Post",
-        content="This is a test post",
-    )
 
 
 @pytest.mark.django_db()
@@ -59,12 +28,7 @@ def test_post_score_downvote(post: Post, user: User) -> None:
 
 
 @pytest.mark.django_db()
-def test_post_score_multiple_votes(post: Post, user: User) -> None:
-    another_user = User.objects.create_user(
-        email="anotheruser@test.pl",
-        password=generate_random_password(),
-    )
-
+def test_post_score_multiple_votes(post: Post, user: User, another_user: User) -> None:
     post.vote(user=user, choice=PostVote.UPVOTE)
     post.refresh_from_db()
     assert post.score == 1
@@ -79,12 +43,7 @@ def test_post_score_multiple_votes(post: Post, user: User) -> None:
 
 
 @pytest.mark.django_db()
-def test_post_score_mixed_votes(post: Post, user: User) -> None:
-    another_user = User.objects.create_user(
-        email="anotheruser@test.pl",
-        password=generate_random_password(),
-    )
-
+def test_post_score_mixed_votes(post: Post, user: User, another_user: User) -> None:
     post.vote(user=user, choice=PostVote.UPVOTE)
     post.vote(user=another_user, choice=PostVote.DOWNVOTE)
 
