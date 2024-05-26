@@ -11,6 +11,7 @@ python = "^3.11"
 Django = "^5.0.4"
 python-decouple = "^3.8"
 pytest-django = "^4.8.0"
+pillow = "^10.3.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
@@ -22,7 +23,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
-exclude = ["scripts/", "manage.py", "asgi.py", "wsgi.py", "migrations/"]
+exclude = ["scripts/", "manage.py", "asgi.py", "wsgi.py", "*/migrations/"]
 line-length = 120
 
 indent-width = 4
@@ -30,7 +31,7 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = ["D104", "D100", "D103", "D211", "D213", "D101", "D102"]
+ignore = ["D104", "D100", "D103", "D211", "D213", "D101", "D102", "D105", "D106"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -47,4 +48,5 @@ line-ending = "auto"
     "S101", # asserts allowed in tests...
     "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
     "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
+    "PLR2004", # Ruff is requesting to replace asserted integers for a constants
 ]
