@@ -1,8 +1,11 @@
 import secrets
 import string
+from collections.abc import Generator
 
 import pytest
 from django.contrib.auth import get_user_model
+
+from core.models import Community, Post
 
 User = get_user_model()
 
@@ -26,7 +29,29 @@ def user(generated_password: str) -> User:
 
 
 @pytest.fixture()
+def another_user(generated_password: str) -> User:
+    user = User.objects.create_user(email="another_user@example.com", password=generated_password)
+    user.plain_password = generated_password
+    return user
+
+
+@pytest.fixture()
 def admin_user(generated_password: str) -> User:
     admin_user = User.objects.create_superuser(email="admin@example.com", password=generated_password)
     admin_user.plain_password = generated_password
     return admin_user
+
+
+@pytest.fixture()
+def community(user: User) -> Generator[Community, None, None]:
+    return Community.objects.create(user=user, name="Test Community")
+
+
+@pytest.fixture()
+def post(user: User, community: Community) -> Generator[Post, None, None]:
+    return Post.objects.create(
+        user=user,
+        community=community,
+        title="Test Post",
+        content="This is a test post",
+    )
