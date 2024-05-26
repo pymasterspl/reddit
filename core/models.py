@@ -149,7 +149,7 @@ class Image(models.Model):
     image = models.ImageField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    order = models.PositiveIntegerField(default=0)
+    order = models.PositiveIntegerField(default=9999999)
 
     class Meta:
         ordering: ClassVar[list[str, str]] = ["order", "created_at"]
