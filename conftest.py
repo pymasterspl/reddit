@@ -4,10 +4,16 @@ from collections.abc import Generator
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.test import Client
 
 from core.models import Community, Post
 
 User = get_user_model()
+
+
+@pytest.fixture()
+def client() -> type[Client]:
+    return Client()
 
 
 def generate_random_password(length: int = 12) -> str:
@@ -19,6 +25,11 @@ def generate_random_password(length: int = 12) -> str:
 @pytest.fixture()
 def generated_password() -> str:
     return generate_random_password()
+
+
+@pytest.fixture()
+def user_model() -> type[get_user_model()]:
+    return get_user_model()
 
 
 @pytest.fixture()

@@ -49,4 +49,5 @@ line-ending = "auto"
     "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
     "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
     "PLR2004", # Ruff is requesting to replace asserted integers for a constants
+    "RUF001", # Ruff had a problem with "’" in text: The two password fields didn’t match.
 ]
