@@ -15,7 +15,7 @@ pillow = "^10.3.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
-ruff = "^0.3.7"
+ruff = "^0.4.5"
 pytest-django = "^4.8.0"
 
 [build-system]
