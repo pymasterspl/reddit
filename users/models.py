@@ -13,7 +13,7 @@ class UserManager(BaseUserManager):
             message: str = "Users must have an email address"
             raise ValueError(message)
         email = self.normalize_email(email)
-        user: "User" = self.model(email=email, **extra_fields)
+        user: User = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
