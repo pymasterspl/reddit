@@ -29,14 +29,14 @@
                     <ul class="navbar-nav ms-auto">
                         {% if request.user.is_authenticated %}
                             <li class="nav-item">
-                                <a class="nav-link" href="/">User profile</a>
+                                <a class="nav-link" href="#">User profile (to be implemented)</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/">Logout</a>
+                                <a class="nav-link" href="#">Logout (to be implemented)</a>
                             </li>
                         {% else %}
                             <li class="nav-item">
-                                <a class="nav-link" href="/">Register</a>
+                                <a class="nav-link" href="#">Register (to be implemented)</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'login' %}">Login</a>
