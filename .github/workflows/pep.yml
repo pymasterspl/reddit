@@ -10,7 +10,6 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.11"]
-    if: github.event.pull_request.draft == false
     steps:
     - name: Cancel Previous Runs
       if: "!endsWith(github.ref, '/master') && !endsWith(github.ref, '/dev')"
