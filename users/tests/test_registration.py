@@ -1,5 +1,3 @@
-from collections.abc import Callable
-
 import pytest
 from django.contrib.auth import get_user_model
 from django.test import Client
@@ -23,7 +21,7 @@ def test_registration_page_loads_correctly(client: Client, register_url: str) ->
 @pytest.mark.django_db()
 def test_registration_form_valid_data(
         client: Client,
-        user_model: Callable,
+        user_model: type[User],
         generated_password: str,
         register_url: str,
 ) -> None:
@@ -40,7 +38,7 @@ def test_registration_form_valid_data(
 
 
 @pytest.mark.django_db()
-def test_registration_form_missing_data(client: Client, user_model: Callable, register_url: str) -> None:
+def test_registration_form_missing_data(client: Client, user_model: type[User], register_url: str) -> None:
     data: dict = {
         "email": "",
         "password1": "",
@@ -60,7 +58,7 @@ def test_registration_form_missing_data(client: Client, user_model: Callable, re
 @pytest.mark.django_db()
 def test_registration_form_user_already_exist(
         client: Client,
-        user_model: Callable,
+        user_model: type[User],
         user: User,
         register_url: str,
         generated_password: str,
