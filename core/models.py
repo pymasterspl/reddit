@@ -155,7 +155,7 @@ class Image(models.Model):
         ordering: ClassVar[list[str, str]] = ["order", "created_at"]
 
     def __str__(self: "Image") -> str:
-        return f"Image of {self.posts}"
+        return f"Image of {self.post}"
 
     def image_url(self: "Image") -> str:
         try:
