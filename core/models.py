@@ -24,6 +24,9 @@ class GenericModel(models.Model):
 class Community(GenericModel):
     name = models.CharField(max_length=255)
 
+    class Meta:
+        verbose_name_plural = "Communities"
+
     def __str__(self: "Community") -> str:
         return str(self.name)
 
