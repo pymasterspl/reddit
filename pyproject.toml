@@ -12,6 +12,8 @@ Django = "^5.0.4"
 python-decouple = "^3.8"
 pytest-django = "^4.8.0"
 pillow = "^10.3.0"
+django-crispy-forms = "^2.1"
+crispy-bootstrap5 = "^2024.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
