@@ -75,4 +75,4 @@ def test_registration_form_user_already_exist(
     form_errors = response.context["form"].errors
     assert len(form_errors) == 1
     assert "email" in form_errors
-    assert user_model.objects.all().count() == 1
+    assert user_model.objects.count() == 1
