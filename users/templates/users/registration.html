@@ -11,9 +11,11 @@
                     {% csrf_token %}
 
                     {% if form.non_field_errors %}
-                        <div class="alert alert-danger" role="alert">
-                            {{ form.non_field_errors }}
-                        </div>
+                        {% for err in form.non_field_errors %}
+                            <div class="alert alert-danger" role="alert">
+                                <p class="form-error">{{ err }}</p>
+                            </div>
+                        {% endfor %}
                     {% endif %}
 
                     {{ form.as_p }}
