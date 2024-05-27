@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load crispy_forms_tags %}
 
 {% block content %}
 
@@ -18,7 +19,7 @@
                         </div>
                     {% endif %}
 
-                    {{ form.as_p }}
+                    {{ form|crispy }}
 
                     <div class="align-items-center">
                         <button type="submit" class="btn btn-primary mt-2 mb-2">Register</button>
