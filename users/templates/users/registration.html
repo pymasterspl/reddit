@@ -9,7 +9,15 @@
             <div class="mx-auto col-10 col-md-8 col-lg-6 vh-100 mt-lg-3">
                 <form method="POST" action=".">
                     {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
                     {{ form.as_p }}
+
                     <div class="align-items-center">
                         <button type="submit" class="btn btn-primary mt-2 mb-2">Register</button>
                     </div>
@@ -18,4 +26,4 @@
         </div>
     </div>
 
-{%  endblock content %}
+{% endblock content %}
