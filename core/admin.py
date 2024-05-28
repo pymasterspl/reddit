@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Community, Post, PostVote, Tag
+from .models import Community, Image, Post, PostVote, Tag
 
 
 @admin.register(Community)
@@ -25,3 +25,8 @@ class PostVoteAdmin(admin.ModelAdmin):
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     list_display = ("name", "created_at")
+
+
+@admin.register(Image)
+class ImageAdmin(admin.ModelAdmin):
+    list_display = ("post", "image", "created_at", "updated_at")

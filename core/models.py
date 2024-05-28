@@ -24,6 +24,9 @@ class GenericModel(models.Model):
 class Community(GenericModel):
     name = models.CharField(max_length=255)
 
+    class Meta:
+        verbose_name_plural = "Communities"
+
     def __str__(self: "Community") -> str:
         return str(self.name)
 
@@ -155,7 +158,7 @@ class Image(models.Model):
         ordering: ClassVar[list[str, str]] = ["order", "created_at"]
 
     def __str__(self: "Image") -> str:
-        return f"Image of {self.posts}"
+        return f"Image of {self.post}"
 
     def image_url(self: "Image") -> str:
         try:
