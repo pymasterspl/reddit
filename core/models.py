@@ -144,7 +144,9 @@ class PostVote(models.Model):
         post_votes = PostVote.objects.filter(post=self.post)
         up_votes = post_votes.filter(choice=PostVote.UPVOTE).count()
         down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
-        Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
+        Post.objects.filter(pk=self.post.pk).update(
+            up_votes=up_votes, down_votes=down_votes
+        )
 
 
 class Image(models.Model):
@@ -165,3 +167,28 @@ class Image(models.Model):
             return self.image.url
         except ValueError:
             return ""
+
+
+class CommunityMember(models.Model):
+    ADMIN: ClassVar[str] = "admin"
+    MODERATOR: ClassVar[str] = "moderator"
+    MEMBER: ClassVar[str] = "member"
+
+    ROLE_CHOICES: ClassVar[list[tuple[str, str]]] = [
+        (ADMIN, "Admin"),
+        (MODERATOR, "Moderator"),
+        (MEMBER, "Member"),
+    ]
+
+    community = models.ForeignKey(
+        Community, on_delete=models.CASCADE, related_name="memberships"
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="communities")
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=MEMBER)
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("community", "user")
+
+    def __str__(self) -> str:
+        return f"{self.user.username} - {self.community.name} ({self.role})"
