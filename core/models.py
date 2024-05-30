@@ -145,7 +145,8 @@ class PostVote(models.Model):
         up_votes = post_votes.filter(choice=PostVote.UPVOTE).count()
         down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
         Post.objects.filter(pk=self.post.pk).update(
-            up_votes=up_votes, down_votes=down_votes
+            up_votes=up_votes,
+            down_votes=down_votes,
         )
 
 
@@ -181,7 +182,9 @@ class CommunityMember(models.Model):
     ]
 
     community = models.ForeignKey(
-        Community, on_delete=models.CASCADE, related_name="memberships"
+        Community,
+        on_delete=models.CASCADE,
+        related_name="memberships",
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="communities")
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=MEMBER)
@@ -190,5 +193,5 @@ class CommunityMember(models.Model):
     class Meta:
         unique_together = ("community", "user")
 
-    def __str__(self) -> str:
+    def __str__(self: "CommunityMember") -> str:
         return f"{self.user.username} - {self.community.name} ({self.role})"

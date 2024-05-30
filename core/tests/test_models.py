@@ -1,7 +1,8 @@
 import pytest
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError
 
-from core.models import Community, Post, PostVote, Tag, CommunityMember
+from core.models import Community, CommunityMember, Post, PostVote, Tag
 
 User = get_user_model()
 
@@ -136,7 +137,9 @@ def test_tags_removed_on_post_update(user: User, community: Community) -> None:
 @pytest.mark.django_db()
 def test_create_community_user(user: User, community: Community) -> None:
     community_user: CommunityMember = CommunityMember.objects.create(
-        user=user, community=community, role=CommunityMember.ADMIN
+        user=user,
+        community=community,
+        role=CommunityMember.ADMIN,
     )
 
     assert community_user.user == user
@@ -147,7 +150,8 @@ def test_create_community_user(user: User, community: Community) -> None:
 @pytest.mark.django_db()
 def test_default_role(user: User, community: Community) -> None:
     community_user: CommunityMember = CommunityMember.objects.create(
-        user=user, community=community
+        user=user,
+        community=community,
     )
 
     assert community_user.role == CommunityMember.MEMBER
@@ -156,10 +160,14 @@ def test_default_role(user: User, community: Community) -> None:
 @pytest.mark.django_db()
 def test_unique_community_user(user: User, community: Community) -> None:
     CommunityMember.objects.create(
-        user=user, community=community, role=CommunityMember.MODERATOR
+        user=user,
+        community=community,
+        role=CommunityMember.MODERATOR,
     )
 
-    with pytest.raises(Exception):
+    with pytest.raises(IntegrityError):
         CommunityMember.objects.create(
-            user=user, community=community, role=CommunityMember.MEMBER
+            user=user,
+            community=community,
+            role=CommunityMember.MEMBER,
         )
