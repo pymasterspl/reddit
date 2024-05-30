@@ -1,7 +1,7 @@
 import pytest
 from django.contrib.auth import get_user_model
 
-from core.models import Community, Post, PostVote, Tag
+from core.models import Community, Post, PostVote, Tag, CommunityMember
 
 User = get_user_model()
 
@@ -131,3 +131,35 @@ def test_tags_removed_on_post_update(user: User, community: Community) -> None:
     assert "tag3" in tag_names
     assert "tag1" not in tag_names
     assert "tag2" not in tag_names
+
+
+@pytest.mark.django_db()
+def test_create_community_user(user: User, community: Community) -> None:
+    community_user: CommunityMember = CommunityMember.objects.create(
+        user=user, community=community, role=CommunityMember.ADMIN
+    )
+
+    assert community_user.user == user
+    assert community_user.community == community
+    assert community_user.role == CommunityMember.ADMIN
+
+
+@pytest.mark.django_db()
+def test_default_role(user: User, community: Community) -> None:
+    community_user: CommunityMember = CommunityMember.objects.create(
+        user=user, community=community
+    )
+
+    assert community_user.role == CommunityMember.MEMBER
+
+
+@pytest.mark.django_db()
+def test_unique_community_user(user: User, community: Community) -> None:
+    CommunityMember.objects.create(
+        user=user, community=community, role=CommunityMember.MODERATOR
+    )
+
+    with pytest.raises(Exception):
+        CommunityMember.objects.create(
+            user=user, community=community, role=CommunityMember.MEMBER
+        )
