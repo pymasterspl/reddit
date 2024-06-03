@@ -1,8 +1,10 @@
+from typing import Any
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.views import LoginView, TemplateView
+from django.contrib.auth.views import LoginView, LogoutView, TemplateView
 from django.forms import Form
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import FormView
 
@@ -39,3 +41,11 @@ class UserRegistrationView(FormView):
         email = form.cleaned_data.get("email")
         messages.success(self.request, f"Account created for {email}!")
         return super().form_valid(form)
+
+
+class CustomLogoutView(LogoutView):
+    next_page = "login"
+
+    def dispatch(self: "LogoutView", request: HttpRequest, *args: tuple, **kwargs: dict[str, Any]) -> HttpResponse:
+        messages.add_message(request, messages.SUCCESS, "You have successfully logged out.")
+        return super().dispatch(request, *args, **kwargs)
