@@ -44,3 +44,11 @@ class User(AbstractUser):
     objects = UserManager()
     username: None = None
     email: str = models.EmailField(unique=True)
+
+
+class User2(AbstractUser):
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS: ClassVar[list[int]] = []
+    objects = UserManager()
+    username: None = None
+    email: str = models.EmailField(unique=True)
