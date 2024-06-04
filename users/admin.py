@@ -1,3 +1,4 @@
+
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
@@ -8,7 +9,7 @@ FieldsetsType = tuple[tuple[None, dict[str, str | tuple[str]]]]
 
 @admin.register(User)
 class CustomUserAdmin(DjangoUserAdmin):
-    list_display: list[str] = DjangoUserAdmin.list_display[1:] + ('is_online',)
+    list_display: list[str] = DjangoUserAdmin.list_display[1:] + ("is_online",)
     ordering: tuple[str] = ("email",)
     fieldsets: FieldsetsType = ()
     add_fieldsets: FieldsetsType = (
@@ -27,7 +28,8 @@ class CustomUserAdmin(DjangoUserAdmin):
         ),
     )
 
-    def is_online(self, obj):
+    def is_online(self: "CustomUserAdmin", obj: User) -> bool | str:
         return obj.is_online
+
     is_online.boolean = True
-    is_online.short_description = 'Online Status'
+    is_online.short_description = "Online Status"

@@ -60,7 +60,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "users.middleware.update_last_activity.UpdateLastActivityMiddleware"
+    "users.middleware.update_last_activity.UpdateLastActivityMiddleware",
 ]
 
 ROOT_URLCONF = "reddit.urls"

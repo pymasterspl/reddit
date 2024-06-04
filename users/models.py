@@ -1,10 +1,10 @@
 from datetime import timedelta
 from typing import ClassVar
 
+from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.conf import settings
 from django.utils import timezone
 
 
@@ -51,7 +51,7 @@ class User(AbstractUser):
 
     def update_last_activity(self: "User") -> None:
         self.last_activity = timezone.now()
-        self.save(update_fields=['last_activity'])
+        self.save(update_fields=["last_activity"])
 
     @property
     def is_online(self: "User") -> bool:
