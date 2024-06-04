@@ -1,8 +1,11 @@
+from datetime import timedelta
 from typing import ClassVar
 
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.conf import settings
+from django.utils import timezone
 
 
 class UserManager(BaseUserManager):
@@ -44,3 +47,13 @@ class User(AbstractUser):
     objects = UserManager()
     username: None = None
     email: str = models.EmailField(unique=True)
+    last_activity = models.DateTimeField(default=timezone.now)
+
+    def update_last_activity(self: "User") -> None:
+        self.last_activity = timezone.now()
+        self.save(update_fields=['last_activity'])
+
+    @property
+    def is_online(self: "User") -> bool:
+        online_limit = timezone.now() - timedelta(minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT)
+        return self.last_activity >= online_limit
