@@ -23,7 +23,7 @@ class GenericModel(models.Model):
 
 class Community(GenericModel):
     name = models.CharField(max_length=255)
-    members = models.ManyToManyField(User, through="CommunityMember")
+    members = models.ManyToManyField(User, through="CommunityMember", related_name="communities")
 
     class Meta:
         verbose_name_plural = "Communities"
@@ -182,7 +182,7 @@ class CommunityMember(models.Model):
 
     community = models.ForeignKey(Community, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=MEMBER)
+    role = models.CharField(max_length=13, choices=ROLE_CHOICES, default=MEMBER)
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
