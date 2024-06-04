@@ -23,6 +23,7 @@ class GenericModel(models.Model):
 
 class Community(GenericModel):
     name = models.CharField(max_length=255)
+    members = models.ManyToManyField(User, through="CommunityMember", related_name="communities")
 
     class Meta:
         verbose_name_plural = "Communities"
@@ -147,6 +148,7 @@ class PostVote(models.Model):
         Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
 
 
+
 class Image(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="images")
     image = models.ImageField()
@@ -165,3 +167,26 @@ class Image(models.Model):
             return self.image.url
         except ValueError:
             return ""
+
+
+class CommunityMember(models.Model):
+    MEMBER: ClassVar[str] = "100_member"
+    MODERATOR: ClassVar[str] = "200_moderator"
+    ADMIN: ClassVar[str] = "300_admin"
+
+    ROLE_CHOICES: ClassVar[list[tuple[str, str]]] = [
+        (MEMBER, "Member"),
+        (MODERATOR, "Moderator"),
+        (ADMIN, "Admin"),
+    ]
+
+    community = models.ForeignKey(Community, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    role = models.CharField(max_length=13, choices=ROLE_CHOICES, default=MEMBER)
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("community", "user")
+
+    def __str__(self: "CommunityMember") -> str:
+        return f"{self.user.username} - {self.community.name} ({self.role})"
