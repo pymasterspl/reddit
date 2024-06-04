@@ -57,3 +57,16 @@ class User(AbstractUser):
     def is_online(self: "User") -> bool:
         online_limit = timezone.now() - timedelta(minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT)
         return self.last_activity >= online_limit
+
+    @property
+    def last_activity_ago(self: "User") -> str:
+        delta = timezone.now() - self.last_activity
+        if delta.days == 0:
+            if delta.seconds < 60:
+                return "just now"
+            if delta.seconds < 3600:
+                return f"{delta.seconds // 60} minutes ago"
+            return f"{delta.seconds // 3600} hours ago"
+        if delta.days == 1:
+            return "1 day ago"
+        return f"{delta.days} days ago"

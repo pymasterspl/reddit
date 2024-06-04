@@ -1,4 +1,3 @@
-
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
@@ -9,10 +8,10 @@ FieldsetsType = tuple[tuple[None, dict[str, str | tuple[str]]]]
 
 @admin.register(User)
 class CustomUserAdmin(DjangoUserAdmin):
-    list_display: list[str] = DjangoUserAdmin.list_display[1:] + ("is_online",)
-    ordering: tuple[str] = ("email",)
-    fieldsets: FieldsetsType = ()
-    add_fieldsets: FieldsetsType = (
+    list_display = DjangoUserAdmin.list_display[1:] + ("is_online", "last_activity_ago")
+    ordering = ("email",)
+    fieldsets = ()
+    add_fieldsets = (
         (
             None,
             {
