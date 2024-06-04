@@ -23,6 +23,7 @@ class GenericModel(models.Model):
 
 class Community(GenericModel):
     name = models.CharField(max_length=255)
+    members = models.ManyToManyField(User, through="CommunityMember")
 
     class Meta:
         verbose_name_plural = "Communities"
@@ -144,10 +145,8 @@ class PostVote(models.Model):
         post_votes = PostVote.objects.filter(post=self.post)
         up_votes = post_votes.filter(choice=PostVote.UPVOTE).count()
         down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
-        Post.objects.filter(pk=self.post.pk).update(
-            up_votes=up_votes,
-            down_votes=down_votes,
-        )
+        Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
+
 
 
 class Image(models.Model):
@@ -171,22 +170,18 @@ class Image(models.Model):
 
 
 class CommunityMember(models.Model):
-    ADMIN: ClassVar[str] = "admin"
-    MODERATOR: ClassVar[str] = "moderator"
-    MEMBER: ClassVar[str] = "member"
+    MEMBER: ClassVar[str] = "100_member"
+    MODERATOR: ClassVar[str] = "200_moderator"
+    ADMIN: ClassVar[str] = "300_admin"
 
     ROLE_CHOICES: ClassVar[list[tuple[str, str]]] = [
-        (ADMIN, "Admin"),
-        (MODERATOR, "Moderator"),
         (MEMBER, "Member"),
+        (MODERATOR, "Moderator"),
+        (ADMIN, "Admin"),
     ]
 
-    community = models.ForeignKey(
-        Community,
-        on_delete=models.CASCADE,
-        related_name="memberships",
-    )
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="communities")
+    community = models.ForeignKey(Community, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=MEMBER)
     joined_at = models.DateTimeField(auto_now_add=True)
 

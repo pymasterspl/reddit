@@ -141,8 +141,9 @@ def test_create_community_user(user: User, community: Community) -> None:
         community=community,
         role=CommunityMember.ADMIN,
     )
+    community_user.refresh_from_db()
 
-    assert community_user.user == user
+    assert community.members.filter(pk=user.pk).exists()
     assert community_user.community == community
     assert community_user.role == CommunityMember.ADMIN
 
