@@ -12,5 +12,5 @@ class UpdateLastActivityMiddleware:
 
     def __call__(self: "UpdateLastActivityMiddleware", request: HttpRequest) -> HttpResponse:
         if request.user.is_authenticated:
-            User.objects.get(pk=request.user.pk).update_last_activity()
+            request.user.update_last_activity()
         return self.get_response(request)
