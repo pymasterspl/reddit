@@ -31,6 +31,11 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="#">User profile (to be implemented)</a>
                             </li>
+                            {% if request.user.is_staff %}
+                                <li class="nav-item">
+                                    <a class="nav-link text-danger" href="{% url 'admin:index' %}">Admin</a>
+                                </li>
+                            {% endif %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'logout_confirmation' %}">Logout</a>
                             </li>
