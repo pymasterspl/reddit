@@ -58,6 +58,7 @@ class User(AbstractUser):
         online_limit = timezone.now() - timedelta(minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES)
         return self.last_activity >= online_limit
 
+    @property
     def last_activity_ago(self: "User") -> str:
         delta = timezone.now() - self.last_activity
 
