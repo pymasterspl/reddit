@@ -50,8 +50,7 @@ class User(AbstractUser):
     last_activity = models.DateTimeField(auto_now_add=True)
 
     def update_last_activity(self: "User") -> None:
-        self.last_activity = timezone.now()
-        self.save(update_fields=["last_activity"])
+        User.objects.filter(pk=self.pk).update(last_activity=timezone.now())
 
     @property
     def is_online(self: "User") -> bool:
