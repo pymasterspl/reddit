@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 import pytest
+from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
 
@@ -8,7 +9,7 @@ from users.models import User
 
 
 @pytest.mark.django_db()
-def test_is_online(user: User, settings: list, client) -> None:
+def test_is_online(user: User, settings: list, client: Client) -> None:
     settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES = 15
     # Initially, the user's last_activity should be datetime.now
     assert user.is_online
