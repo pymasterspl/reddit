@@ -58,15 +58,19 @@ class User(AbstractUser):
         online_limit = timezone.now() - timedelta(minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES)
         return self.last_activity >= online_limit
 
-    @property
     def last_activity_ago(self: "User") -> str:
         delta = timezone.now() - self.last_activity
+
         if delta.days == 0:
             if delta.seconds < 60:  # noqa: PLR2004
-                return "just now"
-            if delta.seconds < 3600:  # noqa: PLR2004
-                return f"{delta.seconds // 60} minutes ago"
-            return f"{delta.seconds // 3600} hours ago"
-        if delta.days == 1:
-            return "1 day ago"
-        return f"{delta.days} days ago"
+                result = "just now"
+            elif delta.seconds < 3600:  # noqa: PLR2004
+                result = f"{delta.seconds // 60} minutes ago"
+            else:
+                result = f"{delta.seconds // 3600} hours ago"
+        elif delta.days == 1:
+            result = "1 day ago"
+        else:
+            result = f"{delta.days} days ago"
+
+        return result
