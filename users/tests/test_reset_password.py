@@ -1,8 +1,7 @@
-from multiprocessing.connection import Client
-
 import pytest
 from django.contrib.auth import get_user_model
 from django.core import mail
+from django.test import Client
 from django.urls import reverse
 
 User = get_user_model()
