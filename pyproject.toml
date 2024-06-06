@@ -14,6 +14,7 @@ pytest-django = "^4.8.0"
 pillow = "^10.3.0"
 django-crispy-forms = "^2.1"
 crispy-bootstrap5 = "^2024.2"
+freezegun = "^1.5.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
@@ -33,7 +34,7 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = ["D104", "D100", "D103", "D211", "D213", "D101", "D102", "D105", "D106", "D107", "PLR2004"]
+ignore = ["D104", "D100", "D103", "D211", "D213", "D101", "D102", "D105", "D106", "D107"]
 
 [tool.ruff.format]
 quote-style = "double"

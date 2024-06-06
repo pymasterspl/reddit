@@ -151,4 +151,4 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 
 # Set time after last  activity on page, when user change status into offline (minutes)
-LAST_ACTIVITY_ONLINE_LIMIT = 15
+LAST_ACTIVITY_ONLINE_LIMIT_MINUTES = 15

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
-from .models import User
+from users.models import User
 
 FieldsetsType = tuple[tuple[None, dict[str, str | tuple[str]]]]
 
