@@ -62,9 +62,9 @@ class User(AbstractUser):
     def last_activity_ago(self: "User") -> str:
         delta = timezone.now() - self.last_activity
         if delta.days == 0:
-            if delta.seconds < 60:
+            if delta.seconds < 60:  # noqa: PLR2004
                 return "just now"
-            if delta.seconds < 3600:
+            if delta.seconds < 3600:  # noqa: PLR2004
                 return f"{delta.seconds // 60} minutes ago"
             return f"{delta.seconds // 3600} hours ago"
         if delta.days == 1:
