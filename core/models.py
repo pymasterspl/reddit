@@ -120,6 +120,13 @@ class Post(GenericModel):
     def get_images(self: "Post") -> models.QuerySet:
         return Image.objects.filter(post=self)
 
+    def save_post(self: "Post", user: User) -> "SavedPost":
+        saved_post, created = SavedPost.objects.get_or_create(user=user, post=self)
+        return saved_post
+
+    def remove_saved_post(self: "Post", user: User) -> None:
+        SavedPost.objects.filter(user=user, post=self).delete()
+
 
 class PostVote(models.Model):
     UPVOTE = "10_UPVOTE"
@@ -190,3 +197,16 @@ class CommunityMember(models.Model):
 
     def __str__(self: "CommunityMember") -> str:
         return f"{self.user.username} - {self.community.name} ({self.role})"
+
+
+class SavedPost(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="saved_by")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="saved_posts")
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "post")
+        ordering = ["-saved_at"]
+
+    def __str__(self: "SavedPost") -> str:
+        return f"{self.user.username} saved {self.post.title}"

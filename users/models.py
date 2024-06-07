@@ -44,3 +44,6 @@ class User(AbstractUser):
     objects = UserManager()
     username: None = None
     email: str = models.EmailField(unique=True)
+
+    def get_saved_posts(self: "User"):
+        return self.saved_posts.all()
