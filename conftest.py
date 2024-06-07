@@ -49,13 +49,13 @@ def admin_user(generated_password: str) -> User:
 
 @pytest.fixture()
 def community(user: User) -> Generator[Community, None, None]:
-    return Community.objects.create(user=user, name="Test Community")
+    return Community.objects.create(author=user, name="Test Community")
 
 
 @pytest.fixture()
 def post(user: User, community: Community) -> Generator[Post, None, None]:
     return Post.objects.create(
-        user=user,
+        author=user,
         community=community,
         title="Test Post",
         content="This is a test post",
