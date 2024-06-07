@@ -45,5 +45,5 @@ class User(AbstractUser):
     username: None = None
     email: str = models.EmailField(unique=True)
 
-    def get_saved_posts(self: "User"):
+    def get_saved_posts(self: "User") -> models.QuerySet:
         return self.saved_posts.all()

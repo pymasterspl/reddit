@@ -200,13 +200,13 @@ class CommunityMember(models.Model):
 
 
 class SavedPost(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="saved_by")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="saved_posts")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="saved_posts")
     saved_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("user", "post")
-        ordering = ["-saved_at"]
+        unique_together: tuple = ("user", "post")
+        ordering: ClassVar[list[str]] = ["-saved_at"]
 
     def __str__(self: "SavedPost") -> str:
         return f"{self.user.username} saved {self.post.title}"
