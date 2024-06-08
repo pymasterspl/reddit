@@ -1,0 +1,14 @@
+version: '2.0'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    command:
+      - /bin/sh
+      - '-c'
+      - '/code/entrypoint.sh'
+
+    volumes:
+      - .:/code
