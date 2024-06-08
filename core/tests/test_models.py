@@ -54,7 +54,7 @@ def test_post_score_mixed_votes(post: Post, user: User, another_user: User) -> N
 def test_tags_created_on_post_save(user: User, community: Community) -> None:
     content = "This is a test post with #tag1 and #tag2"
     post = Post.objects.create(
-        user=user,
+        author=user,
         community=community,
         title="Test Post",
         content=content,
@@ -72,7 +72,7 @@ def test_tags_created_on_post_save(user: User, community: Community) -> None:
 def test_tags_associated_with_post(user: User, community: Community) -> None:
     content = "This is a test post with #tag1"
     post = Post.objects.create(
-        user=user,
+        author=user,
         community=community,
         title="Test Post",
         content=content,
@@ -89,7 +89,7 @@ def test_tags_associated_with_post(user: User, community: Community) -> None:
 def test_duplicate_tags_not_created(user: User, community: Community) -> None:
     content1 = "This is a test post with #tag1"
     post1 = Post.objects.create(
-        user=user,
+        author=user,
         community=community,
         title="Test Post 1",
         content=content1,
@@ -97,7 +97,7 @@ def test_duplicate_tags_not_created(user: User, community: Community) -> None:
 
     content2 = "This is another test post with #tag1 and #tag2"
     Post.objects.create(
-        user=user,
+        author=user,
         community=community,
         title="Test Post 2",
         content=content2,
@@ -116,7 +116,7 @@ def test_duplicate_tags_not_created(user: User, community: Community) -> None:
 def test_tags_removed_on_post_update(user: User, community: Community) -> None:
     content = "This is a test post with #tag1 and #tag2"
     post = Post.objects.create(
-        user=user,
+        author=user,
         community=community,
         title="Test Post",
         content=content,
