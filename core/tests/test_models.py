@@ -177,7 +177,7 @@ def test_unique_community_user(user: User, community: Community) -> None:
 @pytest.mark.django_db()
 def test_save_post(user: User, post: Post) -> None:
     assert SavedPost.objects.filter(user=user).count() == 0
-    saved_post = post.save_post(user=user)
+    saved_post = SavedPost.save_post(user=user, post=post)
     assert SavedPost.objects.filter(user=user, post=post).exists()
     assert saved_post.user == user
     assert saved_post.post == post
@@ -186,19 +186,19 @@ def test_save_post(user: User, post: Post) -> None:
 
 @pytest.mark.django_db()
 def test_remove_saved_post(user: User, post: Post) -> None:
-    post.save_post(user=user)
+    SavedPost.save_post(user=user, post=post)
     assert SavedPost.objects.filter(user=user).count() == 1
-    post.save_post(user=user)
+    SavedPost.save_post(user=user, post=post)
     assert SavedPost.objects.filter(user=user).count() == 1
-    post.remove_saved_post(user=user)
+    SavedPost.remove_saved_post(user=user, post=post)
     assert not SavedPost.objects.filter(user=user, post=post).exists()
 
 
 @pytest.mark.django_db()
 def test_get_saved_posts(user: User, post: Post) -> None:
-    post.save_post(user=user)
-    saved_posts = user.get_saved_posts()
+    SavedPost.save_post(user=user, post=post)
+    saved_posts = SavedPost.get_saved_posts(user=user)
     assert saved_posts.count() == 1
     assert saved_posts.first().post == post
-    post.remove_saved_post(user=user)
+    SavedPost.remove_saved_post(user=user, post=post)
     assert not saved_posts.exists()

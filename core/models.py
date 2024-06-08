@@ -120,13 +120,6 @@ class Post(GenericModel):
     def get_images(self: "Post") -> models.QuerySet:
         return Image.objects.filter(post=self)
 
-    def save_post(self: "Post", user: User) -> "SavedPost":
-        saved_post, created = SavedPost.objects.get_or_create(user=user, post=self)
-        return saved_post
-
-    def remove_saved_post(self: "Post", user: User) -> None:
-        SavedPost.objects.filter(user=user, post=self).delete()
-
 
 class PostVote(models.Model):
     UPVOTE = "10_UPVOTE"
@@ -210,3 +203,16 @@ class SavedPost(models.Model):
 
     def __str__(self: "SavedPost") -> str:
         return f"{self.user.username} saved {self.post.title}"
+
+    @staticmethod
+    def save_post(user: User, post: Post) -> "SavedPost":
+        saved_post, _ = SavedPost.objects.get_or_create(user=user, post=post)
+        return saved_post
+
+    @staticmethod
+    def remove_saved_post(user: User, post: Post) -> None:
+        SavedPost.objects.filter(user=user, post=post).delete()
+
+    @staticmethod
+    def get_saved_posts(user: User) -> models.QuerySet:
+        return SavedPost.objects.filter(user=user)
