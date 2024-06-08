@@ -11,7 +11,7 @@ User = get_user_model()
 
 
 class GenericModel(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     is_active = models.BooleanField(default=True)
     is_locked = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -73,7 +73,7 @@ class Post(GenericModel):
     )
 
     def __str__(self: "Post") -> str:
-        return f"@{self.user}: {self.title}"
+        return f"@{self.author}: {self.title}"
 
     def save(self: "Post", *args: int, **kwargs: int) -> None:
         if self.pk is not None and self.generate_version() == self.version:
@@ -146,7 +146,6 @@ class PostVote(models.Model):
         up_votes = post_votes.filter(choice=PostVote.UPVOTE).count()
         down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
         Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
-
 
 
 class Image(models.Model):
