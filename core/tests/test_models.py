@@ -2,7 +2,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 
-from core.models import Community, CommunityMember, Post, PostVote, Tag
+from core.models import Community, CommunityMember, Post, PostVote, SavedPost, Tag
 
 User = get_user_model()
 
@@ -172,3 +172,33 @@ def test_unique_community_user(user: User, community: Community) -> None:
             community=community,
             role=CommunityMember.MEMBER,
         )
+
+
+@pytest.mark.django_db()
+def test_save_post(user: User, post: Post) -> None:
+    assert SavedPost.objects.filter(user=user).count() == 0
+    saved_post = SavedPost.save_post(user=user, post=post)
+    assert SavedPost.objects.filter(user=user, post=post).exists()
+    assert saved_post.user == user
+    assert saved_post.post == post
+    assert SavedPost.objects.filter(user=user).count() == 1
+
+
+@pytest.mark.django_db()
+def test_remove_saved_post(user: User, post: Post) -> None:
+    SavedPost.save_post(user=user, post=post)
+    assert SavedPost.objects.filter(user=user).count() == 1
+    SavedPost.save_post(user=user, post=post)
+    assert SavedPost.objects.filter(user=user).count() == 1
+    SavedPost.remove_saved_post(user=user, post=post)
+    assert not SavedPost.objects.filter(user=user, post=post).exists()
+
+
+@pytest.mark.django_db()
+def test_get_saved_posts(user: User, post: Post) -> None:
+    SavedPost.save_post(user=user, post=post)
+    saved_posts = SavedPost.get_saved_posts(user=user)
+    assert saved_posts.count() == 1
+    assert saved_posts.first().post == post
+    SavedPost.remove_saved_post(user=user, post=post)
+    assert not saved_posts.exists()
