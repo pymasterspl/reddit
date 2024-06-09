@@ -14,7 +14,6 @@ DEBUG=True
 # ALLOWED_HOSTS =  json.loads(config('ALLOWED_HOSTS'))
 ALLOWED_HOSTS='["127.0.0.1", "192.168.99.100", "localhost"]'
 
-# Your Login, Password, Host, Host port and TLS to MAIL  settings.py  should be as follow:
 EMAIL_HOST_USER = "test@gmail.com"
 EMAIL_HOST_PASSWORD = "password"
 EMAIL_HOST = "smtp.gmail.com"
