@@ -5,14 +5,14 @@ from .models import Community, Image, Post, PostVote, Tag
 
 @admin.register(Community)
 class CommunityAdmin(admin.ModelAdmin):
-    list_display = ("name", "user", "created_at", "updated_at")
-    search_fields = ("user__email",)
+    list_display = ("name", "author", "created_at", "updated_at")
+    search_fields = ("author__email",)
 
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ("title", "user", "community", "score", "created_at", "updated_at")
-    search_fields = ("title", "user__email", "community__name")
+    list_display = ("title", "author", "community", "score", "created_at", "updated_at")
+    search_fields = ("title", "author__email", "community__name")
     readonly_fields = ("version",)
 
 

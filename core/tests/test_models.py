@@ -2,7 +2,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 
-from core.models import Community, CommunityMember, Post, PostVote, Tag
+from core.models import Community, CommunityMember, Post, PostVote, SavedPost, Tag
 
 User = get_user_model()
 
@@ -54,7 +54,7 @@ def test_post_score_mixed_votes(post: Post, user: User, another_user: User) -> N
 def test_tags_created_on_post_save(user: User, community: Community) -> None:
     content = "This is a test post with #tag1 and #tag2"
     post = Post.objects.create(
-        user=user,
+        author=user,
         community=community,
         title="Test Post",
         content=content,
@@ -72,7 +72,7 @@ def test_tags_created_on_post_save(user: User, community: Community) -> None:
 def test_tags_associated_with_post(user: User, community: Community) -> None:
     content = "This is a test post with #tag1"
     post = Post.objects.create(
-        user=user,
+        author=user,
         community=community,
         title="Test Post",
         content=content,
@@ -89,7 +89,7 @@ def test_tags_associated_with_post(user: User, community: Community) -> None:
 def test_duplicate_tags_not_created(user: User, community: Community) -> None:
     content1 = "This is a test post with #tag1"
     post1 = Post.objects.create(
-        user=user,
+        author=user,
         community=community,
         title="Test Post 1",
         content=content1,
@@ -97,7 +97,7 @@ def test_duplicate_tags_not_created(user: User, community: Community) -> None:
 
     content2 = "This is another test post with #tag1 and #tag2"
     Post.objects.create(
-        user=user,
+        author=user,
         community=community,
         title="Test Post 2",
         content=content2,
@@ -116,7 +116,7 @@ def test_duplicate_tags_not_created(user: User, community: Community) -> None:
 def test_tags_removed_on_post_update(user: User, community: Community) -> None:
     content = "This is a test post with #tag1 and #tag2"
     post = Post.objects.create(
-        user=user,
+        author=user,
         community=community,
         title="Test Post",
         content=content,
@@ -172,3 +172,33 @@ def test_unique_community_user(user: User, community: Community) -> None:
             community=community,
             role=CommunityMember.MEMBER,
         )
+
+
+@pytest.mark.django_db()
+def test_save_post(user: User, post: Post) -> None:
+    assert SavedPost.objects.filter(user=user).count() == 0
+    saved_post = SavedPost.save_post(user=user, post=post)
+    assert SavedPost.objects.filter(user=user, post=post).exists()
+    assert saved_post.user == user
+    assert saved_post.post == post
+    assert SavedPost.objects.filter(user=user).count() == 1
+
+
+@pytest.mark.django_db()
+def test_remove_saved_post(user: User, post: Post) -> None:
+    SavedPost.save_post(user=user, post=post)
+    assert SavedPost.objects.filter(user=user).count() == 1
+    SavedPost.save_post(user=user, post=post)
+    assert SavedPost.objects.filter(user=user).count() == 1
+    SavedPost.remove_saved_post(user=user, post=post)
+    assert not SavedPost.objects.filter(user=user, post=post).exists()
+
+
+@pytest.mark.django_db()
+def test_get_saved_posts(user: User, post: Post) -> None:
+    SavedPost.save_post(user=user, post=post)
+    saved_posts = SavedPost.get_saved_posts(user=user)
+    assert saved_posts.count() == 1
+    assert saved_posts.first().post == post
+    SavedPost.remove_saved_post(user=user, post=post)
+    assert not saved_posts.exists()

@@ -11,7 +11,7 @@ User = get_user_model()
 
 
 class GenericModel(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     is_active = models.BooleanField(default=True)
     is_locked = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -73,7 +73,7 @@ class Post(GenericModel):
     )
 
     def __str__(self: "Post") -> str:
-        return f"@{self.user}: {self.title}"
+        return f"@{self.author}: {self.title}"
 
     def save(self: "Post", *args: int, **kwargs: int) -> None:
         if self.pk is not None and self.generate_version() == self.version:
@@ -148,7 +148,6 @@ class PostVote(models.Model):
         Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
 
 
-
 class Image(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="images")
     image = models.ImageField()
@@ -190,3 +189,29 @@ class CommunityMember(models.Model):
 
     def __str__(self: "CommunityMember") -> str:
         return f"{self.user.username} - {self.community.name} ({self.role})"
+
+
+class SavedPost(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="saved_posts")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="saved_posts")
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together: tuple = ("user", "post")
+        ordering: ClassVar[list[str]] = ["-saved_at"]
+
+    def __str__(self: "SavedPost") -> str:
+        return f"{self.user.username} saved {self.post.title}"
+
+    @staticmethod
+    def save_post(user: User, post: Post) -> "SavedPost":
+        saved_post, _ = SavedPost.objects.get_or_create(user=user, post=post)
+        return saved_post
+
+    @staticmethod
+    def remove_saved_post(user: User, post: Post) -> None:
+        SavedPost.objects.filter(user=user, post=post).delete()
+
+    @staticmethod
+    def get_saved_posts(user: User) -> models.QuerySet:
+        return SavedPost.objects.filter(user=user)
