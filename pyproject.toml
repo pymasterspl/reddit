@@ -33,7 +33,7 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = ["D104", "D100", "D103", "D211", "D213", "D101", "D102", "D105", "D106"]
+ignore = ["D104", "D100", "D103", "D211", "D213", "D101", "D102", "D105", "D106", "D107"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -50,6 +50,6 @@ line-ending = "auto"
     "S101", # asserts allowed in tests...
     "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
     "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
-    "PLR2004", # Ruff is requesting to replace asserted integers for a constants
     "RUF001", # Ruff had a problem with "’" in text: The two password fields didn’t match.
+    "PLR2004", # Ruff is pushing for constants instead of ints.
 ]
