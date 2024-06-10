@@ -31,6 +31,9 @@ class Community(GenericModel):
     def __str__(self: "Community") -> str:
         return str(self.name)
 
+    def count_online_users(self: "Community") -> int:
+        return sum(1 for user in self.members.all() if user.is_online)
+
 
 class Tag(models.Model):
     name = models.SlugField()
