@@ -116,6 +116,9 @@ python manage.py loaddata {fixture_name}.json
 
 Open web browser and navigate to localhost address:  http://127.0.0.1:8000/ 
 
+### Usage with Docker 🐳
+For setup and running with Docker, refer to the [Docker configuration instructions](DOCKER.md).
+
 ### In case of problems with starting the project:
 1. Check the env-template file and update the local .env file if necessary
 2. Run `poetry install`
