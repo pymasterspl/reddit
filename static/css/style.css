@@ -11,3 +11,8 @@
         color: red;
         font-weight: bold;
 }
+
+.container-reset {
+        width: 80%;
+        margin: 0 auto;
+}
