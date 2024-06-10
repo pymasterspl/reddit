@@ -1,11 +1,14 @@
 import hashlib
 import re
+from datetime import timedelta
 from typing import ClassVar
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -32,7 +35,8 @@ class Community(GenericModel):
         return str(self.name)
 
     def count_online_users(self: "Community") -> int:
-        return sum(1 for user in self.members.all() if user.is_online)
+        online_limit = timezone.now() - timedelta(minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES)
+        return self.members.filter(last_activity__gte=online_limit).count()
 
 
 class Tag(models.Model):
