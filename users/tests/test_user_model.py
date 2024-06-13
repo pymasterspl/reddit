@@ -46,13 +46,17 @@ def test_create_superuser_missing_email(generated_password: str) -> None:
 @pytest.mark.django_db()
 def test_create_superuser_not_staff(generated_password: str) -> None:
     with pytest.raises(ValueError, match="Superuser must have is_staff=True."):
-        User.objects.create_superuser(username="admin", email="admin@example.com", password=generated_password, is_staff=False)
+        User.objects.create_superuser(
+            username="admin", email="admin@example.com", password=generated_password, is_staff=False,
+        )
 
 
 @pytest.mark.django_db()
 def test_create_superuser_not_superuser(generated_password: str) -> None:
     with pytest.raises(ValueError, match="Superuser must have is_superuser=True."):
-        User.objects.create_superuser(username="admin", email="admin@example.com", password=generated_password, is_superuser=False)
+        User.objects.create_superuser(
+            username="admin", email="admin@example.com", password=generated_password, is_superuser=False,
+        )
 
 
 def test_login_user_view_get(client: Client) -> None:

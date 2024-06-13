@@ -63,7 +63,7 @@ def test_registration_form_user_already_exist(
         user_model: type[User],
         user: User,
         register_url: str,
-        generated_password: str
+        generated_password: str,
 ) -> None:
     data: dict = {
         "username:": user.username,

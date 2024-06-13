@@ -8,22 +8,21 @@ User = get_user_model()
 
 
 @pytest.mark.django_db()
-def test_login_page_loads_correctly(client: Client):
+def test_login_page_loads_correctly(client: Client) -> None:
     login_url = reverse("login")
     response = client.get(login_url)
     assert "users/login.html" in [t.name for t in response.templates]
 
-    
+
 @pytest.mark.django_db()
-def test_login_view(client: Client, user: User):
-    login_url = reverse('login')
+def test_login_view(client: Client, user: User) -> None:
+    login_url = reverse("login")
     data = {
         "username": user.username,
-        "password": user.plain_password
+        "password": user.plain_password,
     }
     response = client.post(login_url, data)
     assert response.status_code == 302  # Redirect after successful login
     assert response.url == reverse("home-page")
     user = response.wsgi_request.user
     assert user.is_authenticated
-    

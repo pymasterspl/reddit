@@ -1,11 +1,9 @@
 from typing import Any
 
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
 from django.contrib.auth.views import LoginView, LogoutView, TemplateView
-from django.forms import Form
 from django.http import HttpRequest, HttpResponse
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 from django.views.generic import FormView
 
 from .forms import UserRegistrationForm
