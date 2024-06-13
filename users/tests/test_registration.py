@@ -22,10 +22,10 @@ def test_registration_page_loads_correctly(client: Client, register_url: str) ->
 def test_registration_form_valid_data(
         client: Client,
         user_model: type[User],
-        generated_password: str,
         register_url: str,
 ) -> None:
     data: dict = {
+        "username": "test_user",
         "email": "testuser@example.com",
         "password1": "Pass2712!",
         "password2": "Pass2712!",
@@ -40,6 +40,7 @@ def test_registration_form_valid_data(
 @pytest.mark.django_db()
 def test_registration_form_missing_data(client: Client, user_model: type[User], register_url: str) -> None:
     data: dict = {
+        "username": "",
         "email": "",
         "password1": "",
         "password2": "",
@@ -49,7 +50,8 @@ def test_registration_form_missing_data(client: Client, user_model: type[User], 
     assert "users/registration.html" in [t.name for t in response.templates]
     assert not user_model.objects.filter(email="").exists()
     form_errors = response.context["form"].errors
-    assert len(form_errors) == 3
+    assert len(form_errors) == 4
+    assert "username" in form_errors
     assert "email" in form_errors
     assert "password1" in form_errors
     assert "password2" in form_errors
@@ -61,9 +63,10 @@ def test_registration_form_user_already_exist(
         user_model: type[User],
         user: User,
         register_url: str,
-        generated_password: str,
+        generated_password: str
 ) -> None:
     data: dict = {
+        "username:": user.username,
         "email": user.email,
         "password1": generated_password,
         "password2": generated_password,
@@ -73,6 +76,7 @@ def test_registration_form_user_already_exist(
     assert response.status_code == 200
     assert "users/registration.html" in [t.name for t in response.templates]
     form_errors = response.context["form"].errors
-    assert len(form_errors) == 1
+    assert len(form_errors) == 2
     assert "email" in form_errors
+    assert "username" in form_errors
     assert user_model.objects.count() == 1
