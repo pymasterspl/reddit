@@ -1,6 +1,10 @@
+from datetime import timedelta
+
 import pytest
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
+from django.utils import timezone
 
 from core.models import Community, CommunityMember, Post, PostVote, SavedPost, Tag
 
@@ -146,6 +150,28 @@ def test_create_community_user(user: User, community: Community) -> None:
     assert community.members.filter(pk=user.pk).exists()
     assert community_user.community == community
     assert community_user.role == CommunityMember.ADMIN
+
+
+@pytest.mark.django_db()
+def test_community_online_users_counter(user: User, another_user: User, community: Community) -> None:
+    settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES = 15
+    CommunityMember.objects.create(
+        user=user,
+        community=community,
+        role=CommunityMember.MEMBER,
+    )
+    assert community.count_online_users() == 1
+
+    another_community_user: CommunityMember = CommunityMember.objects.create(
+        user=another_user,
+        community=community,
+        role=CommunityMember.MEMBER,
+    )
+    assert community.count_online_users() == 2
+
+    another_community_user.user.last_activity = timezone.now() - timedelta(minutes=16)
+    another_community_user.user.save()
+    assert community.count_online_users() == 1
 
 
 @pytest.mark.django_db()
