@@ -45,7 +45,7 @@ class User(AbstractUser):
     REQUIRED_FIELDS: ClassVar[list[str]] = ["email"]
     objects = UserManager()
     email: str = models.EmailField(unique=True)
-    last_activity = models.DateTimeField(auto_now_add=True)
+    last_activity = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def update_last_activity(self: "User") -> None:
         User.objects.filter(pk=self.pk).update(last_activity=timezone.now())
