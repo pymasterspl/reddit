@@ -78,12 +78,14 @@ class Post(GenericModel):
         max_length=32,
         help_text="Hash of the title + content to prevent overwriting already saved post",
     )
+    view_count = models.IntegerField(default=0)
 
     def __str__(self: "Post") -> str:
         return f"@{self.author}: {self.title}"
 
     def save(self: "Post", *args: int, **kwargs: int) -> None:
-        if self.pk is not None and self.generate_version() == self.version:
+        skip_version_check = kwargs.pop("skip_version_check", False)
+        if not skip_version_check and self.pk is not None and self.generate_version() == self.version:
             msg = "The post was already modified"
             raise ValueError(msg)
         self.version = self.generate_version()

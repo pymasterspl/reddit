@@ -28,6 +28,9 @@
                 {% block nav %}
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'post-list' %}">Post List</a>
+                        </li>
                         {% if request.user.is_authenticated %}
                             <li class="nav-item">
                                 <a class="nav-link" href="#">User profile (to be implemented)</a>

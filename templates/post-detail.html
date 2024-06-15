@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="container">
+        <div class="d-flex justify-content-center text-light">
+            <div class="mx-auto col-10 col-md-8 col-lg-6 vh-100 mt-lg-3">
+                <h3 style="color: red;">Temporary Post Details for Technical Use</h3>
+                <hr>
+                <p>post_id: {{ post_id }}</p>
+                <p>title: {{ post.title }}</p>
+                <p>content: {{ post.content }}</p>
+                <p>parent: {{ post.parent }}</p>
+                <p>up_votes: {{ post.up_votes }}</p>
+                <p>down_votes: {{ post.down_votes }}</p>
+                <p>version: {{ post.version }}</p>
+                <p>score: {{ post.score }}</p>
+                <p>view_count: {{ post.view_count }}</p>
+                <hr>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
