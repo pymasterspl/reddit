@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models import F
 from django.utils import timezone
 
 User = get_user_model()
@@ -79,6 +80,7 @@ class Post(GenericModel):
         help_text="Hash of the title + content to prevent overwriting already saved post",
     )
     view_count = models.IntegerField(default=0)
+    display_counter = models.IntegerField(default=0)
 
     def __str__(self: "Post") -> str:
         return f"@{self.author}: {self.title}"
@@ -128,6 +130,9 @@ class Post(GenericModel):
 
     def get_images(self: "Post") -> models.QuerySet:
         return Image.objects.filter(post=self)
+
+    def update_display_counter(self: "Post") -> None:
+        Post.objects.filter(pk=self.pk).update(display_counter=F("display_counter") + 1)
 
 
 class PostVote(models.Model):

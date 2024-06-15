@@ -1,5 +1,5 @@
-from django.shortcuts import get_object_or_404
-from django.views.generic import ListView, TemplateView
+from django.db.models import QuerySet
+from django.views.generic import DetailView, ListView
 
 from .models import Post
 
@@ -16,24 +16,18 @@ class PostListlView(ListView):
     context_object_name = "posts"
 
 
-class PostDetailView(TemplateView):
+class PostDetailView(DetailView):
 
     """Provide a temporary view for internal testing of the post view count feature.
 
     This view is not intended for production use and should be accessed only by developers.
     """
 
+    model = Post
     template_name = "post-detail.html"
+    context_object_name = "post"
 
-    def get_context_data(self: "PostDetailView", **kwargs: dict) -> dict:
-        context = super().get_context_data(**kwargs)
-
-        post_id = self.kwargs.get("pk")
-        post = get_object_or_404(Post, pk=post_id)
-        post.view_count += 1
-        post.save(update_fields=["view_count"], skip_version_check=True)
-
-        context["post"] = post
-        context["post_id"] = post_id
-
-        return context
+    def get_object(self: "Post", queryset: QuerySet[Post] | None = None) -> Post:
+        obj = super().get_object(queryset=queryset)
+        obj.update_display_counter()
+        return obj
