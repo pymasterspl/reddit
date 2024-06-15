@@ -54,3 +54,9 @@ class CustomLogoutView(LogoutView):
 class ProfileSettingsView(TemplateView):
     # Work on this view is in progress
     template_name = "users/profile_settings.html"
+
+
+class AccountSettingsView(TemplateView):
+    # Work on this view is in progress
+    template_name = "users/account_settings.html"
+
