@@ -1,10 +1,10 @@
+import pytest
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import AuthenticationForm
 from django.test import Client
 from django.urls import reverse_lazy
-import pytest
-from users.tests.test_user_model import HTTP_SUCCESS
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import get_user_model
 
+from users.tests.test_user_model import HTTP_SUCCESS
 
 User = get_user_model()
 

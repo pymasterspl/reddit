@@ -1,4 +1,5 @@
 from typing import Any
+
 from django.contrib import messages
 from django.contrib.auth.views import LoginView, LogoutView, TemplateView
 from django.http import HttpRequest, HttpResponse
