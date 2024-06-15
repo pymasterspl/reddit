@@ -6,8 +6,9 @@ from .models import Post
 
 class PostListlView(ListView):
 
-    """This view is temporary and used for internal testing of the post view count feature.
-    It is not intended for production use and should be accessed only by developers.
+    """Provide a temporary view for internal testing of the post view count feature.
+
+    This view is not intended for production use and should be accessed only by developers.
     """
 
     model = Post
@@ -17,13 +18,14 @@ class PostListlView(ListView):
 
 class PostDetailView(TemplateView):
 
-    """This view is temporary and used for internal testing of the post view count feature.
-    It is not intended for production use and should be accessed only by developers.
+    """Provide a temporary view for internal testing of the post view count feature.
+
+    This view is not intended for production use and should be accessed only by developers.
     """
 
     template_name = "post-detail.html"
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self: "PostDetailView", **kwargs: dict) -> dict:
         context = super().get_context_data(**kwargs)
 
         post_id = self.kwargs.get("pk")
