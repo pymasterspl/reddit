@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-center text-light">
+        <div class="mx-auto col-10 col-md-8 col-lg-6 vh-100 mt-lg-3">
+            <h3 class="technical-header">Temporary List of Posts for Technical Use</h3>
+            <p><a href="{% url 'admin:core_post_add' %}" class="admin-link">Add New Post</a></p>
+            <ul class="post-list">
+                {% for post in posts %}
+                <li>
+                    <a class="post-link" href="{% url 'post-detail' post.id %}">
+                        <h3>{{ post.title }}</h3>
+                        <p>{{ post.content|truncatechars:100 }}</p>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+<style>
+    .technical-header {
+        color: red;
+    }
+    .post-list li {
+        list-style-type: none;
+        margin-bottom: 10px;
+        background-color: black;
+        color: white;
+    }
+    .post-link, .admin-link {
+        display: block;
+        color: white;
+        text-decoration: none;
+        width: 100%;
+        height: 100%;
+        padding: 10px;
+        border: 2px solid transparent;
+        transition: border-color 0.3s ease;
+    }
+    .post-link:hover {
+        border-color: #fff;
+    }
+</style>
+{% endblock content %}
