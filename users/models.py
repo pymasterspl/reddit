@@ -29,7 +29,7 @@ class UserManager(BaseUserManager):
     def create_user(self: "UserManager", email: str, nickname:str, password: str, **extra_fields: int) -> "User":
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
-        
+
         return self._create_user(email, nickname, password, **extra_fields)
 
     def create_superuser(self: "UserManager", email: str, nickname: str, password: str, **extra_fields: int) -> "User":
@@ -57,7 +57,7 @@ class User(AbstractUser):
         blank=False,
         unique=True,
         help_text=_(
-            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
         ),
         validators=[nickname_validator],
         error_messages={
@@ -65,7 +65,7 @@ class User(AbstractUser):
         },
     )
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS: ClassVar[list[int]] = ["nickname"],
+    REQUIRED_FIELDS: ClassVar[list[int]] = ["nickname"]
     objects = UserManager()
     username: None = None
     email: str = models.EmailField(unique=True)
