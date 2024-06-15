@@ -49,3 +49,8 @@ class CustomLogoutView(LogoutView):
     def dispatch(self: "LogoutView", request: HttpRequest, *args: tuple, **kwargs: dict[str, Any]) -> HttpResponse:
         messages.add_message(request, messages.SUCCESS, "You have successfully logged out.")
         return super().dispatch(request, *args, **kwargs)
+
+
+class ProfileSettingsView(TemplateView):
+    # Work on this view is in progress
+    template_name = "users/profile_settings.html"
