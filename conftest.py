@@ -35,7 +35,9 @@ def user(generated_password: str) -> User:
 
 @pytest.fixture()
 def another_user(generated_password: str) -> User:
-    user = User.objects.create_user(email="another_user@example.com", nickname="another_user", password=generated_password)
+    user = User.objects.create_user(
+        email="another_user@example.com", nickname="another_user", password=generated_password,
+    )
     user.plain_password = generated_password
     return user
 
