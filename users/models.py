@@ -21,7 +21,7 @@ class UserManager(BaseUserManager):
             message: str = "Users must have a nickname"
             raise ValueError(message)
         email = self.normalize_email(email)
-        user: User = self.model(email=email, nickname=nickname, password=password, **extra_fields)
+        user: User = self.model(email=email, nickname=nickname, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -60,9 +60,6 @@ class User(AbstractUser):
             "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
         ),
         validators=[nickname_validator],
-        error_messages={
-            "unique": _("A user with that username already exists."),
-        },
     )
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: ClassVar[list[int]] = ["nickname"]
