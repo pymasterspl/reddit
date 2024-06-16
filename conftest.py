@@ -28,21 +28,23 @@ def user_model() -> type[get_user_model()]:
 
 @pytest.fixture()
 def user(generated_password: str) -> User:
-    user = User.objects.create_user(email="test@example.com", password=generated_password)
+    user = User.objects.create_user(email="test@example.com", nickname="test_user", password=generated_password)
     user.plain_password = generated_password
     return user
 
 
 @pytest.fixture()
 def another_user(generated_password: str) -> User:
-    user = User.objects.create_user(email="another_user@example.com", password=generated_password)
+    user = User.objects.create_user(
+        email="another_user@example.com", nickname="another_user", password=generated_password,
+    )
     user.plain_password = generated_password
     return user
 
 
 @pytest.fixture()
 def admin_user(generated_password: str) -> User:
-    admin_user = User.objects.create_superuser(email="admin@example.com", password=generated_password)
+    admin_user = User.objects.create_superuser(email="admin@example.com", nickname="admin", password=generated_password)
     admin_user.plain_password = generated_password
     return admin_user
 
