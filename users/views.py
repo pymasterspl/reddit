@@ -27,7 +27,6 @@ class UserRegistrationView(FormView):
     redirect_authenticated_user = True
     success_url = reverse_lazy("home-page")
 
-
     def form_valid(self: "UserRegistrationView", form: UserRegistrationForm) -> HttpResponse:
         form.save()
         email = form.cleaned_data.get("email")
