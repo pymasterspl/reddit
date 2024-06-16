@@ -11,7 +11,9 @@
                     <div>
                         <a href="#" class="link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-25-hover">r/{{ post.community }}</a> • <small class="text-secondary">{{ post.created_at|timesince }} ago</small>
                     </div>
-                    <a href="#" class="link-light link-offset-2 link-underline-opacity-0 link-underline-opacity-25-hover">{{ post.author }}</a>
+                    <div>
+                        <a href="#" class="link-light link-offset-2 link-underline-opacity-0 link-opacity-75-hover link-underline-opacity-25-hover">{{ post.author }}</a>
+                    </div>
                 </div>
             </div>
             <div class="col-auto ms-auto">
@@ -25,7 +27,9 @@
                         <li><a class="dropdown-item" href="#"><i class="bi bi-bookmark"></i> Save</a></li>
                         <li><a class="dropdown-item" href="#"><i class="bi bi-eye-slash"></i> Hide</a></li>
                         <li><a class="dropdown-item" href="#"><i class="bi bi-flag"></i> Report</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-pencil-square"></i> Edit</a></li>
+                          {% if post.author == request.user %}
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-pencil-square"></i> Edit</a></li>
+                          {% endif %}
                       </ul>
                 </div>
             </div>
