@@ -1,17 +1,25 @@
 <style>
-    .up-vote:hover {
+.up-vote:hover {
     color: red;
 }
 
-    .down-vote:hover {
+.down-vote:hover {
     color: blue;
 }
 
-    .btn-circular {
+.btn-circular {
     border-radius: 50px;
 }
 
-    .btn-secondary-dark {
+.btn-left-circular {
+    border-radius: 50px 0 0 50px;
+}
+
+.btn-right-circular {
+    border-radius: 0 50px 50px 0;
+}
+
+.btn-secondary-dark {
     border-color: #353c3f;
     background-color: #353c3f;
 }
@@ -63,10 +71,16 @@
         <!-- TODO: Fix buttons for vote, comments, award and share upon specific feature merged -->
         <!-- TODO: add comments count to the button of comments -->
         <div class="btn-toolbar" role="toolbar" aria-label="Post toolbar">
-            <div class="btn-group btn-circular me-2">
-               <a href="#" class="btn btn-secondary up-vote btn-circular btn-sm btn-secondary-dark"><i class="bi bi-arrow-up-circle"></i></a>
-               <button type=button class="btn btn-secondary btn-sm btn-secondary-dark" disabled>{{ post.score }}</button>
-               <a href="#" class="btn btn-secondary down-vote btn-circular btn-sm btn-secondary-dark"><i class="bi bi-arrow-down-circle"></i></a>
+            <div class="btn-group me-2">
+                <form method="post" action="{% url 'post-vote' post.id 'up' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-secondary up-vote btn-left-circular btn-sm btn-secondary-dark"><i class="bi bi-arrow-up-circle"></i></button>
+                </form>
+                <button type=button class="btn btn-secondary btn-sm btn-secondary-dark" disabled>{{ post.score }}</button>
+                <form method="post" action="{% url 'post-vote' post.id 'down' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-secondary down-vote btn-right-circular btn-sm btn-secondary-dark"><i class="bi bi-arrow-down-circle"></i></button>
+                </form>
             </div>
             <div class="btn-group btn-circular me-2">
                <a href="#" class="btn btn-secondary btn-circular btn-sm btn-secondary-dark"><i class="bi bi-chat-square-text"></i></a>
