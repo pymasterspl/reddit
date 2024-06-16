@@ -38,4 +38,8 @@ class PostVoteView(LoginRequiredMixin, View):
             post.vote(request.user, PostVote.UPVOTE)
         elif vote_type == "down":
             post.vote(request.user, PostVote.DOWNVOTE)
+
+        next_url = request.POST.get('next') or request.GET.get('next')
+        if next_url:
+            return redirect(next_url)
         return redirect("post-detail", pk=post.id)

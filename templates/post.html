@@ -43,12 +43,12 @@
         <!-- TODO: Fix buttons for award and share upon specific feature merged -->
         <div class="btn-toolbar" role="toolbar" aria-label="Post toolbar">
             <div class="btn-group me-2">
-                <form method="post" action="{% url 'post-vote' post.id 'up' %}">
+                <form method="post" action="{% url 'post-vote' post.id 'up' %}?next={{ request.path }}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-secondary up-vote btn-left-circular btn-sm btn-secondary-dark"><i class="bi bi-arrow-up-circle"></i></button>
                 </form>
                 <button type=button class="btn btn-secondary btn-sm btn-secondary-dark" disabled>{{ post.score }}</button>
-                <form method="post" action="{% url 'post-vote' post.id 'down' %}">
+                <form method="post" action="{% url 'post-vote' post.id 'down' %}?next={{ request.path }}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-secondary down-vote btn-right-circular btn-sm btn-secondary-dark"><i class="bi bi-arrow-down-circle"></i></button>
                 </form>
