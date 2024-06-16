@@ -8,12 +8,15 @@
             <div class="col">
                 <div class="d-flex flex-column">
                     <!-- TODO: Update links to user public profile and community upon feature released -->
-                    <a href="#" class="link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-50-hover">r/{{ post.community }}</a>
-                    <a href="#" class="link-secondary link-offset-2 link-underline-opacity-0 link-underline-opacity-50-hover">{{ post.author }}</a>
+                    <div>
+                        <a href="#" class="link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-25-hover">r/{{ post.community }}</a> • <small class="text-secondary">{{ post.created_at|timesince }} ago</small>
+                    </div>
+                    <a href="#" class="link-light link-offset-2 link-underline-opacity-0 link-underline-opacity-25-hover">{{ post.author }}</a>
                 </div>
             </div>
-            <div class="col-auto">
-                <small class="text-secondary">{{ post.created_at|timesince }} ago</small>
+            <div class="col-auto ms-auto">
+                <!-- TODO: Update link with post-save feature -->
+                <a href="#" class="link-light link-opacity-50-hover"><i class="bi bi-bookmark"></i></a>
             </div>
         </div>
     </div>
