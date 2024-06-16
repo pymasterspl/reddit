@@ -21,12 +21,6 @@ class PostListlView(ListView):
 
 
 class PostDetailView(DetailView):
-
-    """Provide a temporary view for internal testing of the post view count feature.
-
-    This view is not intended for production use and should be accessed only by developers.
-    """
-
     model = Post
     template_name = "post-detail.html"
     context_object_name = "post"

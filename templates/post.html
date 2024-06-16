@@ -75,7 +75,6 @@
     </div>
     <div class="card-footer">
         <!-- TODO: Fix buttons for vote, comments, award and share upon specific feature merged -->
-        <!-- TODO: add comments count to the button of comments -->
         <div class="btn-toolbar" role="toolbar" aria-label="Post toolbar">
             <div class="btn-group me-2">
                 <form method="post" action="{% url 'post-vote' post.id 'up' %}">
@@ -89,7 +88,7 @@
                 </form>
             </div>
             <div class="btn-group btn-circular me-2">
-               <a href="#" class="btn btn-secondary btn-circular btn-sm btn-secondary-dark"><i class="bi bi-chat-square-text"></i></a>
+               <a href="#" class="btn btn-secondary btn-circular btn-sm btn-secondary-dark"><i class="bi bi-chat-square-text"></i> {{ post.children_count }}</a>
             </div>
             <div class="btn-group btn-circular me-2">
                <a href="#" class="btn btn-secondary btn-circular btn-sm btn-secondary-dark"><i class="bi bi-award"></i></a>
