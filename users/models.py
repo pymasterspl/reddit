@@ -4,29 +4,35 @@ from typing import ClassVar
 from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 
 class UserManager(BaseUserManager):
     use_in_migrations: bool = True
 
-    def _create_user(self: "UserManager", email: str, password: str, **extra_fields: int) -> "User":
+    def _create_user(self: "UserManager", email: str, nickname:str, password: str, **extra_fields: int) -> "User":
         if not email:
             message: str = "Users must have an email address"
             raise ValueError(message)
+        if not nickname:
+            message: str = "Users must have a nickname"
+            raise ValueError(message)
         email = self.normalize_email(email)
-        user: User = self.model(email=email, **extra_fields)
+        user: User = self.model(email=email, nickname=nickname, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_user(self: "UserManager", email: str, password: str, **extra_fields: int) -> "User":
+    def create_user(self: "UserManager", email: str, nickname:str, password: str, **extra_fields: int) -> "User":
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
-        return self._create_user(email, password, **extra_fields)
 
-    def create_superuser(self: "UserManager", email: str, password: str, **extra_fields: int) -> "User":
+        return self._create_user(email, nickname, password, **extra_fields)
+
+    def create_superuser(self: "UserManager", email: str, nickname: str, password: str, **extra_fields: int) -> "User":
 
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
@@ -38,12 +44,25 @@ class UserManager(BaseUserManager):
             message: str = "Superuser must have is_superuser=True."
             raise ValueError(message)
 
-        return self._create_user(email, password, **extra_fields)
+        return self._create_user(email, nickname, password, **extra_fields)
 
 
 class User(AbstractUser):
+
+    nickname_validator = UnicodeUsernameValidator()
+
+    nickname = models.CharField(
+        max_length=150,
+        null=False,
+        blank=False,
+        unique=True,
+        help_text=_(
+            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
+        ),
+        validators=[nickname_validator],
+    )
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS: ClassVar[list[int]] = []
+    REQUIRED_FIELDS: ClassVar[list[int]] = ["nickname"]
     objects = UserManager()
     username: None = None
     email: str = models.EmailField(unique=True)
