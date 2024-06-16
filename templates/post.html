@@ -1,11 +1,29 @@
-<div class="card bg-dark shadow-sm mb-3">
-    <div class="card-header text-light">
-        <a href="#">r/{{ post.community }}</a> | {{ post.created_at|timesince }} ago
+<div class="card bg-dark shadow-sm mb-3 text-light">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <!-- TODO: Update avatar src with user avatar URL after merging feature/avatar -->
+                <img src="https://placehold.co/32x32.png" alt="{{ post.author }} avatar image" class="rounded-circle" style="width: 32px; height: 32px;">
+            </div>
+            <div class="col">
+                <div class="d-flex flex-column">
+                    <!-- TODO: Update links to user public profile and community upon feature released -->
+                    <a href="#" class="link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-50-hover">r/{{ post.community }}</a>
+                    <a href="#" class="link-secondary link-offset-2 link-underline-opacity-0 link-underline-opacity-50-hover">{{ post.author }}</a>
+                </div>
+            </div>
+            <div class="col-auto">
+                <small class="text-secondary">{{ post.created_at|timesince }} ago</small>
+            </div>
+        </div>
     </div>
-    <div class="card-body text-light">
+    <div class="card-body">
+        <h4 class="h5">{{ post.title }}</h4>
         {{ post.content }}
     </div>
-    <div class="card-footer text-light">
-        Score: {{ post.score }} | Comments: {{ post.count_comments }}
+    <div class="card-footer">
+        <!-- TODO: Add buttons for up vote and down vote -->
+        <!-- TODO: Fix method to count comments -->
+        Score: {{ post.score }} | Comments: {{ post.children.count }}
     </div>
 </div>
