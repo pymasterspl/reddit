@@ -1,0 +1,11 @@
+<div class="card bg-dark shadow-sm mb-3">
+    <div class="card-header text-light">
+        <a href="#">r/{{ post.community }}</a> | {{ post.created_at|timesince }} ago
+    </div>
+    <div class="card-body text-light">
+        {{ post.content }}
+    </div>
+    <div class="card-footer text-light">
+        Score: {{ post.score }} | Comments: {{ post.count_comments }}
+    </div>
+</div>
