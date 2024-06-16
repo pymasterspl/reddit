@@ -1,3 +1,14 @@
+<style>
+    .up-vote:hover {
+    color: red;
+    }
+    .down-vote:hover {
+    color: blue;
+    }
+    .btn-circular {
+    border-radius: 50px;
+}
+</style>
 <div class="card bg-dark shadow-sm mb-3 text-light">
     <div class="card-header">
         <div class="row align-items-center">
@@ -36,13 +47,28 @@
         </div>
     </div>
     <div class="card-body">
-        <h4 class="h5">{{ post.title }}</h4>
+        <h3 class="h3">{{ post.title }}</h3>
         {{ post.content }}
         <!-- TODO: add post image handling -->
     </div>
     <div class="card-footer">
         <!-- TODO: Add buttons for up vote and down vote -->
         <!-- TODO: Fix method to count comments -->
-        Score: {{ post.score }} | Comments: {{ post.children.count }}
+        <div class="btn-toolbar" role="toolbar" aria-label="Post toolbar">
+            <div class="btn-group btn-circular me-2">
+               <a href="#" class="btn btn-secondary up-vote btn-circular btn-sm "><i class="bi bi-arrow-up-circle"></i></a>
+               <button type=button disabled class="btn btn-secondary btn-sm ">{{ post.score }}</button>
+               <a href="#" class="btn btn-secondary down-vote btn-circular btn-sm "><i class="bi bi-arrow-down-circle"></i></a>
+            </div>
+            <div class="btn-group btn-circular me-2">
+               <a href="#" class="btn btn-secondary btn-circular btn-sm "><i class="bi bi-chat-square-text"></i></a>
+            </div>
+            <div class="btn-group btn-circular me-2">
+               <a href="#" class="btn btn-secondary btn-circular btn-sm "><i class="bi bi-award"></i></a>
+            </div>
+            <div class="btn-group btn-circular me-2">
+               <a href="#" class="btn btn-secondary btn-circular btn-sm "><i class="bi bi-share"></i></a>
+            </div>
+        </div>
     </div>
 </div>
