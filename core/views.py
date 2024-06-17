@@ -1,10 +1,9 @@
 from django.db.models import QuerySet
-from django.views.generic import DetailView, ListView, CreateView
-from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
+from django.views.generic import CreateView, DetailView, ListView
 
-from .models import Post, Community
 from .forms import PostForm
+from .models import Community, Post
 
 
 class PostListlView(ListView):
@@ -39,12 +38,12 @@ class PostDetailView(DetailView):
 class AddPostView(CreateView):
     model = Post
     form_class = PostForm
-    template_name = 'post-add.html'
+    template_name = "post-add.html"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         # Set initial community to None
-        kwargs['initial'] = {'community': None}
+        kwargs["initial"] = {"community": None}
         return kwargs
 
     def form_valid(self, form):
@@ -53,8 +52,8 @@ class AddPostView(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['communities'] = Community.objects.filter(is_active=True)
+        context["communities"] = Community.objects.filter(is_active=True)
         return context
 
     success_url = reverse_lazy(
-        'post-detail', kwargs={'pk': '{{ object.pk }}'})  # Dynamically set PK
+        "post-detail", kwargs={"pk": "{{ object.pk }}"})  # Dynamically set PK
