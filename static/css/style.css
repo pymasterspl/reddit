@@ -16,3 +16,35 @@
         width: 80%;
         margin: 0 auto;
 }
+
+.up-vote:hover {
+    color: red;
+}
+
+.down-vote:hover {
+    color: blue;
+}
+
+.btn-circular {
+    border-radius: 50px;
+}
+
+.btn-left-circular {
+    border-radius: 50px 0 0 50px;
+}
+
+.btn-right-circular {
+    border-radius: 0 50px 50px 0;
+}
+
+.btn-secondary-dark {
+    border-color: #353c3f;
+    background-color: #353c3f;
+}
+
+.btn-secondary-dark:disabled {
+        border-color: #353c3f;
+        background-color: #353c3f;
+        color: #fff;
+        opacity: 1;
+}
