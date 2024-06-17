@@ -4,11 +4,10 @@
 <div class="border-bottom border-secondary mt-3">
     <ul class="nav nav-underline">
         <li class="nav-item">
-            <a class="nav-link link-secondary" aria-current="page" href="#">Account</a>
+            <a class="{% if request.resolver_match.url_name == 'account_settings' %}nav-link active link-light link-underline-primary{% else %}nav-link link-secondary{% endif %}" aria-current="page" href="{% url 'account_settings' %}">Account</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link active link-light link-underline-primary" aria-current="page" href="#">Profile</a>
+            <a class="{% if request.resolver_match.url_name == 'profile_settings' %}nav-link active link-light link-underline-primary{% else %}nav-link link-secondary{% endif %}" aria-current="page" href="{% url 'profile_settings' %}">Profile</a>
         </li>
     </ul>
 </div>
-
