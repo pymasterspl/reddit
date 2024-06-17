@@ -1,4 +1,5 @@
 {% load timesince %}
+{% load is_saved_by %}
 <div class="card bg-dark shadow-sm mb-3 text-light">
     <div class="card-header">
         <div class="row align-items-center">
@@ -22,15 +23,26 @@
                     <a class="btn btn-dark" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-three-dots"></i>
                     </a>
-                      <ul class="dropdown-menu dropdown-menu-dark">
-                          <!-- TODO: Update links with User features -->
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-bookmark"></i> Save</a></li>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <!-- TODO: Update links with User features -->
+                        <li>{% if post|is_saved_by:request.user %}
+                            <form method="POST" class="d-none" id="unsave-form-{{ post.pk }}" action="{% url 'post-save-unsave' pk=post.pk action_type='unsave' %}">
+                                {% csrf_token %}
+                            </form>
+                            <a href="#" class="dropdown-item" onclick="event.preventDefault(); document.getElementById('unsave-form-{{ post.pk }}').submit();"><i class="bi bi-bookmark-fill"></i> Unsave</a>
+                            {% else %}
+                            <form method="POST" class="d-none" id="save-form-{{ post.pk }}" action="{% url 'post-save-unsave' pk=post.pk action_type='save' %}">
+                                {% csrf_token %}
+                            </form>
+                            <a href="#" class="dropdown-item" onclick="event.preventDefault(); document.getElementById('save-form-{{ post.pk }}').submit();"><i class="bi bi-bookmark"></i> Save</a>
+                            {% endif %}
+                        </li>
                         <li><a class="dropdown-item" href="#"><i class="bi bi-eye-slash"></i> Hide</a></li>
                         <li><a class="dropdown-item" href="#"><i class="bi bi-flag"></i> Report</a></li>
-                          {% if post.author == request.user %}
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-pencil-square"></i> Edit</a></li>
-                          {% endif %}
-                      </ul>
+                        {% if post.author == request.user %}
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-pencil-square"></i> Edit</a></li>
+                        {% endif %}
+                    </ul>
                 </div>
             </div>
         </div>
@@ -55,13 +67,13 @@
                 </form>
             </div>
             <div class="btn-group btn-circular me-2">
-               <a href="#" class="btn btn-secondary btn-circular btn-sm btn-secondary-dark"><i class="bi bi-chat-square-text"></i> {{ post.children_count }}</a>
+                <a href="#" class="btn btn-secondary btn-circular btn-sm btn-secondary-dark"><i class="bi bi-chat-square-text"></i> {{ post.children_count }}</a>
             </div>
             <div class="btn-group btn-circular me-2">
-               <a href="#" class="btn btn-secondary btn-circular btn-sm btn-secondary-dark"><i class="bi bi-award"></i></a>
+                <a href="#" class="btn btn-secondary btn-circular btn-sm btn-secondary-dark"><i class="bi bi-award"></i></a>
             </div>
             <div class="btn-group btn-circular me-2">
-               <a href="#" class="btn btn-secondary btn-circular btn-sm btn-secondary-dark"><i class="bi bi-share"></i></a>
+                <a href="#" class="btn btn-secondary btn-circular btn-sm btn-secondary-dark"><i class="bi bi-share"></i></a>
             </div>
         </div>
     </div>
