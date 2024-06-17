@@ -132,6 +132,7 @@ class Post(GenericModel):
     def update_display_counter(self: "Post") -> None:
         Post.objects.filter(pk=self.pk).update(display_counter=F("display_counter") + 1)
 
+    @property
     def children_count(self: "Post") -> int:
         def count_descendants(post: "Post") -> int:
             children = post.children.all()
