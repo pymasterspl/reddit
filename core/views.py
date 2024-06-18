@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django.views.generic import DetailView, ListView
 
-from .models import Post, PostVote
+from .models import Post, PostVote, SavedPost
 
 
 class PostListlView(ListView):
@@ -33,6 +33,20 @@ class PostVoteView(LoginRequiredMixin, View):
             post.vote(request.user, PostVote.UPVOTE)
         elif vote_type == "down":
             post.vote(request.user, PostVote.DOWNVOTE)
+
+        next_url = request.POST.get("next") or request.GET.get("next")
+        if next_url:
+            return redirect(next_url)
+        return redirect("post-detail", pk=post.id)
+
+
+class PostSaveView(LoginRequiredMixin, View):
+    def post(self: "PostSaveView", request: HttpRequest, pk: int, action_type: str) -> HttpResponse:
+        post = get_object_or_404(Post, pk=pk)
+        if action_type == "save":
+            SavedPost.save_post(user=self.request.user, post=post)
+        elif action_type == "unsave":
+            SavedPost.remove_saved_post(user=self.request.user, post=post)
 
         next_url = request.POST.get("next") or request.GET.get("next")
         if next_url:
