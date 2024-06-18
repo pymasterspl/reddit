@@ -1,0 +1,36 @@
+{% load crispy_forms_tags %}
+
+<ul class="list-unstyled">
+    {% for comment in comments %}
+        <li>
+            <div class="card bg-dark shadow-sm mb-3 text-light">
+                {% include 'core/comment.html' with comment=comment %}
+            </div>
+            <div class="mb-3">
+                <button class="btn btn-sm btn-secondary" onclick="toggleForm('commentForm{{ comment.id }}')">Reply</button>
+            </div>
+            <div id="commentForm{{ comment.id }}" class="hidden mt-2 ms-5">
+                <div class="card bg-dark text-light p-3 mb-3">
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger" role="alert">
+                                {% for err in form.non_field_errors %}
+                                    <p class="form-error">{{ err }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {{ form|crispy }}
+                        <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                        <button class="btn btn-sm btn-success" type="submit">Submit</button>
+                    </form>
+                </div>
+            </div>
+            <div class="ms-5">
+                {% if comment.children.exists %}
+                    {% include 'core/comments_tree.html' with comments=comment.children.all %}
+                {% endif %}
+            </div>
+        </li>
+    {% endfor %}
+</ul>
