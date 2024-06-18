@@ -143,6 +143,7 @@ class Post(GenericModel):
 
         return count_descendants(self)
 
+    @property
     def get_comments(self: "Post") -> models.QuerySet:
         return self.children.all()
 
