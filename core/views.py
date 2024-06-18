@@ -13,7 +13,7 @@ class PostListView(ListView):
     template_name = "core/post-list.html"
     context_object_name = "posts"
 
-    def get_queryset(self: "PostListView") -> models.Queryset:
+    def get_queryset(self: "PostListView") -> models.QuerySet:
         return Post.objects.filter(parent=None)
 
 
