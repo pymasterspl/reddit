@@ -28,7 +28,7 @@ class PostDetailView(DetailView):
         obj.update_display_counter()
         return obj
 
-    def get_context_data(self: "DetailView", **kwargs: Any) -> dict:
+    def get_context_data(self: "PostDetailView", **kwargs: dict[str, Any]) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         comments = self.object.get_comments()
         form = CommentForm()
