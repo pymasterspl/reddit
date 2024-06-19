@@ -14,12 +14,20 @@ from django.utils import timezone
 User = get_user_model()
 
 
+class GenericModelManager(models.Manager):
+    def get_queryset(self: "GenericModelManager") -> models.QuerySet:
+        return super().get_queryset().filter(is_active=True)
+
+
 class GenericModel(models.Model):
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     is_active = models.BooleanField(default=True)
     is_locked = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = GenericModelManager()
+    all_objects = models.Manager()
 
     class Meta:
         abstract = True
