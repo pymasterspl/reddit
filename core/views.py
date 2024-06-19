@@ -4,6 +4,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
+from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import DetailView, ListView
 
@@ -43,14 +45,11 @@ class PostDetailView(DetailView):
         if form.is_valid():
             new_comment = form.save(commit=False)
             parent_id = request.POST.get("parent_id")
-            if parent_id:
-                new_comment.parent = Post.objects.get(id=parent_id)
-            else:
-                new_comment.parent = post
+            new_comment.parent = get_object_or_404(Post, id=parent_id) if parent_id else post
             new_comment.author = request.user
             new_comment.community = post.community
             new_comment.save()
-            return redirect("post-detail", pk=pk)
+            return redirect(reverse_lazy("post-detail", kwargs={"pk": pk}))
 
         comments = post.get_comments()
         context = {
@@ -58,7 +57,8 @@ class PostDetailView(DetailView):
             "comments": comments,
             "form": form,
         }
-        return render(request, "post_detail.html", context)
+        html_content = render_to_string(self.template_name, context)
+        return HttpResponse(html_content)
 
 
 class PostVoteView(LoginRequiredMixin, View):
