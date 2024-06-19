@@ -11,9 +11,9 @@ class CommunityAdmin(admin.ModelAdmin):
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ("title", "author", "community", "score", "created_at", "updated_at")
+    list_display = ("title", "community", "score", "display_counter", "author", "created_at", "updated_at")
     search_fields = ("title", "author__email", "community__name")
-    readonly_fields = ("version",)
+    readonly_fields = ("version", "display_counter", "up_votes", "down_votes")
 
 
 @admin.register(PostVote)
