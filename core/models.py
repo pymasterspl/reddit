@@ -143,7 +143,7 @@ class Post(GenericModel):
 
         return count_descendants(self)
 
-    def is_saved_by(self: "Post", user: User) -> bool:
+    def is_saved(self: "Post", user: User) -> bool:
         return SavedPost.objects.filter(user=user, post=self).exists()
 
 

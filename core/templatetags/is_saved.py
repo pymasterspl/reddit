@@ -9,7 +9,7 @@ User = get_user_model()
 
 
 @register.filter
-def is_saved_by(post: Post, user: User) -> bool:
+def is_saved(post: Post, user: User) -> bool:
     if isinstance(post, Post):
-        return post.is_saved_by(user)
+        return post.is_saved(user)
     return False

@@ -1,5 +1,5 @@
 {% load timesince %}
-{% load is_saved_by %}
+{% load is_saved %}
 <div class="card-header border">
     <div class="row align-items-center">
         <div class="col-auto">
@@ -34,7 +34,7 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark">
                     <!-- TODO: Update links with User features -->
-                    <li>{% if post|is_saved_by:request.user %}
+                    <li>{% if post|is_saved:request.user %}
                         <form method="POST" class="d-none" id="unsave-form-{{ post.pk }}" action="{% url 'post-save-unsave' pk=post.pk action_type='unsave' %}?next={{ request.path }}">
                             {% csrf_token %}
                         </form>
