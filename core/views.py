@@ -3,7 +3,7 @@ from typing import Any
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.views import View
@@ -44,7 +44,7 @@ class PostDetailView(DetailView):
         form = CommentForm(request.POST)
         if form.is_valid():
             new_comment = form.save(commit=False)
-            parent_id = request.POST.get("parent_id")
+            parent_id = form.cleaned_data.get("parent_id")
             new_comment.parent = get_object_or_404(Post, id=parent_id) if parent_id else post
             new_comment.author = request.user
             new_comment.community = post.community

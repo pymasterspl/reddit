@@ -6,6 +6,8 @@ from .models import Post
 
 
 class CommentForm(forms.ModelForm):
+    parent_id = forms.IntegerField(widget=forms.HiddenInput(), required=True)
+
     class Meta:
         model: ClassVar = Post
         fields: ClassVar = ["content"]

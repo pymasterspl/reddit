@@ -43,14 +43,14 @@
             <div class="card bg-dark shadow-sm text-light p-3 mb-3">
                 <form method="post" action="">
                     {% csrf_token %}
-                        {% if form.non_field_errors %}
-                            <div class="alert alert-danger" role="alert">
-                                {% for err in form.non_field_errors %}
-                                    <p class="form-error">{{ err }}</p>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
                     {{ form|crispy }}
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {% for err in form.non_field_errors %}
+                                <p class="form-error">{{ err }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                     <button class="btn btn-sm btn-success" type="submit">Submit</button>
                 </form>
             </div></div>
