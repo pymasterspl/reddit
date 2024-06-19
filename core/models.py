@@ -26,8 +26,8 @@ class GenericModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = GenericModelManager()
     all_objects = models.Manager()
+    objects = GenericModelManager()
 
     class Meta:
         abstract = True
