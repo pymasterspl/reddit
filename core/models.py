@@ -80,6 +80,7 @@ class Post(GenericModel):
         help_text="Hash of the title + content to prevent overwriting already saved post",
     )
     display_counter = models.IntegerField(default=0)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self: "Post") -> str:
         return f"@{self.author}: {self.title}"

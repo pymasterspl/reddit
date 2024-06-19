@@ -1,5 +1,5 @@
 from django.db.models import QuerySet
-from django.urls import reverse_lazy
+from django.urls import reverse
 from django.views.generic import CreateView, DetailView, ListView
 
 from .forms import PostForm
@@ -44,10 +44,11 @@ class AddPostView(CreateView):
         kwargs = super().get_form_kwargs()
         # Set initial community to None
         kwargs["initial"] = {"community": None}
+        kwargs["user"] = self.request.user
         return kwargs
 
     def form_valid(self, form):
-        form.instance.author = self.request.user  # Set author to current user
+        form.instance.author = self.request.user
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -55,5 +56,8 @@ class AddPostView(CreateView):
         context["communities"] = Community.objects.filter(is_active=True)
         return context
 
-    success_url = reverse_lazy(
-        "post-detail", kwargs={"pk": "{{ object.pk }}"})  # Dynamically set PK
+    def get_success_url(self):
+        return reverse('post-detail', kwargs={'pk': self.object.pk})
+
+    # success_url = reverse_lazy(
+    #     "post-detail", kwargs={"pk": "{{ object.pk }}"})  # Dynamically set PK
