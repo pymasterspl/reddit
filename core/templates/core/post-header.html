@@ -35,7 +35,9 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark">
                     <!-- TODO: Update links with User features -->
-                    <li>{% if post|is_saved:request.user %}
+                    <li>
+                        {% if request.user.is_authenticated %}
+                        {% if post|is_saved:request.user %}
                         <form method="POST" class="d-none" id="unsave-form-{{ post.pk }}" action="{% url 'post-save-unsave' pk=post.pk action_type='unsave' %}?next={{ request.path }}">
                             {% csrf_token %}
                         </form>
@@ -46,11 +48,16 @@
                         </form>
                         <a href="#" class="dropdown-item" onclick="event.preventDefault(); document.getElementById('save-form-{{ post.pk }}').submit();"><i class="bi bi-bookmark"></i> Save</a>
                         {% endif %}
+                        {% else %}
+                        <a href="{% url 'login' %}?next={{ request.path }}" class="dropdown-item"><i class="bi bi-bookmark"></i> Save</a>
+                        {% endif %}
                     </li>
                     <li><a class="dropdown-item" href="#"><i class="bi bi-eye-slash"></i> Hide</a></li>
                     <li><a class="dropdown-item" href="#"><i class="bi bi-flag"></i> Report</a></li>
+                    {% if request.user.is_authenticated %}
                     {% if post.author == request.user %}
                     <li><a class="dropdown-item" href="#"><i class="bi bi-pencil-square"></i> Edit</a></li>
+                    {% endif %}
                     {% endif %}
                 </ul>
             </div>
