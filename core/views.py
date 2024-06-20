@@ -33,22 +33,22 @@ class PostDetailView(DetailView):
     def get_context_data(self: "PostDetailView", **kwargs: dict[str, Any]) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         comments = self.object.get_comments()
-        form = CommentForm()
 
         context["comments"] = comments
-        context["form"] = form
+        context["form"] = self.object.get_comment_form()
         return context
 
     def post(self: "PostDetailView", request: HttpRequest, pk: int) -> HttpResponse:
         post = get_object_or_404(Post, id=pk)
         form = CommentForm(request.POST)
         if form.is_valid():
-            new_comment = form.save(commit=False)
             parent_id = form.cleaned_data.get("parent_id")
-            new_comment.parent = get_object_or_404(Post, id=parent_id) if parent_id else post
-            new_comment.author = request.user
-            new_comment.community = post.community
-            new_comment.save()
+            content = form.cleaned_data.get("content")
+            Post.objects.create(
+                parent_id=parent_id,
+                community=post.community,
+                content=content,
+                author=request.user)
             return redirect(reverse_lazy("post-detail", kwargs={"pk": pk}))
 
         comments = post.get_comments()

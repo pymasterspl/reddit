@@ -1,19 +1,12 @@
-from typing import ClassVar
-
 from django import forms
 
-from .models import Post
 
-
-class CommentForm(forms.ModelForm):
-    parent_id = forms.IntegerField(widget=forms.HiddenInput(), required=True)
+class CommentForm(forms.Form):
+    content = forms.CharField(required=True, widget=forms.Textarea(attrs={"rows": 3, "class": "form-control bg-dark text-light"}))
+    parent_id = forms.IntegerField(required=True, widget=forms.HiddenInput)
 
     class Meta:
-        model: ClassVar = Post
-        fields: ClassVar = ["content", "parent_id"]
-        widgets: ClassVar = {
-            "content": forms.Textarea(attrs={"rows": 3, "class": "form-control bg-dark text-light"}),
-        }
-        labels: ClassVar = {
+        fields = ["content", "parent_id"]
+        labels = {
             "content": "Add a comment:",
         }
