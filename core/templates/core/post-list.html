@@ -7,34 +7,23 @@
 
 {% block content %}
 <div class="container">
-    <a href="{% url 'admin:core_post_add' %}" class="admin-link">Add New Post</a>
-    <p>
-    </p>
-    <ul class="post-list">
+    <div class="mx-auto col-10 col-md-8 col-lg-8 mt-lg-3">
+        <a href="{% url 'admin:core_post_add' %}" class="admin-link mb-3X">Add New Post</a>
         {% for post in posts %}
-        <li>
-            <div class="card bg-dark shadow-sm mb-2 text-light"
-            >
-                {% include 'core/post-header.html' with post=post %}
-                <div class="card-body border"
-                     style="cursor: pointer"
-                     id="myDiv{{post.id}}" data-url="{% url 'post-detail' post.id %}"
-                >
-                    <h3 class="h3">{{ post.title }}</h3>
-                    {{ post.content|truncatechars:100 }}
-                </div>
+        <div class="card bg-dark shadow-sm mb-3 text-light border">
+            {% include 'core/post-header.html' with post=post %}
 
-                {% include 'core/post-footer.html' with post=post %}
+            <div class="card-body text-light border">
+                <h3 class="h3 mx-5">{{ post.title }}</h3>
+                <p class="mx-5">{{ post.content|striptags|truncatechars:100 }}</p>
             </div>
-        </li>
-        <script>
-            document.getElementById("myDiv{{post.id}}").onclick = function() {
-                var url = this.getAttribute('data-url');
-                window.location.href = url;
-            }
-        </script>
-        {% endfor %}
-    </ul>
-</div>
 
+            {% include 'core/post-footer.html' with post=post %}
+        </div>
+        <div class="d-flex flex-row-reverse">
+            <a href="{% url 'post-detail' post.id %}" class="button text-decoration-none h3 me-5 mb-5">Read More</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 {% endblock content %}

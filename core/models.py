@@ -152,14 +152,17 @@ class Post(GenericModel):
             return total_children
 
         return count_descendants(self)
+      
+    def is_saved(self: "Post", user: User) -> bool:
+        return SavedPost.objects.filter(user=user, post=self).exists()
 
     def get_comments(self: "Post") -> models.QuerySet:
         return self.children.all()
 
     def get_comment_form(self: "Post") -> CommentForm:
         return CommentForm(initial={"parent_id": self.pk})
-
-
+      
+      
 class PostVote(models.Model):
     UPVOTE = "10_UPVOTE"
     DOWNVOTE = "20_DOWNVOTE"
