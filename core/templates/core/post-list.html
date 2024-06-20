@@ -15,7 +15,7 @@
 
             <div class="card-body text-light border">
                 <h3 class="h3 mx-5">{{ post.title }}</h3>
-                <p class="mx-5">{{ post.content|truncatechars:100 }}</p>
+                <p class="mx-5">{{ post.content|striptags|truncatechars:100 }}</p>
             </div>
 
             {% include 'core/post-footer.html' with post=post %}
