@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models import F
 from django.utils import timezone
 
 User = get_user_model()
@@ -70,7 +71,7 @@ class Post(GenericModel):
         blank=True,
         null=True,
         on_delete=models.CASCADE,
-        related_query_name="children",
+        related_name="children",
     )
     up_votes = models.IntegerField(default=0)
     down_votes = models.IntegerField(default=0)
@@ -78,6 +79,7 @@ class Post(GenericModel):
         max_length=32,
         help_text="Hash of the title + content to prevent overwriting already saved post",
     )
+    display_counter = models.IntegerField(default=0)
 
     def __str__(self: "Post") -> str:
         return f"@{self.author}: {self.title}"
@@ -126,6 +128,23 @@ class Post(GenericModel):
 
     def get_images(self: "Post") -> models.QuerySet:
         return Image.objects.filter(post=self)
+
+    def update_display_counter(self: "Post") -> None:
+        Post.objects.filter(pk=self.pk).update(display_counter=F("display_counter") + 1)
+
+    @property
+    def children_count(self: "Post") -> int:
+        def count_descendants(post: "Post") -> int:
+            children = post.children.all()
+            total_children = children.count()
+            for child in children:
+                total_children += count_descendants(child)
+            return total_children
+
+        return count_descendants(self)
+
+    def is_saved(self: "Post", user: User) -> bool:
+        return SavedPost.objects.filter(user=user, post=self).exists()
 
 
 class PostVote(models.Model):

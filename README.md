@@ -37,6 +37,7 @@ Good reading on working with code changes and pull request is https://google.git
 
 ### Code
 
+- Use excellent Bootstrap framework for handling HTML pages https://getbootstrap.com/
 - Use class based views instead of function based views. A lot of examples and reading can be found on Jacek Blog: https://akademiait.com.pl/ and youtube: https://www.youtube.com/watch?v=2S9-pvFBlBc&ab_channel=AkademiaIT
 - for testing use pytest. Tests using Django Unit Testing will not be accepted. A lot of tests are in our previous project: https://github.com/pymasterspl/Dshop. Also please watch https://www.youtube.com/watch?v=xn3wSM82fnA&ab_channel=AkademiaIT
 - If you have questions, just ask on discord, reddit channel.
