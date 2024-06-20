@@ -1,10 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="container">
+        <h3 class="mb-4">Link is not active</h3>
+        <div class="d-flex justify-content-center">
+            <div class="mx-auto col-10 col-md-8 col-lg-6 vh-100 mt-lg-3">
+                <div class="centered">
+                    Your activation link is no longer active or invalid. If you have any questions, please contact your administrator.
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+{%  endblock content %}
