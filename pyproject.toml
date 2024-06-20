@@ -15,6 +15,7 @@ pillow = "^10.3.0"
 django-crispy-forms = "^2.1"
 crispy-bootstrap5 = "^2024.2"
 django-timesince = "^2021.5.27"
+six = "^1.16.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
