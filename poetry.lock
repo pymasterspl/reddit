@@ -92,6 +92,16 @@ files = [
 django = ">=4.2"
 
 [[package]]
+name = "django-timesince"
+version = "2021.5.27"
+description = "django timesince replacement"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-timesince-2021.5.27.tar.gz", hash = "sha256:ad2b089887f547143dff7a930b5488f5f2ea0a221e7d7c5704d1e166a104d4a3"},
+]
+
+[[package]]
 name = "iniconfig"
 version = "2.0.0"
 description = "brain-dead simple config-ini parsing"
@@ -329,4 +339,5 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "3f146a1098bd5febd58ae75025589c3b35c3b98ad4ab496294d3812b13d20aea"
+content-hash = "786c0cc3dfcacfcf05936e45ec4a0496540506172b087d9224f6f48f5fd79758"
+

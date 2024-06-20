@@ -1,0 +1,47 @@
+.up-vote:hover {
+    color: red;
+}
+
+.down-vote:hover {
+    color: blue;
+}
+
+.btn-circular {
+    border-radius: 50px;
+}
+
+.btn-left-circular {
+    border-radius: 50px 0 0 50px;
+}
+
+.btn-right-circular {
+    border-radius: 0 50px 50px 0;
+}
+
+.btn-secondary-dark {
+    border-color: #353c3f;
+    background-color: #353c3f;
+}
+
+.btn-secondary-dark:disabled {
+        border-color: #353c3f;
+        background-color: #353c3f;
+        color: #fff;
+        opacity: 1;
+}
+.post-list li {
+    list-style-type: none;
+    margin-bottom: 10px;
+    background-color: black;
+    color: white;
+}
+.admin-link {
+        display: block;
+        color: white;
+        text-decoration: none;
+        width: 100%;
+        height: 100%;
+        padding: 10px;
+        border: 2px solid transparent;
+        transition: border-color 0.3s ease;
+    }

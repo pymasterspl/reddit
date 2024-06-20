@@ -71,7 +71,7 @@ class Post(GenericModel):
         blank=True,
         null=True,
         on_delete=models.CASCADE,
-        related_query_name="children",
+        related_name="children",
     )
     up_votes = models.IntegerField(default=0)
     down_votes = models.IntegerField(default=0)
@@ -132,6 +132,20 @@ class Post(GenericModel):
 
     def update_display_counter(self: "Post") -> None:
         Post.objects.filter(pk=self.pk).update(display_counter=F("display_counter") + 1)
+
+    @property
+    def children_count(self: "Post") -> int:
+        def count_descendants(post: "Post") -> int:
+            children = post.children.all()
+            total_children = children.count()
+            for child in children:
+                total_children += count_descendants(child)
+            return total_children
+
+        return count_descendants(self)
+
+    def is_saved(self: "Post", user: User) -> bool:
+        return SavedPost.objects.filter(user=user, post=self).exists()
 
 
 class PostVote(models.Model):
