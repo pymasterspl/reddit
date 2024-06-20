@@ -1,21 +1,28 @@
+import secrets
+import string
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
 
-from ..models import Community
+from core.models import Community
 
 pytestmark = pytest.mark.django_db
 
 User = get_user_model()
 
 
+def generate_random_password(length: int = 12) -> str:
+    characters = string.ascii_letters + string.digits + string.punctuation
+    return "".join(secrets.choice(characters) for _ in range(length))
+
 @pytest.fixture()
 def user(client: Client) -> User:
-    user = User.objects.create_user(username="test_user", password="test_password")
+    password = generate_random_password()
+    user = User.objects.create_user(username="test_user", password=password)
     client.login(email=user.email, password=user.password)
     return user
-
 
 @pytest.fixture()
 def community() -> Community:
