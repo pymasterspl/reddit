@@ -21,6 +21,6 @@ jobs:
     - name: Linting
       uses: chartboost/ruff-action@v1
     - name: Formatting Check
-    - uses: chartboost/ruff-action@v1
+      uses: chartboost/ruff-action@v1
       with:
         args: 'format --check'
