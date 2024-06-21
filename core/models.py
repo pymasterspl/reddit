@@ -11,8 +11,6 @@ from django.db import models
 from django.db.models import F
 from django.utils import timezone
 
-from core.forms import CommentForm
-
 User = get_user_model()
 
 
@@ -38,6 +36,7 @@ class GenericModel(models.Model):
 class Community(GenericModel):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='authored_communities')
     members = models.ManyToManyField(User, through="CommunityMember", related_name="communities")
 
     class Meta:
@@ -160,7 +159,8 @@ class Post(GenericModel):
     def get_comments(self: "Post") -> models.QuerySet:
         return self.children.all()
 
-    def get_comment_form(self: "Post") -> CommentForm:
+    def get_comment_form(self: "Post"):
+        from .forms import CommentForm
         return CommentForm(initial={"parent_id": self.pk})
 
 
