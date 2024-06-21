@@ -30,10 +30,11 @@ class PostDetailView(DetailView):
         return obj
 
 
-class AddPostView(CreateView):
+class AddPostView(LoginRequiredMixin, CreateView):
     model = Post
     form_class = PostForm
     template_name = "post-add.html"
+    login_url = "login"
 
     def get_form_kwargs(self: "AddPostView") -> dict[str, any]:
         kwargs = super().get_form_kwargs()

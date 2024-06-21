@@ -21,3 +21,5 @@ class PostForm(forms.ModelForm):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
         self.fields["community"].queryset = Community.objects.filter(is_active=True)
+        self.fields["title"].required = True
+        self.fields["content"].required = True
