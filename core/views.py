@@ -7,13 +7,11 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
-
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView
 
 from .forms import CommentForm, PostForm
 from .models import Community, Post, PostVote, SavedPost
-
 
 
 class PostListView(ListView):
