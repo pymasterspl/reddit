@@ -63,29 +63,29 @@ class PostDetailView(DetailView):
         return HttpResponse(html_content)
 
 
-class AddPostView(LoginRequiredMixin, CreateView):
+class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     form_class = PostForm
     template_name = "post-add.html"
     login_url = "login"
 
-    def get_form_kwargs(self: "AddPostView") -> dict[str, any]:
+    def get_form_kwargs(self: "PostCreateView") -> dict[str, any]:
         kwargs = super().get_form_kwargs()
         # Set initial community to None
         kwargs["initial"] = {"community": None}
         kwargs["user"] = self.request.user
         return kwargs
 
-    def form_valid(self: "AddPostView", form: PostForm) -> HttpResponse:
+    def form_valid(self: "PostCreateView", form: PostForm) -> HttpResponse:
         form.instance.author = self.request.user
         return super().form_valid(form)
 
-    def get_context_data(self: "AddPostView", **kwargs: any) -> dict[str, any]:
+    def get_context_data(self: "PostCreateView", **kwargs: any) -> dict[str, any]:
         context = super().get_context_data(**kwargs)
         context["communities"] = Community.objects.filter(is_active=True)
         return context
 
-    def get_success_url(self: "AddPostView") -> str:
+    def get_success_url(self: "PostCreateView") -> str:
         return reverse("post-detail", kwargs={"pk": self.object.pk})
 
 
