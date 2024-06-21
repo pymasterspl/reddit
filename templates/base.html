@@ -38,7 +38,7 @@
                             <a class="nav-link" href="{% url 'post-list' %}">Post List</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'add-post' %}">Add Post</a>
+                            <a class="nav-link" href="{% url 'post-create' %}">Post Create</a>
                         </li>
                         {% if request.user.is_authenticated %}
                             <li class="nav-item">
