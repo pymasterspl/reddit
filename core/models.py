@@ -11,7 +11,14 @@ from django.db import models
 from django.db.models import F
 from django.utils import timezone
 
+from core.forms import CommentForm
+
 User = get_user_model()
+
+
+class ActiveOnlyManager(models.Manager):
+    def get_queryset(self: "ActiveOnlyManager") -> models.QuerySet:
+        return super().get_queryset().filter(is_active=True)
 
 
 class GenericModel(models.Model):
@@ -20,6 +27,9 @@ class GenericModel(models.Model):
     is_locked = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    all_objects = models.Manager()
+    objects = ActiveOnlyManager()
 
     class Meta:
         abstract = True
@@ -145,6 +155,12 @@ class Post(GenericModel):
 
     def is_saved(self: "Post", user: User) -> bool:
         return SavedPost.objects.filter(user=user, post=self).exists()
+
+    def get_comments(self: "Post") -> models.QuerySet:
+        return self.children.all()
+
+    def get_comment_form(self: "Post") -> CommentForm:
+        return CommentForm(initial={"parent_id": self.pk})
 
 
 class PostVote(models.Model):
