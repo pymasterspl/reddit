@@ -8,10 +8,10 @@ from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import DetailView, ListView
+from django.views.generic import CreateView, DetailView, ListView
 
-from .forms import CommentForm
-from .models import Post, PostVote, SavedPost
+from .forms import CommentForm, CommunityForm
+from .models import Post, PostVote, SavedPost, Community, CommunityMember
 
 
 class PostListView(ListView):
@@ -89,3 +89,38 @@ class PostSaveView(LoginRequiredMixin, View):
         if next_url:
             return redirect(next_url)
         return redirect("post-detail", pk=post.id)
+
+
+class CommunityListView(ListView):
+    model = Community
+    template_name = 'core/community-list.html'
+    context_object_name = 'communities'
+    paginate_by = 10
+
+
+class CommunityCreateView(LoginRequiredMixin, CreateView):
+    model = Community
+    form_class = CommunityForm
+    template_name = 'core/community-create.html'
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        response = super().form_valid(form)
+        CommunityMember.objects.create(
+            community=self.object,
+            user=self.request.user,
+            role=CommunityMember.ADMIN
+        )
+        return response
+
+    def get_success_url(self):
+        return reverse_lazy('community-detail', kwargs={'slug': self.object.slug})
+
+
+class CommunityDetailView(DetailView):
+    model = Community
+    template_name = 'core/community-detail.html'
+    context_object_name = 'community'
+
+    def get_object(self):
+        return Community.objects.get(slug=self.kwargs['slug'])
