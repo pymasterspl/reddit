@@ -17,6 +17,7 @@ def generate_random_password(length: int = 12) -> str:
     characters = string.ascii_letters + string.digits + string.punctuation
     return "".join(secrets.choice(characters) for _ in range(length))
 
+
 @pytest.fixture()
 def user(client: Client) -> User:
     password = generate_random_password()
@@ -28,6 +29,7 @@ def user(client: Client) -> User:
 
     client.login(email=user.email, password=user.password)
     return user
+
 
 @pytest.fixture()
 def community() -> Community:
@@ -49,11 +51,13 @@ def test_add_post_valid(client: Client, user: User, community: Community) -> Non
 
 
 def test_add_post_invalid(client: Client, user: User, community: Community) -> None:
-    data = {"title": ""}  # Missing content
+    data = {"title": ""}
     client.force_login(user)
     response = client.post(reverse("post-create"), data=data)
     assert response.status_code == 200
-    assert b"This field is required." in response.content
+    form = response.context["form"]
+    assert "This field is required." in form.errors["title"]
+    assert "This field is required." in form.errors["content"]
 
 
 def test_add_post_unauthorized(client: Client, community: Community) -> None:
@@ -63,6 +67,5 @@ def test_add_post_unauthorized(client: Client, community: Community) -> None:
         "content": "This is a test post content.",
     }
     response = client.post(reverse("post-create"), data=data)
-    # Assert redirection to login page (replace 302 with actual redirect code if different)
     assert response.status_code == 302
     assert reverse("login") in response.url

@@ -66,12 +66,11 @@ class PostDetailView(DetailView):
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     form_class = PostForm
-    template_name = "post-add.html"
+    template_name = "core/post-create.html"
     login_url = "login"
 
     def get_form_kwargs(self: "PostCreateView") -> dict[str, any]:
         kwargs = super().get_form_kwargs()
-        # Set initial community to None
         kwargs["initial"] = {"community": None}
         kwargs["user"] = self.request.user
         return kwargs
