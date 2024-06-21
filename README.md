@@ -117,6 +117,29 @@ python manage.py loaddata {fixture_name}.json
 
 Open web browser and navigate to localhost address:  http://127.0.0.1:8000/ 
 
+### Ruff formatting and linting
+
+This is how we use linter:
+```bash
+ruff check                  # Lint all files in the current directory.
+ruff check --fix            # Lint all files in the current directory, and fix any fixable errors.
+ruff check --watch          # Lint all files in the current directory, and re-lint on change.
+ruff check path/to/code/    # Lint all files in `path/to/code` (and any subdirectories).
+```
+
+
+This is how to use formatter:
+```bash
+ruff format                   # Format all files in the current directory.
+ruff format path/to/code/     # Format all files in `path/to/code` (and any subdirectories).
+ruff format path/to/file.py   # Format a single file.
+ruff format --check           # Reports if there are differences between current and in future formatted files.
+```
+
+More at:
+https://docs.astral.sh/ruff/linter/
+https://docs.astral.sh/ruff/formatter/
+
 ### Usage with Docker 🐳
 For setup and running with Docker, refer to the [Docker configuration instructions](DOCKER.md).
 
