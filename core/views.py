@@ -1,14 +1,19 @@
+from typing import Any
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse
+from django.template.loader import render_to_string
+from django.urls import reverse, reverse_lazy
+
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView
 
-from .forms import PostForm
+from .forms import CommentForm, PostForm
 from .models import Community, Post, PostVote, SavedPost
+
 
 
 class PostListView(ListView):
@@ -28,6 +33,36 @@ class PostDetailView(DetailView):
         obj = super().get_object(queryset=queryset)
         obj.update_display_counter()
         return obj
+
+    def get_context_data(self: "PostDetailView", **kwargs: dict[str, Any]) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        comments = self.object.get_comments()
+
+        context["comments"] = comments
+        context["form"] = self.object.get_comment_form()
+        return context
+
+    def post(self: "PostDetailView", request: HttpRequest, pk: int) -> HttpResponse:
+        post = get_object_or_404(Post, id=pk)
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            parent_id = form.cleaned_data.get("parent_id")
+            content = form.cleaned_data.get("content")
+            Post.objects.create(
+                parent_id=parent_id,
+                community=post.community,
+                content=content,
+                author=request.user)
+            return redirect(reverse_lazy("post-detail", kwargs={"pk": pk}))
+
+        comments = post.get_comments()
+        context = {
+            "post": post,
+            "comments": comments,
+            "form": form,
+        }
+        html_content = render_to_string(self.template_name, context)
+        return HttpResponse(html_content)
 
 
 class AddPostView(LoginRequiredMixin, CreateView):
