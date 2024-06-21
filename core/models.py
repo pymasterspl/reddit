@@ -10,6 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import F
 from django.utils import timezone
+from django.utils.text import slugify
 
 from core.forms import CommentForm
 
@@ -37,6 +38,7 @@ class GenericModel(models.Model):
 
 class Community(GenericModel):
     name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
     members = models.ManyToManyField(User, through="CommunityMember", related_name="communities")
 
     class Meta:
@@ -48,6 +50,11 @@ class Community(GenericModel):
     def count_online_users(self: "Community") -> int:
         online_limit = timezone.now() - timedelta(minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES)
         return self.members.filter(last_activity__gte=online_limit).count()
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        return super().save(*args, **kwargs)
 
 
 class Tag(models.Model):
