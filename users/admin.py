@@ -8,7 +8,7 @@ FieldsetsType = tuple[tuple[None, dict[str, str | tuple[str]]]]
 
 @admin.register(User)
 class CustomUserAdmin(DjangoUserAdmin):
-    list_display: list[str] = DjangoUserAdmin.list_display[1:] + ("is_online", "last_activity_ago")
+    list_display: tuple[str] = ("nickname", "email", "is_staff", "is_online", "last_activity_ago")
     ordering: tuple[str] = ("email",)
     fieldsets: FieldsetsType = ()
     add_fieldsets: FieldsetsType = (
@@ -17,6 +17,7 @@ class CustomUserAdmin(DjangoUserAdmin):
             {
                 "classes": ("wide",),
                 "fields": (
+                    "nickname",
                     "email",
                     "first_name",
                     "last_name",
