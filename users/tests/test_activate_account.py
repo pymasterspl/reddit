@@ -38,7 +38,6 @@ def test_activate_user_view(client: Client) -> None:
                                     email="testuser@example.com",
                                     password=password)
     user.is_active = False
-    user.is_active = False
     user.save()
 
     uid = urlsafe_base64_encode(force_bytes(user.pk))
@@ -48,11 +47,12 @@ def test_activate_user_view(client: Client) -> None:
                              kwargs={"uidb64": uid, "token": token})
     response = client.get(activation_url)
 
-    user.refresh_from_db()
     assert response.status_code == 302
     assert response.url == reverse("login")
-    assert user.is_active
+    assert not user.is_active
+    user.refresh_from_db()
+
     messages = list(get_messages(response.wsgi_request))
-    assert any(
-        message.message == "Your account has been activated, you can now login!"
-        for message in messages)
+    assert len(messages) == 1
+    message = messages[0]
+    assert message.message == "Your account has been activated, you can now login!"

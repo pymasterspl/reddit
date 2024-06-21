@@ -8,7 +8,7 @@ from django.core.mail import send_mail
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views import View
@@ -45,19 +45,22 @@ class UserRegistrationView(FormView):
         user.save()
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = account_activation_token.make_token(user)
-        activation_link = f"http://{self.request.get_host()}/{uid}/{token}/"
+        protocol = "https" if self.request.is_secure() else "http"
         current_site = get_current_site(self.request)
+        activation_link = reverse("activate-account",
+                                  kwargs={"uidb64": uid, "token": token})
+        full_activation_link = f"{protocol}://{current_site.domain}{activation_link}"
         send_mail(
             "Confirm your registration",
-            f"Please click on the following link to confirm your registration {activation_link}",
+            f"Please click on the following link to confirm your registration "
+            f"{activation_link}",
             settings.EMAIL_HOST_USER,
             [user.email],
             fail_silently=False,
-            html_message=render_to_string("users/account_activation_email.html", {
+            html_message=render_to_string("users/account_activation_email.html",
+                                          {
                 "user": user,
-                "domain": current_site.domain,
-                "uid": uid,
-                "token": token,
+                "activation_link": full_activation_link,
             }),
         )
         messages.success(self.request, f"Account created for {user.email}! "
@@ -80,7 +83,7 @@ class ActivateUser(View):
             HttpResponse:
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(pk=uid)
+            user = User.objects.get(pk=uid, is_active=False)
             if account_activation_token.check_token(user, token):
                 user.is_active = True
                 user.save()
