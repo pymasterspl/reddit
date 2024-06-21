@@ -20,7 +20,6 @@ django-timesince = "^2021.5.27"
 pytest = "^8.1.1"
 ruff = "^0.4.5"
 pytest-django = "^4.8.0"
-autopep8 = "^2.3.0"
 
 [build-system]
 requires = ["poetry-core"]
