@@ -22,9 +22,9 @@
             <label for="{{ form.community.id_for_label }}" class="form-label">{{ form.community.label }}</label>
             {{ form.community }}
             {% for error in form.community.errors %}
-            <div class="invalid-feedback d-block">
-                {{ error }}
-            </div>
+                <div class="invalid-feedback d-block">
+                    {{ error }}
+                </div>
             {% endfor %}
         </div>
 
@@ -42,9 +42,9 @@
             <label for="{{ form.content.id_for_label }}" class="form-label">{{ form.content.label }}</label>
             {{ form.content }}
             {% for error in form.content.errors %}
-            <div class="invalid-feedback d-block">
-                {{ error }}
-            </div>
+                <div class="invalid-feedback d-block">
+                    {{ error }}
+                </div>
             {% endfor %}
         </div>
 
