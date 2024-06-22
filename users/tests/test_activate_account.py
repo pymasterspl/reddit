@@ -49,8 +49,8 @@ def test_activate_user_view(client: Client) -> None:
 
     assert response.status_code == 302
     assert response.url == reverse("login")
-    assert not user.is_active
     user.refresh_from_db()
+    assert user.is_active
 
     messages = list(get_messages(response.wsgi_request))
     assert len(messages) == 1
