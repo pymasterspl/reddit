@@ -37,6 +37,7 @@ def test_add_fieldsets(model_admin: admin.ModelAdmin) -> None:
             {
                 "classes": ("wide",),
                 "fields": (
+                    "nickname",
                     "email",
                     "first_name",
                     "last_name",
