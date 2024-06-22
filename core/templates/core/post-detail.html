@@ -40,20 +40,21 @@
             </div>
             <button class="btn btn-sm btn-primary mb-3" onclick="toggleForm('postCommentForm')">Add Comment</button>
             <div id="postCommentForm" class="hidden">
-            <div class="card bg-dark shadow-sm text-light p-3 mb-3">
-                <form method="post" action="">
-                    {% csrf_token %}
-                    {% if form.non_field_errors %}
-                        <div class="alert alert-danger" role="alert">
-                            {% for err in form.non_field_errors %}
-                                <p class="form-error">{{ err }}</p>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                    {{ form|crispy }}
-                    <button class="btn btn-sm btn-success" type="submit">Submit</button>
-                </form>
-            </div></div>
+                <div class="card bg-dark shadow-sm text-light p-3 mb-3">
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger" role="alert">
+                                {% for err in form.non_field_errors %}
+                                    <p class="form-error">{{ err }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {{ form|crispy }}
+                        <button class="btn btn-sm btn-success" type="submit">Submit</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 

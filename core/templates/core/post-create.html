@@ -8,13 +8,8 @@
     {% if form.errors %}
     <div class="alert alert-danger" role="alert">
         <ul class="mb-0">
-            {% for field in form %}
-            {% for error in field.errors %}
-            <li>{{ error }}</li>
-            {% endfor %}
-            {% endfor %}
             {% for error in form.non_field_errors %}
-            <li>{{ error }}</li>
+                <li>{{ error }}</li>
             {% endfor %}
         </ul>
     </div>
@@ -37,9 +32,9 @@
             <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
             {{ form.title }}
             {% for error in form.title.errors %}
-            <div class="invalid-feedback d-block">
-                {{ error }}
-            </div>
+                <div class="invalid-feedback d-block">
+                    {{ error }}
+                </div>
             {% endfor %}
         </div>
 
