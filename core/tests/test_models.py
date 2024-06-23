@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 
 import pytest
@@ -234,7 +235,7 @@ def test_get_saved_posts(user: User, post: Post) -> None:
 @pytest.mark.django_db()
 def test_create_community() -> None:
     user = User.objects.create_user(email="testuser@example.com", nickname="Test Nickname",
-                                    password=config("TEST_PASSWORD"))
+                                    password=os.getenv("TEST_PASSWORD"))
     community = Community.objects.create(name="Test Community", author=user)
 
     assert community.name == "Test Community"
