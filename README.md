@@ -133,7 +133,7 @@ This is how to use formatter:
 ruff format                   # Format all files in the current directory.
 ruff format path/to/code/     # Format all files in `path/to/code` (and any subdirectories).
 ruff format path/to/file.py   # Format a single file.
-ruff format --check           # Reports if there are differences between current and in future formatted files.
+ruff format --check           # Checks if formatting is proper and reports violations. Does not change files.
 ```
 
 More at:
