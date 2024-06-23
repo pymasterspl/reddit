@@ -33,6 +33,7 @@ def test_registration_view(client: Client) -> None:
 
 @pytest.mark.django_db()
 def test_activate_user_view(client: Client) -> None:
+
     password = fake.password()
     user = User.objects.create_user(nickname="testnickname",
                                     email="testuser@example.com",
