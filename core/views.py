@@ -110,7 +110,7 @@ class CommunityCreateView(LoginRequiredMixin, CreateView):
         CommunityMember.objects.create(
             community=self.object,
             user=self.request.user,
-            role=CommunityMember.ADMIN
+            role=CommunityMember.ADMIN,
         )
         return response
 

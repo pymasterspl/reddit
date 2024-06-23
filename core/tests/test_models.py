@@ -230,7 +230,7 @@ def test_get_saved_posts(user: User, post: Post) -> None:
     assert not saved_posts.exists()
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_create_community():
     user = User.objects.create_user(email="testuser@example.com", nickname="Test Nickname", password="testpass")
     community = Community.objects.create(name="Test Community", author=user)
