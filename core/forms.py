@@ -47,7 +47,7 @@ class CommunityForm(forms.ModelForm):
         model = Community
         fields: typing.ClassVar = ["name"]
 
-    def __init__(self: "CommentForm", *args: list, **kwargs: dict) -> None:
+    def __init__(self: "CommunityForm", *args: list, **kwargs: dict) -> None:
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = "post"
