@@ -1,5 +1,4 @@
 from django import forms
-from django.utils.text import slugify
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 
@@ -26,10 +25,3 @@ class CommunityForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.add_input(Submit('submit', 'Create Community'))
-
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-        instance.slug = slugify(instance.name)
-        if commit:
-            instance.save()
-        return instance
