@@ -1,13 +1,14 @@
 from django.urls import path
 
 from .views import (
-        CommunityCreateView,
-        CommunityDetailView,
-        CommunityListView,
-        PostDetailView,
-        PostListView,
-        PostSaveView,
-        PostVoteView, PostCreateView,
+    CommunityCreateView,
+    CommunityDetailView,
+    CommunityListView,
+    PostCreateView,
+    PostDetailView,
+    PostListView,
+    PostSaveView,
+    PostVoteView,
 )
 
 urlpatterns = [

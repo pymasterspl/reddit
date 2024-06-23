@@ -1,6 +1,5 @@
-from typing import ClassVar
-
 import typing
+from typing import ClassVar
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit

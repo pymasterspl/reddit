@@ -11,8 +11,8 @@ from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView
 
-from .forms import CommentForm, PostForm, CommunityForm
-from .models import Community, Post, PostVote, SavedPost, CommunityMember
+from .forms import CommentForm, CommunityForm, PostForm
+from .models import Community, CommunityMember, Post, PostVote, SavedPost
 
 
 class PostListView(ListView):
