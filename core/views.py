@@ -47,11 +47,7 @@ class PostDetailView(DetailView):
         if form.is_valid():
             parent_id = form.cleaned_data.get("parent_id")
             content = form.cleaned_data.get("content")
-            Post.objects.create(
-                parent_id=parent_id,
-                community=post.community,
-                content=content,
-                author=request.user)
+            Post.objects.create(parent_id=parent_id, community=post.community, content=content, author=request.user)
             return redirect(reverse_lazy("post-detail", kwargs={"pk": pk}))
 
         comments = post.get_comments()
