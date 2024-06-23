@@ -64,3 +64,14 @@ def post(user: User, community: Community) -> Generator[Post, None, None]:
         title="Test Post",
         content="This is a test post",
     )
+
+
+@pytest.fixture()
+def comment(user: User, post: Post) -> Generator[Post, None, None]:
+    return Post.objects.create(
+        author=user,
+        community=post.community,
+        title="Test comment",
+        content="This is a test comment",
+        parent=post,
+    )

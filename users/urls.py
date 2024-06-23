@@ -2,7 +2,14 @@ from django.contrib.auth import views as auth_views
 from django.urls import path
 from django.views.generic import TemplateView
 
-from .views import CustomLogoutView, HomeView, LoginUserView, ProfileSettingsView, UserRegistrationView
+from .views import (
+    AccountSettingsView,
+    CustomLogoutView,
+    HomeView,
+    LoginUserView,
+    ProfileSettingsView,
+    UserRegistrationView,
+)
 
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
@@ -31,4 +38,5 @@ urlpatterns = [
         name="password_reset_complete",
     ),
     path("settings/profile/", ProfileSettingsView.as_view(), name="profile_settings"),
+    path("settings/account/", AccountSettingsView.as_view(), name="account_settings"),
 ]

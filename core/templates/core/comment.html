@@ -1,0 +1,8 @@
+{% include 'core/post-header.html' with post=comment %}
+
+<div class="card-body">
+    {{ comment.content }}
+    <!-- TODO: add post image handling -->
+</div>
+
+{% include 'core/post-footer.html' with post=comment %}

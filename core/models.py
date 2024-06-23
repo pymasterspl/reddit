@@ -14,12 +14,20 @@ from django.utils import timezone
 User = get_user_model()
 
 
+class ActiveOnlyManager(models.Manager):
+    def get_queryset(self: "ActiveOnlyManager") -> models.QuerySet:
+        return super().get_queryset().filter(is_active=True)
+
+
 class GenericModel(models.Model):
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     is_active = models.BooleanField(default=True)
     is_locked = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    all_objects = models.Manager()
+    objects = ActiveOnlyManager()
 
     class Meta:
         abstract = True
@@ -71,7 +79,7 @@ class Post(GenericModel):
         blank=True,
         null=True,
         on_delete=models.CASCADE,
-        related_query_name="children",
+        related_name="children",
     )
     up_votes = models.IntegerField(default=0)
     down_votes = models.IntegerField(default=0)
@@ -131,6 +139,27 @@ class Post(GenericModel):
 
     def update_display_counter(self: "Post") -> None:
         Post.objects.filter(pk=self.pk).update(display_counter=F("display_counter") + 1)
+
+    @property
+    def children_count(self: "Post") -> int:
+        def count_descendants(post: "Post") -> int:
+            children = post.children.all()
+            total_children = children.count()
+            for child in children:
+                total_children += count_descendants(child)
+            return total_children
+
+        return count_descendants(self)
+
+    def is_saved(self: "Post", user: User) -> bool:
+        return SavedPost.objects.filter(user=user, post=self).exists()
+
+    def get_comments(self: "Post") -> models.QuerySet:
+        return self.children.all()
+
+    def get_comment_form(self: "Post") -> any:
+        from .forms import CommentForm
+        return CommentForm(initial={"parent_id": self.pk})
 
 
 class PostVote(models.Model):

@@ -66,6 +66,9 @@ class User(AbstractUser):
     email: str = models.EmailField(unique=True)
     last_activity = models.DateTimeField(auto_now_add=True, db_index=True)
 
+    def __str__(self: "User") -> str:
+        return self.nickname
+
     def update_last_activity(self: "User") -> None:
         User.objects.filter(pk=self.pk).update(last_activity=timezone.now())
 

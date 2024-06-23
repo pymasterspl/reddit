@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+{% endblock %}
+
+{% block content %}
+<style>
+.hidden {
+    display: none;
+}
+</style>
+<script>
+    function toggleForm(formId) {
+        var form = document.getElementById(formId);
+        if (form.classList.contains('hidden')) {
+            form.classList.remove('hidden');
+        } else {
+        form.classList.add('hidden');
+        }
+    }
+</script>
+<div class="container">
+    <div class="d-flex justify-content-center text-light">
+        <div class="mx-auto col-10 col-md-8 col-lg-8 mt-lg-3">
+            <div class="card bg-dark shadow-sm mb-3 text-light">
+
+                {% include 'core/post-header.html' with post=post %}
+
+                <div class="card-body">
+                    <h3 class="h3">{{ post.title }}</h3>
+                    {{ post.content }}
+                    <!-- TODO: add post image handling -->
+                </div>
+
+                {% include 'core/post-footer.html' with post=post %}
+
+            </div>
+            <button class="btn btn-sm btn-primary mb-3" onclick="toggleForm('postCommentForm')">Add Comment</button>
+            <div id="postCommentForm" class="hidden">
+                <div class="card bg-dark shadow-sm text-light p-3 mb-3">
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger" role="alert">
+                                {% for err in form.non_field_errors %}
+                                    <p class="form-error">{{ err }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {{ form|crispy }}
+                        <button class="btn btn-sm btn-success" type="submit">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMMENTS -->
+    <div class="d-flex justify-content-center text-light">
+        <div class="mx-auto col-10 col-md-8 col-lg-8">
+            <h3 class="mt-2">Comments:</h3>
+            {% include 'core/comments_tree.html' with comments=comments %}
+        </div>
+    </div>
+</div>
+{% endblock content %}
