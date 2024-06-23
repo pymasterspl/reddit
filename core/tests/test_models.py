@@ -2,7 +2,6 @@ import os
 from datetime import timedelta
 
 import pytest
-from decouple import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
