@@ -7,12 +7,12 @@ from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView
 
-from .forms import CommentForm, CommunityForm
-from .models import Community, CommunityMember, Post, PostVote, SavedPost
+from .forms import CommentForm, PostForm, CommunityForm
+from .models import Community, Post, PostVote, SavedPost, CommunityMember
 
 
 class PostListView(ListView):
@@ -62,6 +62,31 @@ class PostDetailView(DetailView):
         }
         html_content = render_to_string(self.template_name, context)
         return HttpResponse(html_content)
+
+
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = "core/post-create.html"
+    login_url = "login"
+
+    def get_form_kwargs(self: "PostCreateView") -> dict[str, any]:
+        kwargs = super().get_form_kwargs()
+        kwargs["initial"] = {"community": None}
+        kwargs["user"] = self.request.user
+        return kwargs
+
+    def form_valid(self: "PostCreateView", form: PostForm) -> HttpResponse:
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+    def get_context_data(self: "PostCreateView", **kwargs: any) -> dict[str, any]:
+        context = super().get_context_data(**kwargs)
+        context["communities"] = Community.objects.filter(is_active=True)
+        return context
+
+    def get_success_url(self: "PostCreateView") -> str:
+        return reverse("post-detail", kwargs={"pk": self.object.pk})
 
 
 class PostVoteView(LoginRequiredMixin, View):

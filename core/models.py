@@ -1,7 +1,7 @@
 import hashlib
 import re
 from datetime import timedelta
-from typing import TYPE_CHECKING, ClassVar, Any
+from typing import ClassVar
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
