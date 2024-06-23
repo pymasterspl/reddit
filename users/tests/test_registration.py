@@ -20,10 +20,10 @@ def test_registration_page_loads_correctly(client: Client, register_url: str) ->
 
 @pytest.mark.django_db()
 def test_registration_form_valid_data(
-        client: Client,
-        user_model: type[User],
-        generated_password: str,
-        register_url: str,
+    client: Client,
+    user_model: type[User],
+    generated_password: str,
+    register_url: str,
 ) -> None:
     data: dict = {
         "email": "testuser@example.com",
@@ -60,11 +60,11 @@ def test_registration_form_missing_data(client: Client, user_model: type[User], 
 
 @pytest.mark.django_db()
 def test_registration_form_user_already_exist(
-        client: Client,
-        user_model: type[User],
-        user: User,
-        register_url: str,
-        generated_password: str,
+    client: Client,
+    user_model: type[User],
+    user: User,
+    register_url: str,
+    generated_password: str,
 ) -> None:
     data: dict = {
         "email": user.email,

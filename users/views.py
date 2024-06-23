@@ -27,7 +27,6 @@ class UserRegistrationView(FormView):
     redirect_authenticated_user = True
     success_url = reverse_lazy("home-page")
 
-
     def form_valid(self: "UserRegistrationView", form: UserRegistrationForm) -> HttpResponse:
         form.save()
         email = form.cleaned_data.get("email")
@@ -51,4 +50,3 @@ class ProfileSettingsView(TemplateView):
 class AccountSettingsView(TemplateView):
     # Work on this view is in progress
     template_name = "users/account_settings.html"
-
