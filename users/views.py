@@ -50,4 +50,3 @@ class ProfileSettingsView(TemplateView):
 class AccountSettingsView(TemplateView):
     # Work on this view is in progress
     template_name = "users/account_settings.html"
-
