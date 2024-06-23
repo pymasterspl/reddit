@@ -1,3 +1,5 @@
+import typing
+
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
@@ -16,11 +18,12 @@ class CommentForm(forms.Form):
 
 
 class CommunityForm(forms.ModelForm):
+
     class Meta:
         model = Community
-        fields = ["name"]
+        fields: typing.ClassVar = ["name"]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self: "CommentForm", *args: list, **kwargs: dict) -> None:
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = "post"

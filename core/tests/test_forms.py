@@ -6,7 +6,7 @@ from core.models import Community
 
 
 @pytest.mark.django_db()
-def test_community_form():
+def test_community_form() ->None:
     form_data = {
         "name": "Test Community",
     }

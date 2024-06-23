@@ -104,7 +104,7 @@ class CommunityCreateView(LoginRequiredMixin, CreateView):
     form_class = CommunityForm
     template_name = "core/community-create.html"
 
-    def form_valid(self, form: forms.ModelForm) -> HttpResponseRedirect:
+    def form_valid(self: "CommunityCreateView", form: forms.ModelForm) -> HttpResponseRedirect:
         form.instance.author = self.request.user
         response = super().form_valid(form)
         CommunityMember.objects.create(
@@ -114,7 +114,7 @@ class CommunityCreateView(LoginRequiredMixin, CreateView):
         )
         return response
 
-    def get_success_url(self) -> str:
+    def get_success_url(self: "CommunityCreateView") -> str:
         return reverse_lazy("community-detail", kwargs={"slug": self.object.slug})
 
 
@@ -123,5 +123,5 @@ class CommunityDetailView(DetailView):
     template_name = "core/community-detail.html"
     context_object_name = "community"
 
-    def get_object(self) -> Community:
+    def get_object(self: "CommunityDetailView") -> Community:
         return Community.objects.get(slug=self.kwargs["slug"])

@@ -1,7 +1,7 @@
 import hashlib
 import re
 from datetime import timedelta
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -13,6 +13,9 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 User = get_user_model()
+
+if TYPE_CHECKING:
+    from .forms import CommentForm
 
 
 class ActiveOnlyManager(models.Manager):
@@ -46,7 +49,7 @@ class Community(GenericModel):
     def __str__(self: "Community") -> str:
         return str(self.name)
 
-    def save(self, *args, **kwargs):
+    def save(self: "Community", *args: list, **kwargs: dict) -> None:
         if not self.slug:
             self.slug = slugify(self.name)
             counter = 1
@@ -170,7 +173,7 @@ class Post(GenericModel):
     def get_comments(self: "Post") -> models.QuerySet:
         return self.children.all()
 
-    def get_comment_form(self: "Post"):
+    def get_comment_form(self: "Post") -> "CommentForm":
         from .forms import CommentForm
         return CommentForm(initial={"parent_id": self.pk})
 
