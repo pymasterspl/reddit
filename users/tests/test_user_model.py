@@ -46,7 +46,10 @@ def test_create_superuser_missing_email(generated_password: str) -> None:
 def test_create_superuser_not_staff(generated_password: str) -> None:
     with pytest.raises(ValueError, match="Superuser must have is_staff=True."):
         User.objects.create_superuser(
-            email="admin@example.com", nickname="admin", password=generated_password, is_staff=False,
+            email="admin@example.com",
+            nickname="admin",
+            password=generated_password,
+            is_staff=False,
         )
 
 
@@ -54,7 +57,10 @@ def test_create_superuser_not_staff(generated_password: str) -> None:
 def test_create_superuser_not_superuser(generated_password: str) -> None:
     with pytest.raises(ValueError, match="Superuser must have is_superuser=True."):
         User.objects.create_superuser(
-            email="admin@example.com", nickname="admin", password=generated_password, is_superuser=False,
+            email="admin@example.com",
+            nickname="admin",
+            password=generated_password,
+            is_superuser=False,
         )
 
 
@@ -62,4 +68,3 @@ def test_login_user_view_get(client: Client) -> None:
     response = client.get(reverse_lazy("login"))
     assert response.status_code == HTTP_SUCCESS
     assert b"Log in" in response.content
-

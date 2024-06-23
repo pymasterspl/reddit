@@ -9,7 +9,7 @@ User = get_user_model()
 
 @pytest.mark.django_db()
 def test_password_reset_view(
-        client: Client,
+    client: Client,
 ) -> None:
     url = reverse("reset_password")
     response = client.get(url)
@@ -19,8 +19,8 @@ def test_password_reset_view(
 
 @pytest.mark.django_db()
 def test_password_reset_not_send_email(
-        client: Client,
-        user: type[User],
+    client: Client,
+    user: type[User],
 ) -> None:
     wrong_email = "wrong@example.com"
     url = reverse("reset_password")
@@ -31,8 +31,8 @@ def test_password_reset_not_send_email(
 
 @pytest.mark.django_db()
 def test_password_reset_send_email(
-        client: Client,
-        user: type[User],
+    client: Client,
+    user: type[User],
 ) -> None:
     url = reverse("reset_password")
     response = client.post(url, {"email": user.email})
@@ -42,8 +42,8 @@ def test_password_reset_send_email(
 
 @pytest.mark.django_db()
 def test_password_reset_twice_send_email(
-        client: Client,
-        user: type[User],
+    client: Client,
+    user: type[User],
 ) -> None:
     url = reverse("reset_password")
     response = client.post(url, {"email": user.email})
@@ -57,9 +57,9 @@ def test_password_reset_twice_send_email(
 
 @pytest.mark.django_db()
 def test_password_first_wrong_mail_and_second_correct(
-        client: Client,
-        generated_password: str,
-        user: type[User],
+    client: Client,
+    generated_password: str,
+    user: type[User],
 ) -> None:
     wrong_email = "wrong@example.com"
     url = reverse("reset_password")
