@@ -1,4 +1,3 @@
-import os
 from datetime import timedelta
 
 import pytest
@@ -232,7 +231,7 @@ def test_get_saved_posts(user: User, post: Post) -> None:
 
 
 @pytest.mark.django_db()
-def test_create_community(user) -> None:
+def test_create_community(user: object) -> None:
     community = Community.objects.create(name="Test Community", author=user)
 
     assert community.name == "Test Community"
