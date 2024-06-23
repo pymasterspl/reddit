@@ -11,8 +11,6 @@ from django.db import models
 from django.db.models import F
 from django.utils import timezone
 
-from core.forms import CommentForm
-
 User = get_user_model()
 
 
@@ -159,7 +157,8 @@ class Post(GenericModel):
     def get_comments(self: "Post") -> models.QuerySet:
         return self.children.all()
 
-    def get_comment_form(self: "Post") -> CommentForm:
+    def get_comment_form(self: "Post") -> any:
+        from .forms import CommentForm
         return CommentForm(initial={"parent_id": self.pk})
 
 
