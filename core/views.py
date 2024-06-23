@@ -12,7 +12,7 @@ from django.views import View
 from django.views.generic import CreateView, DetailView, ListView
 
 from .forms import CommentForm, CommunityForm
-from .models import Post, PostVote, SavedPost, Community, CommunityMember
+from .models import Community, CommunityMember, Post, PostVote, SavedPost
 
 
 class PostListView(ListView):

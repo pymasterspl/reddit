@@ -37,7 +37,7 @@ class GenericModel(models.Model):
 class Community(GenericModel):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
-    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='authored_communities')
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="authored_communities")
     members = models.ManyToManyField(User, through="CommunityMember", related_name="communities")
 
     class Meta:
