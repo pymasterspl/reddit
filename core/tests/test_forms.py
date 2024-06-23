@@ -1,13 +1,14 @@
 import pytest
 from django.utils.text import slugify
+
 from core.forms import CommunityForm
 from core.models import Community
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_community_form():
     form_data = {
-        "name": "Test Community"
+        "name": "Test Community",
     }
 
     form = CommunityForm(data=form_data)
@@ -18,8 +19,6 @@ def test_community_form():
 
     expected_slug = slugify(form_data["name"])
     assert community.slug == expected_slug
-
-    community.save()
 
     assert community.name == "Test Community"
 
