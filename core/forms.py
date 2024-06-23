@@ -5,6 +5,16 @@ from django import forms
 from .models import Community, Post
 
 
+class CommentForm(forms.Form):
+    content = forms.CharField(label="Add a comment", required=True, widget=forms.Textarea(
+        attrs={
+            "rows": 3,
+            "class": "form-control bg-dark text-light",
+        },
+    ))
+    parent_id = forms.IntegerField(required=True, widget=forms.HiddenInput)
+
+
 class PostForm(forms.ModelForm):
     user: forms.models.BaseModelForm | None
 
@@ -23,13 +33,3 @@ class PostForm(forms.ModelForm):
         self.fields["community"].queryset = Community.objects.filter(is_active=True)
         self.fields["title"].required = True
         self.fields["content"].required = True
-
-
-class CommentForm(forms.Form):
-    content = forms.CharField(label="Add a comment", required=True, widget=forms.Textarea(
-        attrs={
-            "rows": 3,
-            "class": "form-control bg-dark text-light",
-        },
-    ))
-    parent_id = forms.IntegerField(required=True, widget=forms.HiddenInput)
