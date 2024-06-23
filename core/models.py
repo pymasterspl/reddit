@@ -170,7 +170,7 @@ class Post(GenericModel):
     def get_comments(self: "Post") -> models.QuerySet:
         return self.children.all()
 
-    def get_comment_form(self: "Post") -> Any:
+    def get_comment_form(self: "Post") -> any:
         from .forms import CommentForm
         return CommentForm(initial={"parent_id": self.pk})
 
