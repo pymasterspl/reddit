@@ -1,7 +1,7 @@
 import hashlib
 import re
 from datetime import timedelta
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, Any
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -13,9 +13,6 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 User = get_user_model()
-
-if TYPE_CHECKING:
-    from .forms import CommentForm
 
 
 class ActiveOnlyManager(models.Manager):
@@ -173,7 +170,7 @@ class Post(GenericModel):
     def get_comments(self: "Post") -> models.QuerySet:
         return self.children.all()
 
-    def get_comment_form(self: "Post") -> "CommentForm":
+    def get_comment_form(self: "Post") -> Any:
         from .forms import CommentForm
         return CommentForm(initial={"parent_id": self.pk})
 
