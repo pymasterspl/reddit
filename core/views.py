@@ -1,9 +1,10 @@
 from typing import Any
 
+from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
 from django.db.models import QuerySet
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
@@ -93,17 +94,17 @@ class PostSaveView(LoginRequiredMixin, View):
 
 class CommunityListView(ListView):
     model = Community
-    template_name = 'core/community-list.html'
-    context_object_name = 'communities'
+    template_name = "core/community-list.html"
+    context_object_name = "communities"
     paginate_by = 10
 
 
 class CommunityCreateView(LoginRequiredMixin, CreateView):
     model = Community
     form_class = CommunityForm
-    template_name = 'core/community-create.html'
+    template_name = "core/community-create.html"
 
-    def form_valid(self, form):
+    def form_valid(self, form: forms.ModelForm) -> HttpResponseRedirect:
         form.instance.author = self.request.user
         response = super().form_valid(form)
         CommunityMember.objects.create(
@@ -113,14 +114,14 @@ class CommunityCreateView(LoginRequiredMixin, CreateView):
         )
         return response
 
-    def get_success_url(self):
-        return reverse_lazy('community-detail', kwargs={'slug': self.object.slug})
+    def get_success_url(self) -> str:
+        return reverse_lazy("community-detail", kwargs={"slug": self.object.slug})
 
 
 class CommunityDetailView(DetailView):
     model = Community
-    template_name = 'core/community-detail.html'
-    context_object_name = 'community'
+    template_name = "core/community-detail.html"
+    context_object_name = "community"
 
-    def get_object(self):
-        return Community.objects.get(slug=self.kwargs['slug'])
+    def get_object(self) -> Community:
+        return Community.objects.get(slug=self.kwargs["slug"])

@@ -232,9 +232,9 @@ def test_get_saved_posts(user: User, post: Post) -> None:
 
 @pytest.mark.django_db
 def test_create_community():
-    user = User.objects.create_user(email='testuser@example.com', nickname='Test Nickname', password='testpass')
-    community = Community.objects.create(name='Test Community', author=user)
+    user = User.objects.create_user(email="testuser@example.com", nickname="Test Nickname", password="testpass")
+    community = Community.objects.create(name="Test Community", author=user)
 
-    assert community.name == 'Test Community'
+    assert community.name == "Test Community"
     assert community.author == user
-    assert community.slug == 'test-community'
+    assert community.slug == "test-community"

@@ -7,7 +7,7 @@ from core.models import Community
 @pytest.mark.django_db
 def test_community_form():
     form_data = {
-        'name': 'Test Community'
+        "name": "Test Community"
     }
 
     form = CommunityForm(data=form_data)
@@ -16,13 +16,13 @@ def test_community_form():
 
     community = form.save(commit=True)
 
-    expected_slug = slugify(form_data['name'])
+    expected_slug = slugify(form_data["name"])
     assert community.slug == expected_slug
 
     community.save()
 
-    assert community.name == 'Test Community'
+    assert community.name == "Test Community"
 
-    community_from_db = Community.objects.get(name='Test Community')
+    community_from_db = Community.objects.get(name="Test Community")
     assert community_from_db is not None
     assert community_from_db.slug == expected_slug
