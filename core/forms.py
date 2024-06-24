@@ -1,5 +1,8 @@
+import typing
 from typing import ClassVar
 
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Submit
 from django import forms
 
 from .models import Community, Post
@@ -37,3 +40,15 @@ class PostForm(forms.ModelForm):
         self.fields["community"].queryset = Community.objects.filter(is_active=True)
         self.fields["title"].required = True
         self.fields["content"].required = True
+
+
+class CommunityForm(forms.ModelForm):
+    class Meta:
+        model = Community
+        fields: typing.ClassVar = ["name"]
+
+    def __init__(self: "CommunityForm", *args: list, **kwargs: dict) -> None:
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_method = "post"
+        self.helper.add_input(Submit("submit", "Create Community"))

@@ -1,6 +1,15 @@
 from django.urls import path
 
-from .views import PostCreateView, PostDetailView, PostListView, PostSaveView, PostVoteView
+from .views import (
+    CommunityCreateView,
+    CommunityDetailView,
+    CommunityListView,
+    PostCreateView,
+    PostDetailView,
+    PostListView,
+    PostSaveView,
+    PostVoteView,
+)
 
 urlpatterns = [
     path("post-list/", PostListView.as_view(), name="post-list"),
@@ -8,4 +17,7 @@ urlpatterns = [
     path("post-create/", PostCreateView.as_view(), name="post-create"),
     path("post/<int:pk>/vote/<str:vote_type>/", PostVoteView.as_view(), name="post-vote"),
     path("post/<int:pk>/action/<str:action_type>/", PostSaveView.as_view(), name="post-save-unsave"),
+    path("communities/", CommunityListView.as_view(), name="community-list"),
+    path("community/create/", CommunityCreateView.as_view(), name="community-create"),
+    path("community/<slug:slug>/", CommunityDetailView.as_view(), name="community-detail"),
 ]
