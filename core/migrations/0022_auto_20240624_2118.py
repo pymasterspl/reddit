@@ -27,16 +27,6 @@ def slugify_name(apps, schema_editor):
             community.save()
 
 
-def unique_slugify(community, slug):
-    Community = community.__class__
-    unique_slug = slug
-    counter = 1
-    while Community.objects.filter(slug=unique_slug).exists():
-        unique_slug = f"{slug}-{counter}"
-        counter += 1
-    return unique_slug
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
