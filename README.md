@@ -117,7 +117,7 @@ python manage.py loaddata {fixture_name}.json
 
 Open web browser and navigate to localhost address:  http://127.0.0.1:8000/ 
 
-#### Cnnecting gmail to the application
+#### Connecting gmail to the application
 
 To enable registration on the site, you must provide your e-mail data. There are two ways
 
