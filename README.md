@@ -117,6 +117,36 @@ python manage.py loaddata {fixture_name}.json
 
 Open web browser and navigate to localhost address:  http://127.0.0.1:8000/ 
 
+#### Cnnecting gmail to the application
+
+To enable registration on the site, you must provide your e-mail data. There are two ways
+
+In the env file you need to set these fields
+
+1. First possibility.
+
+   ```
+   EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+   EMAIL_HOST = 'smtp.gmail.com'
+   EMAIL_HOST_PORT = 587
+   EMAIL_HOST_USER = 'your_name_email@gmail.com'
+   EMAIL_HOST_PASSWORD = 'your_password'
+   EMAIL_USE_TLS = True
+   ```
+2.  Second possibility.
+
+      You can generate a token for your account instead of entering your password.
+   
+
+   ```
+  * The first thing you need to do is go to https://myaccount.google.com/security
+  * Activate two-step verification via this link https://myaccount.google.com/signinoptions/twosv
+  * Then we return to the website https://myaccount.google.com in the input we enter app passwords or in Polish veriosn "hasła do aplikacji" ( it depends on the language setting on your account )
+  * after entering a given view, you must enter the password from your Gmail, then enter the name of this code.
+  * Gmail returns you the code that you dig into the application in the place.
+  * Place this code instead of the password -> EMAIL_HOST_PASSWORD.
+   ```
+
 ### Ruff formatting and linting
 
 This is how we use linter:
