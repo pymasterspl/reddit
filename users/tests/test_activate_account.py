@@ -13,6 +13,7 @@ from users.tokens import account_activation_token
 User = get_user_model()
 fake = Faker()
 
+
 @pytest.mark.django_db()
 def test_registration_view(client: Client) -> None:
     url = reverse("register")
@@ -33,19 +34,15 @@ def test_registration_view(client: Client) -> None:
 
 @pytest.mark.django_db()
 def test_activate_user_view(client: Client) -> None:
-
     password = fake.password()
-    user = User.objects.create_user(nickname="testnickname",
-                                    email="testuser@example.com",
-                                    password=password)
+    user = User.objects.create_user(nickname="testnickname", email="testuser@example.com", password=password)
     user.is_active = False
     user.save()
 
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = account_activation_token.make_token(user)
 
-    activation_url = reverse("activate-account",
-                             kwargs={"uidb64": uid, "token": token})
+    activation_url = reverse("activate-account", kwargs={"uidb64": uid, "token": token})
     response = client.get(activation_url)
 
     assert response.status_code == 302

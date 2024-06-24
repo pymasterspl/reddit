@@ -46,25 +46,26 @@ class UserRegistrationView(FormView):
         token = account_activation_token.make_token(user)
         protocol = "https" if self.request.is_secure() else "http"
         current_site = get_current_site(self.request)
-        activation_link = reverse("activate-account",
-                                  kwargs={"uidb64": uid, "token": token})
+        activation_link = reverse("activate-account", kwargs={"uidb64": uid, "token": token})
         full_activation_link = f"{protocol}://{current_site.domain}{activation_link}"
         send_mail(
             "Confirm your registration",
-            f"Please click on the following link to confirm your registration "
-            f"{activation_link}",
+            f"Please click on the following link to confirm your registration " f"{activation_link}",
             settings.EMAIL_HOST_USER,
             [user.email],
             fail_silently=False,
-            html_message=render_to_string("users/account_activation_email.html",
-                                          {
-                "user": user,
-                "activation_link": full_activation_link,
-            }),
+            html_message=render_to_string(
+                "users/account_activation_email.html",
+                {
+                    "user": user,
+                    "activation_link": full_activation_link,
+                },
+            ),
         )
-        messages.success(self.request, f"Account created for {user.email}! "
-                                       f"Please confirm your email to activate "
-                                       f"your account.")
+        messages.success(
+            self.request,
+            f"Account created for {user.email}! " f"Please confirm your email to activate " f"your account.",
+        )
         return super().form_valid(form)
 
 
@@ -77,17 +78,14 @@ class CustomLogoutView(LogoutView):
 
 
 class ActivateUser(View):
-
-    def get(self: "ActivateUser", request: HttpRequest, uidb64: str, token: str) -> \
-            HttpResponse:
+    def get(self: "ActivateUser", request: HttpRequest, uidb64: str, token: str) -> HttpResponse:
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid, is_active=False)
             if account_activation_token.check_token(user, token):
                 user.is_active = True
                 user.save()
-                messages.success(request,
-                                 "Your account has been activated, you can now login!")
+                messages.success(request, "Your account has been activated, you can now login!")
 
                 return redirect("login")
             return render(request, "users/account_activation_invalid.html")
