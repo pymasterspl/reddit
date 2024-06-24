@@ -10,6 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import F
 from django.utils import timezone
+from django.utils.text import slugify
 
 User = get_user_model()
 
@@ -35,6 +36,8 @@ class GenericModel(models.Model):
 
 class Community(GenericModel):
     name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="authored_communities")
     members = models.ManyToManyField(User, through="CommunityMember", related_name="communities")
 
     class Meta:
@@ -42,6 +45,16 @@ class Community(GenericModel):
 
     def __str__(self: "Community") -> str:
         return str(self.name)
+
+    def save(self: "Community", *args: list, **kwargs: dict) -> None:
+        if not self.slug:
+            self.slug = slugify(self.name)
+            counter = 1
+            original_slug = self.slug
+            while Community.objects.filter(slug=self.slug).exists():
+                self.slug = f"{original_slug}-{counter}"
+                counter += 1
+        super().save(*args, **kwargs)
 
     def count_online_users(self: "Community") -> int:
         online_limit = timezone.now() - timedelta(minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES)
