@@ -228,3 +228,12 @@ def test_get_saved_posts(user: User, post: Post) -> None:
     assert saved_posts.first().post == post
     SavedPost.remove_saved_post(user=user, post=post)
     assert not saved_posts.exists()
+
+
+@pytest.mark.django_db()
+def test_create_community(user: object) -> None:
+    community = Community.objects.create(name="Test Community", author=user)
+
+    assert community.name == "Test Community"
+    assert community.author == user
+    assert community.slug == "test-community"

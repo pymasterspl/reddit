@@ -1,0 +1,66 @@
+{% load timesince %}
+{% load is_saved %}
+
+<div class="card-header">
+    <div class="row align-items-center">
+        <div class="col-auto">
+            <!-- TODO: Update avatar src with user avatar URL after merging feature/avatar -->
+            <img src="https://placehold.co/32x32.png"
+                 alt="{{ post.author }} avatar image"
+                 class="rounded-circle"
+                 style="width: 32px; height: 32px;">
+        </div>
+        <div class="col">
+            <div class="d-flex flex-column">
+                <!-- TODO: Update links to user public profile and community upon feature released -->
+                <div>
+                    <a href="#"
+                       class="link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-25-hover">
+                        r/{{ post.community }}
+                    </a>
+                    • <small class="text-secondary">{{ post.created_at|timesince }} ago</small>
+                </div>
+                <div>
+                    <a href="#"
+                       class="link-light link-offset-2 link-underline-opacity-0 link-opacity-75-hover link-underline-opacity-25-hover">
+                        {{ post.author.nickname }}
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-auto ms-auto">
+            <div class="dropdown bg-dark">
+                <a class="btn btn-dark" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark">
+                    <!-- TODO: Update links with User features -->
+                    <li>
+                        {% if request.user.is_authenticated %}
+                        {% if post|is_saved:request.user %}
+                        <form method="POST" class="d-none" id="unsave-form-{{ post.pk }}" action="{% url 'post-save-unsave' pk=post.pk action_type='unsave' %}?next={{ request.path }}">
+                            {% csrf_token %}
+                        </form>
+                        <a href="#" class="dropdown-item" onclick="event.preventDefault(); document.getElementById('unsave-form-{{ post.pk }}').submit();"><i class="bi bi-bookmark-fill"></i> Unsave</a>
+                        {% else %}
+                        <form method="POST" class="d-none" id="save-form-{{ post.pk }}" action="{% url 'post-save-unsave' pk=post.pk action_type='save' %}?next={{ request.path }}">
+                            {% csrf_token %}
+                        </form>
+                        <a href="#" class="dropdown-item" onclick="event.preventDefault(); document.getElementById('save-form-{{ post.pk }}').submit();"><i class="bi bi-bookmark"></i> Save</a>
+                        {% endif %}
+                        {% else %}
+                        <a href="{% url 'login' %}?next={{ request.path }}" class="dropdown-item"><i class="bi bi-bookmark"></i> Save</a>
+                        {% endif %}
+                    </li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-eye-slash"></i> Hide</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-flag"></i> Report</a></li>
+                    {% if request.user.is_authenticated %}
+                    {% if post.author == request.user %}
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-pencil-square"></i> Edit</a></li>
+                    {% endif %}
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

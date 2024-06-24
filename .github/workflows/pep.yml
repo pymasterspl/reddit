@@ -18,4 +18,9 @@ jobs:
         access_token: ${{ github.token }}
     - uses: actions/checkout@v3.2.0
     - uses: actions/checkout@v4
-    - uses: chartboost/ruff-action@v1
+    - name: Linting
+      uses: chartboost/ruff-action@v1
+    - name: Formatting Check
+      uses: chartboost/ruff-action@v1
+      with:
+        args: 'format --check'

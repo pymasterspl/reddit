@@ -54,4 +54,3 @@ def test_last_activity_ago(user: User) -> None:
     user.last_activity = timezone.now() - timedelta(days=3)
     user.save()
     assert user.last_activity_ago == "3 days ago"
-

@@ -37,6 +37,7 @@ Good reading on working with code changes and pull request is https://google.git
 
 ### Code
 
+- Use excellent Bootstrap framework for handling HTML pages https://getbootstrap.com/
 - Use class based views instead of function based views. A lot of examples and reading can be found on Jacek Blog: https://akademiait.com.pl/ and youtube: https://www.youtube.com/watch?v=2S9-pvFBlBc&ab_channel=AkademiaIT
 - for testing use pytest. Tests using Django Unit Testing will not be accepted. A lot of tests are in our previous project: https://github.com/pymasterspl/Dshop. Also please watch https://www.youtube.com/watch?v=xn3wSM82fnA&ab_channel=AkademiaIT
 - If you have questions, just ask on discord, reddit channel.
@@ -115,6 +116,29 @@ python manage.py loaddata {fixture_name}.json
 ```
 
 Open web browser and navigate to localhost address:  http://127.0.0.1:8000/ 
+
+### Ruff formatting and linting
+
+This is how we use linter:
+```bash
+ruff check                  # Lint all files in the current directory.
+ruff check --fix            # Lint all files in the current directory, and fix any fixable errors.
+ruff check --watch          # Lint all files in the current directory, and re-lint on change.
+ruff check path/to/code/    # Lint all files in `path/to/code` (and any subdirectories).
+```
+
+
+This is how to use formatter:
+```bash
+ruff format                   # Format all files in the current directory.
+ruff format path/to/code/     # Format all files in `path/to/code` (and any subdirectories).
+ruff format path/to/file.py   # Format a single file.
+ruff format --check           # Checks if formatting is proper and reports violations. Does not change files.
+```
+
+More at:
+https://docs.astral.sh/ruff/linter/
+https://docs.astral.sh/ruff/formatter/
 
 ### Usage with Docker 🐳
 For setup and running with Docker, refer to the [Docker configuration instructions](DOCKER.md).

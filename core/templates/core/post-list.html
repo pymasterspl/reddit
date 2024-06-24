@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="mx-auto col-10 col-md-8 col-lg-8 mt-lg-3">
+        <a href="{% url 'admin:core_post_add' %}" class="admin-link mb-3X">Add New Post</a>
+        {% for post in posts %}
+        <div class="card bg-dark shadow-sm mb-3 text-light border">
+            {% include 'core/post-header.html' with post=post %}
+
+            <div class="card-body text-light border">
+                <h3 class="h3 mx-5">{{ post.title }}</h3>
+                <p class="mx-5">{{ post.content|striptags|truncatechars:100 }}</p>
+            </div>
+
+            {% include 'core/post-footer.html' with post=post %}
+        </div>
+        <div class="d-flex flex-row-reverse">
+            <a href="{% url 'post-detail' post.id %}" class="button text-decoration-none h3 me-5 mb-5">Read More</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}

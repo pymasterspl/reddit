@@ -8,9 +8,16 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models import F
 from django.utils import timezone
+from django.utils.text import slugify
 
 User = get_user_model()
+
+
+class ActiveOnlyManager(models.Manager):
+    def get_queryset(self: "ActiveOnlyManager") -> models.QuerySet:
+        return super().get_queryset().filter(is_active=True)
 
 
 class GenericModel(models.Model):
@@ -20,12 +27,17 @@ class GenericModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    all_objects = models.Manager()
+    objects = ActiveOnlyManager()
+
     class Meta:
         abstract = True
 
 
 class Community(GenericModel):
     name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="authored_communities")
     members = models.ManyToManyField(User, through="CommunityMember", related_name="communities")
 
     class Meta:
@@ -33,6 +45,16 @@ class Community(GenericModel):
 
     def __str__(self: "Community") -> str:
         return str(self.name)
+
+    def save(self: "Community", *args: list, **kwargs: dict) -> None:
+        if not self.slug:
+            self.slug = slugify(self.name)
+            counter = 1
+            original_slug = self.slug
+            while Community.objects.filter(slug=self.slug).exists():
+                self.slug = f"{original_slug}-{counter}"
+                counter += 1
+        super().save(*args, **kwargs)
 
     def count_online_users(self: "Community") -> int:
         online_limit = timezone.now() - timedelta(minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES)
@@ -70,7 +92,7 @@ class Post(GenericModel):
         blank=True,
         null=True,
         on_delete=models.CASCADE,
-        related_query_name="children",
+        related_name="children",
     )
     up_votes = models.IntegerField(default=0)
     down_votes = models.IntegerField(default=0)
@@ -78,6 +100,7 @@ class Post(GenericModel):
         max_length=32,
         help_text="Hash of the title + content to prevent overwriting already saved post",
     )
+    display_counter = models.IntegerField(default=0)
 
     def __str__(self: "Post") -> str:
         return f"@{self.author}: {self.title}"
@@ -126,6 +149,31 @@ class Post(GenericModel):
 
     def get_images(self: "Post") -> models.QuerySet:
         return Image.objects.filter(post=self)
+
+    def update_display_counter(self: "Post") -> None:
+        Post.objects.filter(pk=self.pk).update(display_counter=F("display_counter") + 1)
+
+    @property
+    def children_count(self: "Post") -> int:
+        def count_descendants(post: "Post") -> int:
+            children = post.children.all()
+            total_children = children.count()
+            for child in children:
+                total_children += count_descendants(child)
+            return total_children
+
+        return count_descendants(self)
+
+    def is_saved(self: "Post", user: User) -> bool:
+        return SavedPost.objects.filter(user=user, post=self).exists()
+
+    def get_comments(self: "Post") -> models.QuerySet:
+        return self.children.all()
+
+    def get_comment_form(self: "Post") -> any:
+        from .forms import CommentForm
+
+        return CommentForm(initial={"parent_id": self.pk})
 
 
 class PostVote(models.Model):
