@@ -146,3 +146,6 @@ class CommunityDetailView(DetailView):
 
     def get_object(self: "CommunityDetailView") -> Community:
         return Community.objects.get(slug=self.kwargs["slug"])
+
+
+class PostReportView()
