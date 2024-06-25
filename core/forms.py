@@ -52,3 +52,15 @@ class CommunityForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = "post"
         self.helper.add_input(Submit("submit", "Create Community"))
+
+
+class ReportForm(forms.Form):
+    REASON_CHOICES = [
+        ('spam', 'Spam'),
+        ('harassment', 'Harassment'),
+        ('hate_speech', 'Hate Speech'),
+        ('other', 'Other'),
+    ]
+
+    reason = forms.ChoiceField(choices=REASON_CHOICES, label='Reason for reporting')
+    comments = forms.CharField(widget=forms.Textarea, required=False, label='Additional comments')
