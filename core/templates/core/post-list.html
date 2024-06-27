@@ -8,7 +8,7 @@
 {% block content %}
 <div class="container">
     <div class="mx-auto col-10 col-md-8 col-lg-8 mt-lg-3">
-        <a href="{% url 'admin:core_post_add' %}" class="admin-link mb-3X">Add New Post</a>
+        <a href="{% url 'post-create' %}" class="admin-link mb-3">Add New Post</a>
         {% for post in posts %}
         <div class="card bg-dark shadow-sm mb-3 text-light border">
             {% include 'core/post-header.html' with post=post %}
