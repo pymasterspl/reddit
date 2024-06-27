@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="d-flex justify-content-center text-light">
+        <div class="mx-auto col-10 col-md-8 col-lg-8 mt-lg-3">
+
+            <div class="card bg-dark shadow-sm mb-3 text-light">
+
+                <h1 class="h1 text-danger">Delete Post</h1>
+                <div class="card bg-dark shadow-sm mb-3 text-light border">
+                    
+                    {% include 'core/post-header.html' with post=post %}
+                    
+                    <div class="card-body text-light border">
+                        <h3 class="h3 mx-5">{{ post.title }}</h3>
+                        <p class="mx-5">{{ post.content|striptags|truncatechars:100 }}</p>
+                    </div>
+
+                    {% include 'core/post-footer.html' with post=post %}
+                    
+                </div>
+
+                <p class="text-danger">Are you sure you want to delete ?</p>
+
+                <form method="post">{% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                    <a href="{% url 'post-detail' object.pk %}">
+                        <button type="button" class="btn btn-primary">Cancel</button>
+                    </a>
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock content %}

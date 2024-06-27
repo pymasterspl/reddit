@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.views import View
-from django.views.generic import CreateView, DetailView, ListView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView
 
 from .forms import CommentForm, CommunityForm, PostForm
 from .models import Community, CommunityMember, Post, PostVote, SavedPost
@@ -82,6 +82,16 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
     def get_success_url(self: "PostCreateView") -> str:
         return reverse("post-detail", kwargs={"pk": self.object.pk})
+
+
+class PostDeleteView(DeleteView):
+    model = Post
+    template_name = "core/post-confirm-delete.html"
+    success_url = reverse_lazy("post-list")
+
+    def get_queryset(self: "PostDeleteView") -> models.QuerySet:
+        queryset = super().get_queryset()
+        return queryset.filter(author=self.request.user)
 
 
 class PostVoteView(LoginRequiredMixin, View):
