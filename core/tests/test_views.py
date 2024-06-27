@@ -115,5 +115,3 @@ def test_post_delete(client: Client, create_post: Post) -> None:
     assert "Test Post Titlex" not in str(response.content)
 
     assert not Post.objects.filter(id=post.id).exists()
-
-
