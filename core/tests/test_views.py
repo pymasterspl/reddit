@@ -45,8 +45,9 @@ def create_post(client: Client, user: User, community: Community) -> Post:
         "content": "This is a test post content.",
     }
     response = client.post(reverse("post-create"), data=data, follow=True)
-    assert response.status_code == 200, (f"Response status code was {response.status_code}, "
-                                         f"response content: {response.content}")
+    assert response.status_code == 200, (
+        f"Response status code was {response.status_code}, " f"response content: {response.content}"
+    )
     return Post.objects.get(title=data["title"])
 
 
