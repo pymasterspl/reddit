@@ -1,17 +1,18 @@
 from typing import Any
 
+from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
 from django.db.models import QuerySet
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView
 
-from .forms import CommentForm, PostForm
-from .models import Community, Post, PostVote, SavedPost
+from .forms import CommentForm, CommunityForm, PostForm
+from .models import Community, CommunityMember, Post, PostVote, SavedPost
 
 
 class PostListView(ListView):
@@ -68,7 +69,6 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     def get_form_kwargs(self: "PostCreateView") -> dict[str, any]:
         kwargs = super().get_form_kwargs()
         kwargs["initial"] = {"community": None}
-        kwargs["user"] = self.request.user
         return kwargs
 
     def form_valid(self: "PostCreateView", form: PostForm) -> HttpResponse:
@@ -110,3 +110,38 @@ class PostSaveView(LoginRequiredMixin, View):
         if next_url:
             return redirect(next_url)
         return redirect("post-detail", pk=post.id)
+
+
+class CommunityListView(ListView):
+    model = Community
+    template_name = "core/community-list.html"
+    context_object_name = "communities"
+    paginate_by = 10
+
+
+class CommunityCreateView(LoginRequiredMixin, CreateView):
+    model = Community
+    form_class = CommunityForm
+    template_name = "core/community-create.html"
+
+    def form_valid(self: "CommunityCreateView", form: forms.ModelForm) -> HttpResponseRedirect:
+        form.instance.author = self.request.user
+        response = super().form_valid(form)
+        CommunityMember.objects.create(
+            community=self.object,
+            user=self.request.user,
+            role=CommunityMember.ADMIN,
+        )
+        return response
+
+    def get_success_url(self: "CommunityCreateView") -> str:
+        return reverse_lazy("community-detail", kwargs={"slug": self.object.slug})
+
+
+class CommunityDetailView(DetailView):
+    model = Community
+    template_name = "core/community-detail.html"
+    context_object_name = "community"
+
+    def get_object(self: "CommunityDetailView") -> Community:
+        return Community.objects.get(slug=self.kwargs["slug"])

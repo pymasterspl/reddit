@@ -228,3 +228,36 @@ def test_get_saved_posts(user: User, post: Post) -> None:
     assert saved_posts.first().post == post
     SavedPost.remove_saved_post(user=user, post=post)
     assert not saved_posts.exists()
+
+
+@pytest.mark.django_db()
+def test_update_display_counter_initial(post: Post) -> None:
+    assert post.display_counter == 0
+    post.update_display_counter()
+    post.refresh_from_db()
+    assert post.display_counter == 1
+
+
+@pytest.mark.django_db()
+def test_update_display_counter_multiple_updates(post: Post) -> None:
+    assert post.display_counter == 0
+
+    post.update_display_counter()
+    post.update_display_counter()
+    post.update_display_counter()
+    post.refresh_from_db()
+    assert post.display_counter == 3
+
+    post.update_display_counter()
+    post.update_display_counter()
+    post.refresh_from_db()
+    assert post.display_counter == 5
+
+
+@pytest.mark.django_db()
+def test_create_community(user: object) -> None:
+    community = Community.objects.create(name="Test Community", author=user)
+
+    assert community.name == "Test Community"
+    assert community.author == user
+    assert community.slug == "test-community"
