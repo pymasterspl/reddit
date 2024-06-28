@@ -46,6 +46,51 @@ class UserManager(BaseUserManager):
         return self._create_user(email, nickname, password, **extra_fields)
 
 
+class UserSettings(models.Model):
+
+    # https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes
+    content_lang = models.CharField(
+        max_length= 2,
+        choices= [
+            ("en", "English")
+        ]
+    )
+   #  https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+    location = models.CharField(
+        max_length=2,
+        choices = [
+            ("US", "United States")
+        ]
+    )
+    
+    is_beta = models.BooleanField(default=False)
+    is_over_18 = models.BooleanField()
+
+    def __str__(self: "UserSettings") -> str:
+       return f"{self.user} settings"
+
+class Profile(models.Model):
+    nickname_validator = UnicodeUsernameValidator()
+    nickname = models.CharField(
+        max_length=150,
+        null=False,
+        blank=False,
+        unique=True,
+        help_text=_(
+            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
+        ),
+        validators=[nickname_validator],
+    )
+    bio = models.TextField()
+    is_nfsw_visible = models.BooleanField(default=False)
+    is_followable = models.BooleanField(default=True)
+    is_content_visible = models.BooleanField(default=True)
+    is_communities_visible = models.BooleanField(default=True)
+
+    def __str__(self: "Profile") -> str:
+        return f"{self.nickname} settings"
+
+
 class User(AbstractUser):
     nickname_validator = UnicodeUsernameValidator()
 
@@ -59,12 +104,28 @@ class User(AbstractUser):
         ),
         validators=[nickname_validator],
     )
+
+    MALE = "M"
+    FEMALE = "F"
+    NON_BINARY = "B"
+    OTHER = "O"
+
+    GENDER_CHOICES = {
+        MALE: "Male",
+        FEMALE: "Female",
+        NON_BINARY: "Non-binary",
+        OTHER: "Other"
+    }
+
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS: ClassVar[list[int]] = ["nickname"]
     objects = UserManager()
     username: None = None
     email: str = models.EmailField(unique=True)
+    gender = models.CharField(choices=GENDER_CHOICES, max_length=1)
     last_activity = models.DateTimeField(auto_now_add=True, db_index=True)
+    REQUIRED_FIELDS = ["gender"]
+    user_settings = models.OneToOneField(UserSettings, related_name="user", on_delete=models.SET_NULL, null=True)
+    profile = models.OneToOneField(Profile, related_name="user", on_delete=models.SET_NULL, null=True)
 
     def __str__(self: "User") -> str:
         return self.nickname
@@ -94,3 +155,9 @@ class User(AbstractUser):
             result = f"{delta.days} days ago"
 
         return result
+
+
+class SocialLink(models.Model):
+    name = models.CharField(max_length=150)
+    url = models.URLField()
+    user_profile = models.ForeignKey(User, on_delete=models.CASCADE)
