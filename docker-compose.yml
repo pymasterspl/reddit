@@ -2,9 +2,10 @@ version: '2.0'
 
 services:
   web:
+    image: reddit:v0
     build: .
     ports:
-      - "8000:8000"
+      - "7000:8000"
     command:
       - /bin/sh
       - '-c'
