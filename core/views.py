@@ -69,7 +69,6 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     def get_form_kwargs(self: "PostCreateView") -> dict[str, any]:
         kwargs = super().get_form_kwargs()
         kwargs["initial"] = {"community": None}
-        kwargs["user"] = self.request.user
         return kwargs
 
     def form_valid(self: "PostCreateView", form: PostForm) -> HttpResponse:
