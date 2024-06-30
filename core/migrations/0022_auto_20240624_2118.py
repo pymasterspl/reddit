@@ -9,7 +9,7 @@ def unique_slugify(Community, name):
     base_slug = slugify(name)
     unique_slug = base_slug
     counter = 1
-    while Community.objects.filter(slug=unique_slug).exists():
+    while Community.all_objects.filter(slug=unique_slug).exists():
         unique_slug = f"{base_slug}-{counter}"
         counter += 1
     return unique_slug
