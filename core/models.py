@@ -46,14 +46,18 @@ class Community(GenericModel):
     def __str__(self: "Community") -> str:
         return str(self.name)
 
+    def generate_unique_slug(self):
+        base_slug = slugify(self.name)
+        unique_slug = base_slug
+        counter = 1
+        while Community.objects.filter(slug=unique_slug).exists():
+            unique_slug = f"{base_slug}-{counter}"
+            counter += 1
+        return unique_slug
+
     def save(self: "Community", *args: list, **kwargs: dict) -> None:
         if not self.slug:
-            self.slug = slugify(self.name)
-            counter = 1
-            original_slug = self.slug
-            while Community.objects.filter(slug=self.slug).exists():
-                self.slug = f"{original_slug}-{counter}"
-                counter += 1
+            self.slug = self.generate_unique_slug()
         super().save(*args, **kwargs)
 
     def count_online_users(self: "Community") -> int:
