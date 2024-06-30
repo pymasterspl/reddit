@@ -19,7 +19,7 @@ def slugify_name(apps, schema_editor):
     Community = apps.get_model("core", "Community")
 
     with transaction.atomic():
-        for community in Community.objects.all():
+        for community in Community.all_objects.all():
             if not community.slug:
                 community.slug = unique_slugify(Community, community.name)
                 community.save()
