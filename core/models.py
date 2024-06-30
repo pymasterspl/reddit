@@ -46,7 +46,12 @@ class Community(GenericModel):
     def __str__(self: "Community") -> str:
         return str(self.name)
 
-    def generate_unique_slug(self):
+    def save(self: "Community", *args: list, **kwargs: dict) -> None:
+        if not self.slug:
+            self.slug = self.generate_unique_slug()
+        super().save(*args, **kwargs)
+
+    def generate_unique_slug(self: "Community") -> str:
         base_slug = slugify(self.name)
         unique_slug = base_slug
         counter = 1
@@ -54,11 +59,6 @@ class Community(GenericModel):
             unique_slug = f"{base_slug}-{counter}"
             counter += 1
         return unique_slug
-
-    def save(self: "Community", *args: list, **kwargs: dict) -> None:
-        if not self.slug:
-            self.slug = self.generate_unique_slug()
-        super().save(*args, **kwargs)
 
     def count_online_users(self: "Community") -> int:
         online_limit = timezone.now() - timedelta(minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES)
