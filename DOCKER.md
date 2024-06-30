@@ -6,9 +6,15 @@ To run the application within a container, Docker and docker-compose must be ins
 [Docker 🐳](https://docs.docker.com/desktop/)
 [Docker Compose 🐳](https://docs.docker.com/compose/install/)
 
+### Additional Setup for Windows Users
+To prevent line ending issues in Docker, ensure you configure Git with the following command before cloning the repository on Windows:
+```bash
+git config --global core.autocrlf input
+```
+
 ## Repository Download
 Clone the repository into a new, empty folder:
-```
+```bash
 mkdir [folderName]
 cd [folderName]
 git clone https://github.com/pymasterspl/reddit.git .
