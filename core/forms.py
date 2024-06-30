@@ -35,7 +35,6 @@ class PostForm(forms.ModelForm):
         }
 
     def __init__(self: "Post", *args: tuple, **kwargs: dict) -> None:
-        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
         self.fields["community"].queryset = Community.objects.filter(is_active=True)
         self.fields["title"].required = True
