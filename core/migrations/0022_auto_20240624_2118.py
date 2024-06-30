@@ -2,29 +2,16 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, transaction
-from django.utils.text import slugify
-
-from core.models import Community
-
-
-def unique_slugify(community, slug):
-    unique_slug = slug
-    counter = 1
-    while community.objects.filter(slug=unique_slug).exists():
-        unique_slug = f"{slug}-{counter}"
-        counter += 1
-    return unique_slug
 
 
 def slugify_name(apps, schema_editor):
-    communities = Community.objects.all()
+    Community = apps.get_model("core", "Community")
 
     with transaction.atomic():
-        for community in communities:
-            base_slug = slugify(community.name)
-            unique_slug = unique_slugify(community, base_slug)
-            community.slug = unique_slug
-            community.save()
+        for community in Community.objects.all():
+            if not community.slug:
+                community.slug = community.generate_unique_slug()
+                community.save()
 
 
 class Migration(migrations.Migration):
