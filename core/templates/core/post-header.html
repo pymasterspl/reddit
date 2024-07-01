@@ -46,17 +46,22 @@
                         <form method="POST" class="d-none" id="save-form-{{ post.pk }}" action="{% url 'post-save-unsave' pk=post.pk action_type='save' %}?next={{ request.path }}">
                             {% csrf_token %}
                         </form>
-                        <a href="#" class="dropdown-item" onclick="event.preventDefault(); document.getElementById('save-form-{{ post.pk }}').submit();"><i class="bi bi-bookmark"></i> Save</a>
+                        <a href="#" class="dropdown-item" onclick="event.preventDefault(); document.getElementById('save-form-{{ post.pk }}').submit();"><i class="bi bi-bookmark me-2"></i> Save</a>
                         {% endif %}
                         {% else %}
-                        <a href="{% url 'login' %}?next={{ request.path }}" class="dropdown-item"><i class="bi bi-bookmark"></i> Save</a>
+                        <a href="{% url 'login' %}?next={{ request.path }}" class="dropdown-item"><i class="bi bi-bookmark me-2"></i> Save</a>
                         {% endif %}
                     </li>
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-eye-slash"></i> Hide</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-flag"></i> Report</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-eye-slash me-2"></i> Hide</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-flag  me-2"></i> Report</a></li>
                     {% if request.user.is_authenticated %}
                     {% if post.author == request.user %}
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-pencil-square"></i> Edit</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-pencil-square me-2"></i> Edit</a></li>
+                    <li> <a class="dropdown-item text-danger" href="{% url 'post-delete' post.id %}">
+                            <i class="bi bi-trash3-fill me-2"></i>
+                            Delete
+                        </a>
+                    </li>
                     {% endif %}
                     {% endif %}
                 </ul>
