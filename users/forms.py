@@ -2,8 +2,16 @@ from typing import ClassVar
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.core.exceptions import ValidationError
 
 from .models import User
+
+
+def validate_avatar(file: any) -> None:
+    max_size_mb = 2
+    if file.size > max_size_mb * 1024 * 1024:
+        message = f"Avatar file size must be under {max_size_mb}MB"
+        raise ValidationError(message)
 
 
 class UserRegistrationForm(UserCreationForm):
@@ -22,6 +30,10 @@ class UserProfileForm(forms.ModelForm):
         widgets: ClassVar[dict[str, any]] = {
             "avatar": forms.FileInput(attrs={"class": "form-control"}),
         }
+
+    def __init__(self: "UserProfileForm", *args: any, **kwargs: dict) -> None:
+        super().__init__(*args, **kwargs)
+        self.fields["avatar"].validators.append(validate_avatar)
 
     def save(self: "UserProfileForm", *, commit: bool = True) -> User:
         user = super().save(commit=False)
