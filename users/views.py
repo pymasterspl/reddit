@@ -2,6 +2,7 @@ from typing import Any
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, TemplateView
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
@@ -12,12 +13,33 @@ from django.urls import reverse, reverse_lazy
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views import View
-from django.views.generic import FormView
+from django.views.generic import DetailView, FormView, UpdateView
 
 from core.models import User
 
-from .forms import UserRegistrationForm
+from .forms import UserProfileForm, UserRegistrationForm
 from .tokens import account_activation_token
+
+
+class UserProfileView(LoginRequiredMixin, DetailView):
+    model = User
+    template_name = "users/profile.html"
+    context_object_name = "user"
+    login_url = "login"
+
+    def get_object(self: "UserProfileView") -> User:
+        return self.request.user
+
+
+class UserEditView(LoginRequiredMixin, UpdateView):
+    model = User
+    form_class = UserProfileForm
+    template_name = "users/edit_profile.html"
+    success_url = reverse_lazy("profile")
+    login_url = "login"
+
+    def get_object(self: "UserEditView") -> User:
+        return self.request.user
 
 
 class HomeView(TemplateView):
