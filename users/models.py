@@ -64,7 +64,7 @@ class UserSettings(models.Model):
     )
     
     is_beta = models.BooleanField(default=False)
-    is_over_18 = models.BooleanField()
+    is_over_18 = models.BooleanField(default=False)
 
     def __str__(self: "UserSettings") -> str:
        return f"{self.user} settings"
@@ -81,7 +81,7 @@ class Profile(models.Model):
         ),
         validators=[nickname_validator],
     )
-    bio = models.TextField()
+    bio = models.TextField(default="")
     is_nfsw_visible = models.BooleanField(default=False)
     is_followable = models.BooleanField(default=True)
     is_content_visible = models.BooleanField(default=True)
@@ -92,29 +92,18 @@ class Profile(models.Model):
 
 
 class User(AbstractUser):
-    nickname_validator = UnicodeUsernameValidator()
-
-    nickname = models.CharField(
-        max_length=150,
-        null=False,
-        blank=False,
-        unique=True,
-        help_text=_(
-            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
-        ),
-        validators=[nickname_validator],
-    )
-
     MALE = "M"
     FEMALE = "F"
     NON_BINARY = "B"
     OTHER = "O"
+    NON_SPECIFIED = "N"
 
     GENDER_CHOICES = {
         MALE: "Male",
         FEMALE: "Female",
         NON_BINARY: "Non-binary",
-        OTHER: "Other"
+        OTHER: "Other",
+        NON_SPECIFIED: "Non-specified",
     }
 
     USERNAME_FIELD = "email"
@@ -125,10 +114,7 @@ class User(AbstractUser):
     last_activity = models.DateTimeField(auto_now_add=True, db_index=True)
     REQUIRED_FIELDS = ["gender"]
     user_settings = models.OneToOneField(UserSettings, related_name="user", on_delete=models.SET_NULL, null=True)
-    profile = models.OneToOneField(Profile, related_name="user", on_delete=models.SET_NULL, null=True)
-
-    def __str__(self: "User") -> str:
-        return self.nickname
+    profile = models.OneToOneField(Profile, on_delete=models.SET_NULL, null=True)
 
     def update_last_activity(self: "User") -> None:
         User.objects.filter(pk=self.pk).update(last_activity=timezone.now())
@@ -155,7 +141,17 @@ class User(AbstractUser):
             result = f"{delta.days} days ago"
 
         return result
+    
+    @property
+    def nickname(self):
+        return self.profile.nickname if self.profile else "not-yet-named"
 
+    @nickname.setter
+    def nickname(self, value):
+        if self.profile:
+            self.profile.nickname = value
+            self.profile.save()
+            
 
 class SocialLink(models.Model):
     name = models.CharField(max_length=150)

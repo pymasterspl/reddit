@@ -8,4 +8,4 @@ from .models import User
 class UserRegistrationForm(UserCreationForm):
     class Meta:
         model = User
-        fields: ClassVar[list[str]] = ["nickname", "email", "password1", "password2"]
+        fields: ClassVar[list[str]] = ["email", "password1", "password2"]
