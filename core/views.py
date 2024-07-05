@@ -84,10 +84,11 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         return reverse("post-detail", kwargs={"pk": self.object.pk})
 
 
-class PostDeleteView(DeleteView):
+class PostDeleteView(LoginRequiredMixin, DeleteView):
     model = Post
     template_name = "core/post-confirm-delete.html"
     success_url = reverse_lazy("post-list")
+    login_url = "login"
 
     def get_queryset(self: "PostDeleteView") -> models.QuerySet:
         queryset = super().get_queryset()
