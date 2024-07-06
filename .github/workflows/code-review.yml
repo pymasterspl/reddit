@@ -15,4 +15,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           openai_api_key: ${{ secrets.OPENAI_CODE_REVIEW_API_KEY }}
+          model_name: "gpt-4"
           exclude_files: '*.json, *.md, *.yml' # optionally exclude files based on a wildcard expression. 
