@@ -11,3 +11,6 @@ def test_privacy_police_view() -> None:
     response = client.get(url)
     assert response.status_code == http_ok
     assert "base.html" in [t.name for t in response.templates]
+
+
+
