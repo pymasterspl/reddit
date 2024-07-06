@@ -1,6 +1,7 @@
 name: 'code-review'
-on: # rebuild any PRs and main branch changes
+on:
   pull_request:
+    types: [opened, ready_for_review, synchronize, reopened]
 jobs:
   code-review:
     runs-on: ubuntu-latest
