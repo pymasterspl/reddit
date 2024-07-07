@@ -268,7 +268,6 @@ class PostReportedView(LoginRequiredMixin, DetailView):
                 )
                 messages.success(request,
                                  "Post has been deleted successfully.")
-
             elif action == "WARN":
                 user.warnings += 1
                 report.verified = True
