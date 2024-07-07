@@ -5,7 +5,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
 
-from .models import Community, Post
+from .models import REPORT_CHOICES, Community, Post, PostReport
 
 
 class CommentForm(forms.Form):
@@ -36,7 +36,8 @@ class PostForm(forms.ModelForm):
 
     def __init__(self: "Post", *args: tuple, **kwargs: dict) -> None:
         super().__init__(*args, **kwargs)
-        self.fields["community"].queryset = Community.objects.filter(is_active=True)
+        self.fields["community"].queryset = Community.objects.filter(
+            is_active=True)
         self.fields["title"].required = True
         self.fields["content"].required = True
 
@@ -53,13 +54,31 @@ class CommunityForm(forms.ModelForm):
         self.helper.add_input(Submit("submit", "Create Community"))
 
 
-class ReportForm(forms.Form):
-    REASON_CHOICES = [
-        ('spam', 'Spam'),
-        ('harassment', 'Harassment'),
-        ('hate_speech', 'Hate Speech'),
-        ('other', 'Other'),
-    ]
+class PostReportForm(forms.ModelForm):
+    report_type: ClassVar[forms.ChoiceField] = forms.ChoiceField(
+        choices=REPORT_CHOICES,
+        widget=forms.Select(attrs={"class": "form-control"})
+    )
 
-    reason = forms.ChoiceField(choices=REASON_CHOICES, label='Reason for reporting')
-    comments = forms.CharField(widget=forms.Textarea, required=False, label='Additional comments')
+    class Meta:
+        model = PostReport
+        fields: ClassVar[list[str]] = ["post", "report_type", "report_details", "report_person"]
+        widgets: ClassVar[dict[str, forms.Widget]] = {
+            "post": forms.HiddenInput(),
+            "report_person": forms.HiddenInput(),
+            "report_details": forms.Textarea(attrs={"class": "form-control"}),
+        }
+
+
+class AdminActionForm(forms.Form):
+    ACTION_CHOICES: ClassVar[list[tuple[str, str]]] = [
+        ("BAN", "Ban User"),
+        ("DELETE", "Delete Post"),
+        ("WARN", "Warn User"),
+        ("OKEY", "Okey"),
+    ]
+    action: ClassVar[forms.ChoiceField] = forms.ChoiceField(
+        choices=ACTION_CHOICES,
+        widget=forms.Select(attrs={"class": "form-control"}))
+    comment: ClassVar[forms.Textarea] = forms.CharField(widget=forms.Textarea,
+                                                        required=False)
