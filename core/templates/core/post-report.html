@@ -8,8 +8,30 @@
 
 {% block content %}
     <div class="container mt-5">
-        <h1 class="mb-4">Dodaj zgłoszenie postu {{ post }}</h1>
+        <h1 class="mb-4">Dodaj zgłoszenie postu</h1>
+        <div class="card bg-dark shadow-sm mb-3 text-light">
 
+            <div class="col">
+                <div class="d-flex flex-column">
+                    <div>
+                        <a href="#"
+                           class="link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-25-hover">
+                            r/{{ post.community }}
+                        </a>
+                        • <small class="text-secondary">{{ post.created_at|timesince }} ago</small>
+                    </div>
+                    <div>
+                        <a href="#" class="link-light link-offset-2 link-underline-opacity-0 link-opacity-75-hover link-underline-opacity-25-hover">
+                            {{ post.author.nickname }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <h3 class="h3">{{ post.title }}</h3>
+                {{ post.content }}
+            </div>
+        </div>
         {% if form.errors %}
         <div class="alert alert-danger" role="alert">
             <ul class="mb-0">
@@ -30,7 +52,6 @@
                 {{ form.report_details|as_crispy_field }}
             </div>
             <button type="submit" class="btn btn-primary mb-2">Wyślij zgłoszenie</button>
-
         </form>
     </div>
 

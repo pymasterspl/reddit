@@ -53,7 +53,7 @@
                         {% endif %}
                     </li>
                     <li><a class="dropdown-item" href="#"><i class="bi bi-eye-slash"></i> Hide</a></li>
-                    <li><a class="dropdown-item" href="{% '' %}"><i class="bi bi-flag"></i> Report</a></li>
+                    <li><a class="dropdown-item" href="{%  url 'post-report' post.id %}"><i class="bi bi-flag"></i> Report</a></li>
                     {% if request.user.is_authenticated %}
                     {% if post.author == request.user %}
                     <li><a class="dropdown-item" href="#"><i class="bi bi-pencil-square"></i> Edit</a></li>
