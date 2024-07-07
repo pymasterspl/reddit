@@ -65,6 +65,8 @@ class User(AbstractUser):
     username: None = None
     email: str = models.EmailField(unique=True)
     last_activity = models.DateTimeField(auto_now_add=True, db_index=True)
+    create_post: bool = models.BooleanField(default=True)
+    warnings: int = models.IntegerField(default=0)
 
     def __str__(self: "User") -> str:
         return self.nickname
