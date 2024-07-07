@@ -72,7 +72,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     def dispatch(self: "PostCreateView", request: HttpRequest, *args: list, **kwargs: dict[str, Any]) -> HttpResponse:
         if not request.user.is_authenticated:
             return redirect(reverse("login"))
-        if not request.user.create_post :
+        if not request.user.create_post:
             messages.error(request, "You do not have permission to create posts.")
             return redirect(reverse("post-list"))
         return super().dispatch(request, *args, **kwargs)
