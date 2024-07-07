@@ -1,7 +1,10 @@
 from typing import Any
 
 from django import forms
+from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.mail import send_mail
 from django.db import models
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -11,8 +14,8 @@ from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView
 
-from .forms import CommentForm, CommunityForm, PostForm
-from .models import Community, CommunityMember, Post, PostVote, SavedPost
+from .forms import AdminActionForm, CommentForm, CommunityForm, PostForm, PostReportForm
+from .models import AdminAction, Community, CommunityMember, Post, PostReport, PostVote, SavedPost
 
 
 class PostListView(ListView):
@@ -65,6 +68,13 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     form_class = PostForm
     template_name = "core/post-create.html"
     login_url = "login"
+
+    def dispatch(self: "PostCreateView", request: HttpRequest, *args: list, **kwargs: dict[str, Any]) -> HttpResponse:
+        if not request.user.create_post:
+            messages.error(request,
+                           "You do not have permission to create posts.")
+            return redirect(reverse("post-list"))
+        return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self: "PostCreateView") -> dict[str, any]:
         kwargs = super().get_form_kwargs()
@@ -147,4 +157,146 @@ class CommunityDetailView(DetailView):
         return Community.objects.get(slug=self.kwargs["slug"])
 
 
-class PostReportView()
+class PostReportView(LoginRequiredMixin, CreateView):
+    template_name = "core/post-report.html"
+    form_class = PostReportForm
+    success_url = reverse_lazy("home")
+    login_url = "login"
+
+    def form_valid(self: "PostReportView", form: forms.ModelForm) -> HttpResponseRedirect:
+        response = super().form_valid(form)
+        post = get_object_or_404(Post, pk=self.kwargs["pk"])
+        report_type = form.cleaned_data["report_type"]
+        report_details = form.cleaned_data["report_details"]
+
+        PostReport.objects.create(
+            post=post,
+            report_type=report_type,
+            report_details=report_details,
+            report_person=self.request.user
+        )
+        return response
+
+    def get_initial(self: "PostReportView") -> dict[str, Any]:
+        initial = super().get_initial()
+        initial["post"] = Post.objects.get(pk=self.kwargs["pk"])
+        return initial
+
+    def get_form_kwargs(self: "PostReportView") -> dict[str, Any]:
+        kwargs = super().get_form_kwargs()
+        kwargs.update({"initial": self.get_initial()})
+        return kwargs
+
+    def get_context_data(self: "PostReportView", **kwargs: dict[str, Any]) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["post"] = Post.objects.get(pk=self.kwargs["pk"])
+        return context
+
+
+class PostListReportedView(LoginRequiredMixin, ListView):
+    model = PostReport
+    template_name = "core/reported-posts.html"
+    context_object_name = "reports"
+    paginate_by = 10
+
+    def get_queryset(self: "PostListReportedView", request: HttpRequest) -> QuerySet:
+        queryset = PostReport.objects.filter(verified=False)
+        if not self.request.user.is_staff:
+            messages.error(request, "You do not have permission to view this page.")
+        return queryset
+
+
+class PostReportedView(LoginRequiredMixin, DetailView):
+    model = PostReport
+    template_name = "core/reported-post.html"
+    context_object_name = "report"
+
+    def get_object(self: "PostReportedView", request: HttpRequest, queryset: dict[str, Any]) -> PostReport:
+        obj = super().get_object(queryset)
+        if not self.request.user.is_staff:
+            messages.error(request, "You do not have permission to view this page.")
+        return obj
+
+    def get_context_data(self: "PostReportedView") -> dict[str, Any]:
+        context = super().get_context_data()
+        context["form"] = AdminActionForm()
+        return context
+
+    def post(self: "PostReportedView", request: HttpRequest) -> HttpResponse:
+        form = AdminActionForm(request.POST)
+        report = self.get_object()
+
+        if form.is_valid():
+            action: str = form.cleaned_data["action"]
+            comment: str = form.cleaned_data["comment"]
+            post = report.post
+            user = post.author
+
+            admin_action = AdminAction(
+                post_report=report,
+                action=action,
+                comment=comment,
+                performed_by=request.user
+            )
+            admin_action.save()
+
+            if action == "BAN":
+                report.verified = True
+                report.save()
+                user.create_post = False
+                user.save()
+                post.delete()
+                send_mail(
+                    "Account Banned",
+                    "Your account has been banned for violating community rules, now you cannot access posts",
+                    "admin@yourwebsite.com",
+                    [user.email],
+                    fail_silently=False,
+                )
+                messages.success(request, "User has been banned successfully.")
+
+            elif action == "DELETE":
+                report.verified = True
+                report.save()
+                post.delete()
+                send_mail(
+                    "Post Deleted",
+                    "Your post has been deleted due to violations of community guidelines.",
+                    settings.EMAIL_HOST_USER,
+                    [user.email],
+                    fail_silently=False,
+                )
+                messages.success(request,
+                                 "Post has been deleted successfully.")
+
+            elif action == "WARN":
+                user.warnings += 1
+                report.verified = True
+                report.save()
+                if user.warnings >= settings.LIMIT_WARNINGS:
+                    send_mail(
+                        "Post Deleted",
+                        "Your post has been deleted due to violations of community guidelines.",
+                        settings.EMAIL_HOST_USER,
+                        [user.email],
+                        fail_silently=False,
+                    )
+                    messages.success(request,
+                                     "Post has been deleted successfully.")
+                else:
+                    send_mail(
+                        "Warning Issued",
+                        "You have received a warning due to violations of community guidelines.",
+                        settings.EMAIL_HOST_USER,
+                        [user.email],
+                        fail_silently=False,
+                    )
+                    messages.success(request, "User has been warned successfully.")
+            elif action == "OKEY":
+                report.verified = True
+                report.save()
+            return redirect(reverse_lazy("post-list-reported"))
+
+        context = self.get_context_data()
+        context["form"] = form
+        return self.render_to_response(context)
