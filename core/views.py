@@ -25,7 +25,7 @@ class PostListView(ListView):
         return Post.objects.filter(parent=None)
 
 
-@method_decorator(login_required, name='post')
+@method_decorator(login_required, name="post")
 class PostDetailView(DetailView):
     model = Post
     template_name = "core/post-detail.html"

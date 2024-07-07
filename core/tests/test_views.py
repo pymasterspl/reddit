@@ -118,7 +118,7 @@ def test_add_nested_comment_valid(client: Client, another_user: User, post: Post
     assert post.children_count == 2
     assert comment.children_count == 1
 
-    new_comment = Post.objects.get(content=data['content'])
+    new_comment = Post.objects.get(content=data["content"])
     assert new_comment.author == another_user
     assert new_comment.parent == comment
 
