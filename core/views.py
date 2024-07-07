@@ -274,6 +274,7 @@ class PostReportedView(LoginRequiredMixin, DetailView):
                 report.verified = True
                 report.save()
                 if user.warnings >= settings.LIMIT_WARNINGS:
+                    post.delete()
                     send_mail(
                         "Post Deleted",
                         "Your post has been deleted due to violations of community guidelines.",
