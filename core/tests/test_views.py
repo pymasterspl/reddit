@@ -77,7 +77,6 @@ def test_add_comment_valid(client: Client, user: User, post: Post) -> None:
         "content": "This is a test comment content.",
     }
     client.force_login(user)
-    post.refresh_from_db()
     assert post.children_count == 0
     assert post.get_comments().count() == 0
     response = client.post(reverse("post-detail", kwargs={"pk": post.pk}), data=data, follow=True)
@@ -127,8 +126,6 @@ def test_add_nested_comment_valid(client: Client, another_user: User, post: Post
         "content": "This is a test nested comment content.",
     }
     client.force_login(another_user)
-    post.refresh_from_db()
-    comment.refresh_from_db()
     assert post.children_count == 1
     assert post.get_comments().count() == 1
     assert comment.children_count == 0
