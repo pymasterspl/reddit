@@ -290,7 +290,7 @@ REPORT_CHOICES = [
     ("COPYRIGHT_VIOLATION", "Copyright violation"),
     ("TRADEMARK_VIOLATION", "Trademark violation"),
     ("SELF_HARM_OR_SUICIDE", "Self-harm or suicide"),
-    ("SPAM", "Spam")
+    ("SPAM", "Spam"),
 ]
 
 
@@ -324,4 +324,3 @@ class AdminAction(models.Model):
 
     def __str__(self: "AdminAction") -> str:
         return f"{self.get_action_display()} on {self.post_report}"
-

@@ -71,8 +71,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
     def dispatch(self: "PostCreateView", request: HttpRequest, *args: list, **kwargs: dict[str, Any]) -> HttpResponse:
         if not request.user.create_post:
-            messages.error(request,
-                           "You do not have permission to create posts.")
+            messages.error(request, "You do not have permission to create posts.")
             return redirect(reverse("post-list"))
         return super().dispatch(request, *args, **kwargs)
 
@@ -170,10 +169,7 @@ class PostReportView(LoginRequiredMixin, CreateView):
         report_details = form.cleaned_data["report_details"]
 
         PostReport.objects.create(
-            post=post,
-            report_type=report_type,
-            report_details=report_details,
-            report_person=self.request.user
+            post=post, report_type=report_type, report_details=report_details, report_person=self.request.user
         )
         return response
 
@@ -232,12 +228,7 @@ class PostReportedView(LoginRequiredMixin, DetailView):
             post = report.post
             user = post.author
 
-            admin_action = AdminAction(
-                post_report=report,
-                action=action,
-                comment=comment,
-                performed_by=request.user
-            )
+            admin_action = AdminAction(post_report=report, action=action, comment=comment, performed_by=request.user)
             admin_action.save()
 
             if action == "BAN":
@@ -266,8 +257,7 @@ class PostReportedView(LoginRequiredMixin, DetailView):
                     [user.email],
                     fail_silently=False,
                 )
-                messages.success(request,
-                                 "Post has been deleted successfully.")
+                messages.success(request, "Post has been deleted successfully.")
             elif action == "WARN":
                 user.warnings += 1
                 report.verified = True
@@ -281,8 +271,7 @@ class PostReportedView(LoginRequiredMixin, DetailView):
                         [user.email],
                         fail_silently=False,
                     )
-                    messages.success(request,
-                                     "Post has been deleted successfully.")
+                    messages.success(request, "Post has been deleted successfully.")
                 else:
                     send_mail(
                         "Warning Issued",

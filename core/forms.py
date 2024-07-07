@@ -36,8 +36,7 @@ class PostForm(forms.ModelForm):
 
     def __init__(self: "Post", *args: tuple, **kwargs: dict) -> None:
         super().__init__(*args, **kwargs)
-        self.fields["community"].queryset = Community.objects.filter(
-            is_active=True)
+        self.fields["community"].queryset = Community.objects.filter(is_active=True)
         self.fields["title"].required = True
         self.fields["content"].required = True
 
@@ -56,8 +55,7 @@ class CommunityForm(forms.ModelForm):
 
 class PostReportForm(forms.ModelForm):
     report_type: ClassVar[forms.ChoiceField] = forms.ChoiceField(
-        choices=REPORT_CHOICES,
-        widget=forms.Select(attrs={"class": "form-control"})
+        choices=REPORT_CHOICES, widget=forms.Select(attrs={"class": "form-control"})
     )
 
     class Meta:
@@ -78,7 +76,6 @@ class AdminActionForm(forms.Form):
         ("OKEY", "Okey"),
     ]
     action: ClassVar[forms.ChoiceField] = forms.ChoiceField(
-        choices=ACTION_CHOICES,
-        widget=forms.Select(attrs={"class": "form-control"}))
-    comment: ClassVar[forms.Textarea] = forms.CharField(widget=forms.Textarea,
-                                                        required=False)
+        choices=ACTION_CHOICES, widget=forms.Select(attrs={"class": "form-control"})
+    )
+    comment: ClassVar[forms.Textarea] = forms.CharField(widget=forms.Textarea, required=False)
