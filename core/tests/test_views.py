@@ -81,6 +81,7 @@ def test_add_comment_valid(client: Client, user: User, post: Post) -> None:
     response = client.post(reverse("post-detail", kwargs={"pk": post.pk}), data=data, follow=True)
     assert response.status_code == 200
     assert post.children_count == 1
+    post.refresh_from_db()
     assert response.context["comments"][0].author == user
     assert response.context["comments"][0].content == data["content"]
 
@@ -93,6 +94,17 @@ def test_add_comment_invalid(client: Client, user: User, post: Post) -> None:
     form = response.context["form"]
     assert len(form.errors) == 1
     assert "This field is required." in form.errors["content"]
+
+
+def test_add_comment_valid_special_characters(client: Client, user: User, post: Post) -> None:
+    data = {
+        "parent_id": post.pk,
+        "content": "This is a test comment with special characters! 😊🚀✨"
+    }
+    client.force_login(user)
+    response = client.post(reverse("post-detail", kwargs={"pk": post.pk}), data=data, follow=True)
+    assert response.status_code == 200
+    assert "This is a test comment with special characters! 😊🚀✨" in response.content.decode()
 
 
 def test_add_comment_unauthorized(client: Client, post: Post) -> None:
@@ -115,6 +127,8 @@ def test_add_nested_comment_valid(client: Client, another_user: User, post: Post
     assert comment.children_count == 0
     response = client.post(reverse("post-detail", kwargs={"pk": post.pk}), data=data, follow=True)
     assert response.status_code == 200
+    post.refresh_from_db()
+    comment.refresh_from_db()
     assert post.children_count == 2
     assert comment.children_count == 1
 
