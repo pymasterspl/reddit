@@ -9,10 +9,14 @@ from .views import (
     HomeView,
     LoginUserView,
     ProfileSettingsView,
+    UserEditView,
+    UserProfileView,
     UserRegistrationView,
 )
 
 urlpatterns = [
+    path("profile/", UserProfileView.as_view(), name="profile"),
+    path("profile/edit/", UserEditView.as_view(), name="edit_profile"),
     path("", HomeView.as_view(), name="home"),
     path("login/", LoginUserView.as_view(), name="login"),
     path("logout-confirmation/", TemplateView.as_view(template_name="users/logout.html"), name="logout_confirmation"),

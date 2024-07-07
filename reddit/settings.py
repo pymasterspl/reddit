@@ -147,6 +147,9 @@ MEDIA_ROOT = str(BASE_DIR / "media")
 # https://docs.djangoproject.com/en/dev/ref/settings/#media-url
 MEDIA_URL = "/media/"
 
+# Maximum size for avatar uploads (in MB)
+MAX_AVATAR_SIZE_MB = 2
+
 # http://django-crispy-forms.readthedocs.io/en/latest/install.html#template-packs
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"

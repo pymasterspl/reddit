@@ -1,7 +1,11 @@
+import io
+
 import pytest
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
 from django.urls import reverse_lazy
+from PIL import Image
 
 User = get_user_model()
 
@@ -68,3 +72,23 @@ def test_login_user_view_get(client: Client) -> None:
     response = client.get(reverse_lazy("login"))
     assert response.status_code == HTTP_SUCCESS
     assert b"Log in" in response.content
+
+
+@pytest.mark.django_db()
+def test_process_avatar(user: User) -> None:
+    image = Image.new("RGB", (100, 100), color=(73, 109, 137))
+    image_io = io.BytesIO()
+    image.save(image_io, format="JPEG")
+    image_io.seek(0)
+    avatar = SimpleUploadedFile("test_avatar.jpg", image_io.read(), content_type="image/jpeg")
+    user.avatar = avatar
+    user.save()
+    processed_avatar = Image.open(user.avatar)
+    assert processed_avatar.size == (32, 32)
+
+
+@pytest.mark.django_db()
+def test_get_avatar_url(user: User) -> None:
+    image = Image.new("RGB", (100, 100), color=(73, 109, 137))
+    image_io = io.BytesIO()
+    image.save(image_io, format="JPEG")
