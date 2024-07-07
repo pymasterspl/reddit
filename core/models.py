@@ -270,3 +270,54 @@ class SavedPost(models.Model):
     @staticmethod
     def get_saved_posts(user: User) -> models.QuerySet:
         return SavedPost.objects.filter(user=user)
+
+
+REPORT_CHOICES = [
+    ("BREAKS_RULES", "Breaks r/fatFIRE rules"),
+    ("EU_ILLEGAL_CONTENT", "EU illegal content"),
+    ("HARASSMENT", "Harassment"),
+    ("THREATENING_VIOLENCE", "Threatening violence"),
+    ("HATE", "Hate"),
+    ("MINOR_ABUSE_OR_SEXUALIZATION", "Minor abuse or sexualization"),
+    ("SHARING_PERSONAL_INFORMATION", "Sharing personal information"),
+    ("NON_CONSENSUAL_INTIMATE_MEDIA", "Non-consensual intimate media"),
+    ("PROHIBITED_TRANSACTION", "Prohibited transaction"),
+    ("IMPERSONATION", "Impersonation"),
+    ("COPYRIGHT_VIOLATION", "Copyright violation"),
+    ("TRADEMARK_VIOLATION", "Trademark violation"),
+    ("SELF_HARM_OR_SUICIDE", "Self-harm or suicide"),
+    ("SPAM", "Spam")
+]
+
+
+class PostReport(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    report_type = models.CharField(max_length=50, choices=REPORT_CHOICES)
+    report_details = models.TextField(blank=True)
+    report_person = models.ForeignKey(User, on_delete=models.CASCADE)
+    verified: bool = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self: "PostReport") -> str:
+        return f"Report for Post {self.post.id} - {self.report_type}"
+
+
+class AdminAction(models.Model):
+    ACTION_CHOICES: ClassVar[list[tuple[str, str]]] = [
+        ("BAN", "Ban User"),
+        ("DELETE", "Delete Post"),
+        ("WARN", "Warn User"),
+        ("OKEY", "Okey"),
+    ]
+
+    post_report = models.ForeignKey("PostReport", on_delete=models.CASCADE)
+    action = models.CharField(max_length=10, choices=ACTION_CHOICES)
+    comment = models.TextField(blank=True)
+    performed_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self: "AdminAction") -> str:
+        return f"{self.get_action_display()} on {self.post_report}"
+
