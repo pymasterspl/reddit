@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
 
-from core.models import Community
+from core.models import Community, Post
 
 pytestmark = pytest.mark.django_db
 
@@ -67,5 +67,39 @@ def test_add_post_unauthorized(client: Client, community: Community) -> None:
         "content": "This is a test post content.",
     }
     response = client.post(reverse("post-create"), data=data)
+    assert response.status_code == 302
+    assert reverse("login") in response.url
+
+
+def test_add_comment_valid(client: Client, user: User, post: Post) -> None:
+    data = {
+        "parent_id": post.pk,
+        "content": "This is a test comment content.",
+    }
+    client.force_login(user)
+    assert post.children_count == 0
+    response = client.post(reverse("post-detail", kwargs={"pk": post.pk}), data=data, follow=True)
+    assert response.status_code == 200
+    assert post.children_count == 1
+    assert response.context["comments"][0].author == user
+    assert response.context["comments"][0].content == data["content"]
+
+
+def test_add_comment_invalid(client: Client, user: User, post: Post) -> None:
+    data = {"parent_id": post.pk, "content": ""}
+    client.force_login(user)
+    response = client.post(reverse("post-detail", kwargs={"pk": post.pk}), data=data)
+    assert response.status_code == 200
+    form = response.context["form"]
+    assert len(form.errors) == 1
+    assert "This field is required." in form.errors["content"]
+
+
+def test_add_comment_unauthorized(client: Client, post: Post) -> None:
+    data = {
+        "parent_id": post.pk,
+        "content": "This is a test comment content.",
+    }
+    response = client.post(reverse("post-detail", kwargs={"pk": post.pk}), data=data)
     assert response.status_code == 302
     assert reverse("login") in response.url
