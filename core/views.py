@@ -69,8 +69,9 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     template_name = "core/post-create.html"
     login_url = "login"
 
-    def dispatch(self: "PostCreateView", request: HttpRequest, *args: tuple[Any], **kwargs: dict[str, Any]) -> \
-            HttpResponse:
+    def dispatch(
+        self: "PostCreateView", request: HttpRequest, *args: tuple[Any], **kwargs: dict[str, Any]
+    ) -> HttpResponse:
         if not request.user.is_authenticated:
             return redirect(reverse("login"))
         if not request.user.create_post:
@@ -221,8 +222,7 @@ class PostReportedView(LoginRequiredMixin, DetailView):
         context["form"] = AdminActionForm()
         return context
 
-    def post(self: "PostReportedView", request: HttpRequest, **kwargs: dict[str, Any]) -> \
-            HttpResponse:
+    def post(self: "PostReportedView", request: HttpRequest, **kwargs: dict[str, Any]) -> HttpResponse:
         form = AdminActionForm(request.POST)
         report = self.get_object()
 
@@ -304,4 +304,3 @@ class PostReportedView(LoginRequiredMixin, DetailView):
 
     def get_object(self: "PostReportedView", queryset: QuerySet | None = None) -> PostReport:
         return super().get_object(queryset)
-
