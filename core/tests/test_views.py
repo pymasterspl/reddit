@@ -161,7 +161,7 @@ def test_add_nested_comment_unauthorized(client: Client, post: Post, comment: Po
     assert reverse("login") in response.url
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_add_deeply_nested_comment_valid(client: Client, another_user: User, post: Post) -> None:
     client.force_login(another_user)
     parent_comment = post
