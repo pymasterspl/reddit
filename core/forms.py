@@ -60,10 +60,8 @@ class PostReportForm(forms.ModelForm):
 
     class Meta:
         model = PostReport
-        fields: ClassVar[list[str]] = ["post", "report_type", "report_details", "report_person"]
+        fields: ClassVar[list[str]] = ["report_type", "report_details"]
         widgets: ClassVar[dict[str, forms.Widget]] = {
-            "post": forms.HiddenInput(),
-            "report_person": forms.HiddenInput(),
             "report_details": forms.Textarea(attrs={"class": "form-control"}),
         }
 
