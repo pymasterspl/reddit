@@ -69,7 +69,8 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     template_name = "core/post-create.html"
     login_url = "login"
 
-    def dispatch(self: "PostCreateView", request: HttpRequest, *args: list, **kwargs: dict[str, Any]) -> HttpResponse:
+    def dispatch(self: "PostCreateView", request: HttpRequest, *args: tuple[Any], **kwargs: dict[str, Any]) -> \
+            HttpResponse:
         if not request.user.is_authenticated:
             return redirect(reverse("login"))
         if not request.user.create_post:
@@ -165,15 +166,14 @@ class PostReportView(LoginRequiredMixin, CreateView):
     login_url = "login"
 
     def form_valid(self: "PostReportView", form: forms.ModelForm) -> HttpResponseRedirect:
-        response = super().form_valid(form)
         post = get_object_or_404(Post, pk=self.kwargs["pk"])
-        report_type = form.cleaned_data["report_type"]
-        report_details = form.cleaned_data["report_details"]
-
-        PostReport.objects.create(
-            post=post, report_type=report_type, report_details=report_details, report_person=self.request.user
-        )
-        return response
+        report_person = self.request.user
+        post_report = form.save(commit=False)
+        post_report.post = post
+        post_report.report_person = report_person
+        post_report.save()
+        messages.success(self.request, "Your post has been reported.")
+        return super().form_valid(form)
 
     def get_initial(self: "PostReportView") -> dict[str, Any]:
         initial = super().get_initial()
@@ -197,10 +197,10 @@ class PostListReportedView(LoginRequiredMixin, ListView):
     context_object_name = "reports"
     paginate_by = 10
 
-    def get_queryset(self: "PostListReportedView", request: HttpRequest) -> QuerySet:
+    def get_queryset(self: "PostListReportedView") -> QuerySet:
         queryset = PostReport.objects.filter(verified=False)
         if not self.request.user.is_staff:
-            messages.error(request, "You do not have permission to view this page.")
+            messages.error(self.request, "You do not have permission to view this page.")
         return queryset
 
 
@@ -209,18 +209,20 @@ class PostReportedView(LoginRequiredMixin, DetailView):
     template_name = "core/reported-post.html"
     context_object_name = "report"
 
-    def get_object(self: "PostReportedView", request: HttpRequest, queryset: dict[str, Any]) -> PostReport:
-        obj = super().get_object(queryset)
+    def get_queryset(self: "PostReportedView") -> QuerySet:
+        queryset = super().get_queryset()
         if not self.request.user.is_staff:
-            messages.error(request, "You do not have permission to view this page.")
-        return obj
+            messages.error(self.request, "You do not have permission to view this page.")
+            return queryset.none()
+        return queryset
 
     def get_context_data(self: "PostReportedView") -> dict[str, Any]:
         context = super().get_context_data()
         context["form"] = AdminActionForm()
         return context
 
-    def post(self: "PostReportedView", request: HttpRequest) -> HttpResponse:
+    def post(self: "PostReportedView", request: HttpRequest, **kwargs: dict[str, Any]) -> \
+            HttpResponse:
         form = AdminActionForm(request.POST)
         report = self.get_object()
 
@@ -241,7 +243,7 @@ class PostReportedView(LoginRequiredMixin, DetailView):
                 post.delete()
                 send_mail(
                     "Account Banned",
-                    "Your account has been banned for violating community rules, now you cannot access posts",
+                    "Your account has been banned for violating community rules, now you cannot access posts.",
                     "admin@yourwebsite.com",
                     [user.email],
                     fail_silently=False,
@@ -288,6 +290,18 @@ class PostReportedView(LoginRequiredMixin, DetailView):
                 report.save()
             return redirect(reverse_lazy("post-list-reported"))
 
-        context = self.get_context_data()
+        context = self.get_context_data(**kwargs)
         context["form"] = form
         return self.render_to_response(context)
+
+    def get(self: "PostReportedView", request: HttpRequest) -> HttpResponse:
+        self.object = self.get_object()
+        if not request.user.is_staff:
+            messages.error(request, "You do not have permission to view this page.")
+            return redirect("post-list-reported")
+        context = self.get_context_data()
+        return self.render_to_response(context)
+
+    def get_object(self: "PostReportedView", queryset: QuerySet | None = None) -> PostReport:
+        return super().get_object(queryset)
+
