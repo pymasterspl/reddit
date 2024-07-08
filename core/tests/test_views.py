@@ -99,10 +99,7 @@ def test_add_comment_invalid(client: Client, user: User, post: Post) -> None:
 
 
 def test_add_comment_valid_special_characters(client: Client, user: User, post: Post) -> None:
-    data = {
-        "parent_id": post.pk,
-        "content": "This is a test comment with special characters! 😊🚀✨"
-    }
+    data = {"parent_id": post.pk, "content": "This is a test comment with special characters! 😊🚀✨"}
     client.force_login(user)
     response = client.post(reverse("post-detail", kwargs={"pk": post.pk}), data=data, follow=True)
     assert response.status_code == 200
@@ -145,10 +142,7 @@ def test_add_nested_comment_valid(client: Client, another_user: User, post: Post
 
 
 def test_add_nested_comment_invalid(client: Client, user: User, post: Post, comment: Post) -> None:
-    data = {
-        "parent_id": comment.pk,
-        "content": ""
-    }
+    data = {"parent_id": comment.pk, "content": ""}
     client.force_login(user)
     response = client.post(reverse("post-detail", kwargs={"pk": post.pk}), data=data)
     assert response.status_code == 200
@@ -165,3 +159,22 @@ def test_add_nested_comment_unauthorized(client: Client, post: Post, comment: Po
     response = client.post(reverse("post-detail", kwargs={"pk": post.pk}), data=data)
     assert response.status_code == 302
     assert reverse("login") in response.url
+
+
+@pytest.mark.django_db
+def test_add_deeply_nested_comment_valid(client: Client, another_user: User, post: Post) -> None:
+    client.force_login(another_user)
+    parent_comment = post
+    for _ in range(10):
+        response = client.post(
+            reverse("post-detail", kwargs={"pk": post.pk}),
+            data={"parent_id": parent_comment.pk, "content": "Nested comment"},
+            follow=True,
+        )
+        assert response.status_code == 200
+        parent_comment = Post.objects.latest("pk")
+
+    post.refresh_from_db()
+    assert post.children_count == 10
+    assert parent_comment.children_count == 0
+    assert parent_comment.parent.children_count == 1
