@@ -14,7 +14,7 @@ Follow: https://github.com/pymasterspl/reddit/blob/dev/README.md#how-to-set-up
 
 ### Code Formatting Rules
 
-The project follows PEP8 coding standards. To ensure code quality, use ruff to check your code before creating pull requests. Follow Ruff section in readme:
+The project follows PEP8 coding standards. To ensure code quality, use ruff to check your code before creating pull requests. Follow the Ruff section in readme:
 
 https://github.com/pymasterspl/reddit/blob/dev/README.md#ruff-formatting-and-linting
 
