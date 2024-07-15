@@ -1,6 +1,22 @@
 # Reddit
 Reddit clone for educational purposes. Developed by PyMasters
-Want to join and work on it? https://pymasters.pl/spolecznosc
+
+- [Joining the project](#joining-the-project)
+- [Rules of engagement](#rules-of-engagement)
+   - [Rules](#rules)
+   - [Code](#code)
+   - [Testing](#testing)
+      - [Writing own tests](#writing-own-tests)
+- [How to Set up](#how-to-set-up)
+   - [Connecting gmail to the application](#connecting-gmail-to-the-application)
+- [Ruff formatting and linting](#ruff-formatting-and-linting)
+- [Usage with Docker 🐳](#usage-with-docker-🐳)
+- [In case of problems with starting the project](#in-case-of-problems-with-starting-the-project)
+
+
+## Joining the project
+
+Want to join and work on it? https://pymasters.pl/spolecznosc and fill the form from this message: https://discord.com/channels/1035267230901997628/1221772410701873293/1247199896834936842 
 
 ## Rules of engagement
 Good reading on working with code changes and pull request is https://google.github.io/eng-practices/. It contains both views - change author and reviewer.
@@ -22,12 +38,13 @@ Good reading on working with code changes and pull request is https://google.git
     - fix can be applied by ruff automatically for some issues, check `ruff check --fix`.
 4. Follow Git Flow approach while developing. 
    - video explaing git flow is available for Pymasters members at: https://discord.com/channels/1035267230901997628/1135149223306858536/1136744608555089990
-       - you can join Pymasters at https://pymasters.pl/spolecznosc     
+       - you can join Pymasters at https://pymasters.pl/spolecznosc
+   - Make changes and commit them. There should be only one reason to make a commit, eg. "Adding new fields to user model" should only contain changes related to those fields, nothing else. If there are other things - new commit is required.
    - Use pull request to add your work. Make pull request to `dev` branch.
    - After creating pull request use "reviewers" option on far right of the screen to request review from "pymasters/reddit" team, or you can request review from certain team member directly by mentioning their name.
       ![alt text](readme-image.png)
    - One of the team members (or multiple) will perform code review and approve the pull request or request changes.
-   - If changes are requested, all comments have to be in constructive and friendly manner, as shown in https://google.github.io/eng-practices/review/reviewer/comments.html
+      - If changes are requested, all comments have to be in constructive and friendly manner, as shown in https://google.github.io/eng-practices/review/reviewer/comments.html
    - It's a good thing to comment on the good parts of code with "Nice work" or something similar.
 5. As this is a learning project, pair programming is most welcome. Jump on Zoom or google meet and work together: https://www.youtube.com/watch?v=wu6BOT-eMgc&t=105s&ab_channel=devmentor.pl
 6. Code quality and automated tests will be run and required to pass before pull request can be merged. 
@@ -41,6 +58,34 @@ Good reading on working with code changes and pull request is https://google.git
 - Use class based views instead of function based views. A lot of examples and reading can be found on Jacek Blog: https://akademiait.com.pl/ and youtube: https://www.youtube.com/watch?v=2S9-pvFBlBc&ab_channel=AkademiaIT
 - for testing use pytest. Tests using Django Unit Testing will not be accepted. A lot of tests are in our previous project: https://github.com/pymasterspl/Dshop. Also please watch https://www.youtube.com/watch?v=xn3wSM82fnA&ab_channel=AkademiaIT
 - If you have questions, just ask on discord, reddit channel.
+
+
+### Testing
+
+The project is using Pytest for automated testing. https://docs.pytest.org/
+
+To run the tests first start project environment with:
+
+```bash
+poetry shell
+```
+
+Run tests in project directory with:
+
+```bash
+pytest
+```
+
+Make sure all tests pass before creating PR. Automated tests are run on every PR and if tests fail, merge will not be possible.
+
+#### Writing own tests
+
+This is most welcome. Test should be located in `tests` directory of a module (remember to add `__init__.py` file!). 
+Test filename should follow pattern `test_{name}.py` where name is either functionality or, eg. "models", so `test_models.py`.
+Each test in the file must start with `test_` prefix, otherwise Pytest will not find it. 
+
+Test driven development is most welcome, check https://www.youtube.com/watch?v=xn3wSM82fnA. It is understandable that TDD itself 
+is cumbersome, so writing the tests after the code is also OK. Practice, practice, practice. Review other tests, experiment, and if questions, ask. 
 
 
 ## How to Set up
