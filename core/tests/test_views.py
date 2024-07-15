@@ -5,8 +5,9 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
+from faker import Faker
 
-from core.models import Community
+from core.models import Community, Post, PostReport
 
 pytestmark = pytest.mark.django_db
 
@@ -32,8 +33,32 @@ def user(client: Client) -> User:
 
 
 @pytest.fixture()
+def admin(client: Client) -> User:
+    password = generate_random_password()
+    user = User.objects.create_user(
+        email="test_admin@example.com",
+        nickname="TestAdmin",
+        password=password,
+        is_superuser=True,
+        is_staff=True
+    )
+
+    client.login(email=user.email, password=user.password)
+    return user
+
+
+@pytest.fixture()
 def community() -> Community:
     return Community.objects.create(name="Test Community", is_active=True)
+
+
+@pytest.fixture()
+def report_data() -> dict:
+    fake = Faker()
+    return {
+        "report_type": "EU_ILLEGAL_CONTENT",
+        "report_details": fake.text(max_nb_chars=100),
+    }
 
 
 def test_add_post_valid(client: Client, user: User, community: Community) -> None:
@@ -69,3 +94,44 @@ def test_add_post_unauthorized(client: Client, community: Community) -> None:
     response = client.post(reverse("post-create"), data=data)
     assert response.status_code == 302
     assert reverse("login") in response.url
+
+
+def test_report_post(client: Client, user: User, post: Post, report_data: dict) -> None:
+    client.force_login(user)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=report_data)
+    assert response.status_code == 302
+    assert reverse("home") in response.url
+
+
+def test_report_post_unauthorized(client: Client, post: Post, report_data: dict) -> None:
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=report_data)
+    assert response.status_code == 302
+    assert reverse("login") in response.url
+
+
+def test_reported_list_post_by_admin(client: Client, admin: User, post: Post, report_data: dict) -> None:
+    client.force_login(admin)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=report_data)
+    assert response.status_code == 302
+    assert reverse("home") in response.url
+    response = client.get(reverse("post-list-reported"))
+    assert response.status_code == 200
+
+    reports_count = PostReport.objects.filter(verified=False).count()
+    assert reports_count > 0
+
+
+def test_reported_list_post_by_user(client: Client, user: User, post: Post, report_data: dict) -> None:
+    client.force_login(user)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=report_data)
+    assert response.status_code == 302
+    assert reverse("home") in response.url
+    response = client.get(reverse("post-list-reported"))
+    assert response.status_code == 302
+    assert reverse("home") in response.url
+
+
+def test_reported_list_post_by_anonymous_user(client: Client) -> None:
+    response = client.get(reverse("post-list-reported"))
+    assert response.status_code == 302
+    assert "/accounts/login/?next=/core/reported-posts/" in response.url
