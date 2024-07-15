@@ -3,7 +3,7 @@ from typing import Any
 from django import forms
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.mail import send_mail
 from django.db import models
 from django.db.models import QuerySet
@@ -192,7 +192,7 @@ class PostReportView(LoginRequiredMixin, CreateView):
         return context
 
 
-class PostListReportedView(LoginRequiredMixin, ListView):
+class PostListReportedView(UserPassesTestMixin, LoginRequiredMixin, ListView):
     model = PostReport
     template_name = "core/reported-posts.html"
     context_object_name = "reports"
@@ -204,8 +204,17 @@ class PostListReportedView(LoginRequiredMixin, ListView):
             messages.error(self.request, "You do not have permission to view this page.")
         return queryset
 
+    def test_func(self: "PostListReportedView") -> bool:
+        return self.request.user.is_staff
 
-class PostReportedView(LoginRequiredMixin, DetailView):
+    def handle_no_permission(self: "PostListReportedView") -> HttpResponse | None:
+        if self.request.user.is_authenticated:
+            messages.error(self.request, "You do not have permission to view this page.")
+            return redirect("home")
+        return super().handle_no_permission()
+
+
+class PostReportedView(UserPassesTestMixin, LoginRequiredMixin, DetailView):
     model = PostReport
     template_name = "core/reported-post.html"
     context_object_name = "report"
