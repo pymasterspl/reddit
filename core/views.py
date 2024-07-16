@@ -307,9 +307,12 @@ class PostReportedView(UserPassesTestMixin, LoginRequiredMixin, DetailView):
         self.object = self.get_object()
         if not request.user.is_staff:
             messages.error(request, "You do not have permission to view this page.")
-            return redirect("post-list-reported")
+            return redirect("home")
         context = self.get_context_data()
         return self.render_to_response(context)
 
     def get_object(self: "PostReportedView", queryset: QuerySet | None = None) -> PostReport:
         return super().get_object(queryset)
+
+    def test_func(self: "PostListReportedView") -> bool:
+        return self.request.user.is_staff
