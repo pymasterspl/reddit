@@ -3,6 +3,7 @@ import string
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.core import mail
 from django.test import Client
 from django.urls import reverse
 from faker import Faker
@@ -58,6 +59,21 @@ def report_data() -> dict:
     return {
         "report_type": "EU_ILLEGAL_CONTENT",
         "report_details": fake.text(max_nb_chars=100),
+    }
+
+
+@pytest.fixture()
+def post_report(post: Post, user: User) -> Post:
+    fake = Faker()
+    return PostReport.objects.create(post=post, report_type="THREATENING_VIOLENCE",
+                                     report_details=fake.text(max_nb_chars=100), report_person=user)
+
+
+@pytest.fixture()
+def admin_action_form_data() -> dict:
+    return {
+        "action": "DELETE",
+        "comment": "This post violates the guidelines."
     }
 
 
@@ -135,3 +151,32 @@ def test_reported_list_post_by_anonymous_user(client: Client) -> None:
     response = client.get(reverse("post-list-reported"))
     assert response.status_code == 302
     assert "/accounts/login/?next=/core/reported-posts/" in response.url
+
+
+def test_reported_detail_post_by_user(client: Client, user: User, post: Post, report_data: dict) -> None:
+    client.force_login(user)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=report_data)
+    assert response.status_code == 302
+    assert reverse("home") in response.url
+    response = client.get(reverse("reported-post", kwargs={"pk": 1}))
+    assert response.status_code == 403
+
+
+def test_reported_detail_post_by_anonymous_user(client: Client, post_report: PostReport) -> None:
+    response = client.get(reverse("post-report", kwargs={"pk": post_report.pk}))
+    assert response.status_code == 302
+    assert f"/users/login/?next=/core/post/report/{post_report.pk}/" in response.url
+
+
+def test_reported_detail_post_by_admin(client: Client, admin: User, post: Post, post_report: PostReport,
+                                       admin_action_form_data: dict) -> None:
+    client.force_login(admin)
+    response = client.post(reverse("reported-post", kwargs={"pk": post_report.pk}), data=admin_action_form_data)
+    assert response.status_code == 302
+
+    with pytest.raises(Post.DoesNotExist):
+        post.refresh_from_db()
+
+    assert len(mail.outbox) == 1
+    assert mail.outbox[0].subject == "Post Deleted"
+    assert mail.outbox[0].to == [post.author.email]
