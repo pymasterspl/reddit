@@ -3,6 +3,7 @@ from typing import Any
 from django import forms
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.mail import send_mail
 from django.db import models
@@ -11,6 +12,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
+from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView
 
@@ -26,6 +28,7 @@ class PostListView(ListView):
         return Post.objects.filter(parent=None)
 
 
+@method_decorator(login_required, name="post")
 class PostDetailView(DetailView):
     model = Post
     template_name = "core/post-detail.html"
