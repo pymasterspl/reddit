@@ -37,11 +37,7 @@ def user(client: Client) -> User:
 def admin(client: Client) -> User:
     password = generate_random_password()
     user = User.objects.create_user(
-        email="test_admin@example.com",
-        nickname="TestAdmin",
-        password=password,
-        is_superuser=True,
-        is_staff=True
+        email="test_admin@example.com", nickname="TestAdmin", password=password, is_superuser=True, is_staff=True
     )
 
     client.login(email=user.email, password=user.password)
@@ -65,16 +61,14 @@ def report_data() -> dict:
 @pytest.fixture()
 def post_report(post: Post, user: User) -> Post:
     fake = Faker()
-    return PostReport.objects.create(post=post, report_type="THREATENING_VIOLENCE",
-                                     report_details=fake.text(max_nb_chars=100), report_person=user)
+    return PostReport.objects.create(
+        post=post, report_type="THREATENING_VIOLENCE", report_details=fake.text(max_nb_chars=100), report_person=user
+    )
 
 
 @pytest.fixture()
 def admin_action_form_data() -> dict:
-    return {
-        "action": "DELETE",
-        "comment": "This post violates the guidelines."
-    }
+    return {"action": "DELETE", "comment": "This post violates the guidelines."}
 
 
 def test_add_post_valid(client: Client, user: User, community: Community) -> None:
@@ -119,6 +113,7 @@ def test_report_post(client: Client, user: User, post: Post, report_data: dict) 
     assert reverse("home") in response.url
     assert response.status_code == 302
     assert reverse("login") in response.url
+
 
 def test_report_post_unauthorized(client: Client, post: Post, report_data: dict) -> None:
     response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=report_data)
@@ -215,8 +210,9 @@ def test_reported_detail_post_by_anonymous_user(client: Client, post_report: Pos
     assert f"/users/login/?next=/core/post/report/{post_report.pk}/" in response.url
 
 
-def test_reported_detail_post_by_admin(client: Client, admin: User, post: Post, post_report: PostReport,
-                                       admin_action_form_data: dict) -> None:
+def test_reported_detail_post_by_admin(
+    client: Client, admin: User, post: Post, post_report: PostReport, admin_action_form_data: dict
+) -> None:
     client.force_login(admin)
     response = client.post(reverse("reported-post", kwargs={"pk": post_report.pk}), data=admin_action_form_data)
     assert response.status_code == 302
