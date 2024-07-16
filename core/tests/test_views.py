@@ -111,8 +111,6 @@ def test_report_post(client: Client, user: User, post: Post, report_data: dict) 
     response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=report_data)
     assert response.status_code == 302
     assert reverse("home") in response.url
-    assert response.status_code == 302
-    assert reverse("login") in response.url
 
 
 def test_report_post_unauthorized(client: Client, post: Post, report_data: dict) -> None:
@@ -192,7 +190,7 @@ def test_reported_list_post_by_user(client: Client, user: User, post: Post, repo
 def test_reported_list_post_by_anonymous_user(client: Client) -> None:
     response = client.get(reverse("post-list-reported"))
     assert response.status_code == 302
-    assert "/accounts/login/?next=/core/reported-posts/" in response.url
+    assert "/users/login/?next=/core/reported-posts/" in response.url
 
 
 def test_reported_detail_post_by_user(client: Client, user: User, post: Post, report_data: dict) -> None:
