@@ -11,6 +11,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from PIL import Image
+from core.models import Post, CommunityMember
 
 
 class UserManager(BaseUserManager):
@@ -77,6 +78,23 @@ class User(AbstractUser):
         if self.avatar:
             self.avatar = self.process_avatar(self.avatar)
         super().save(*args, **kwargs)
+
+    def has_permission(self, post_id: int, permission_name: str) -> bool:
+        post = Post.objects.get(id=post_id)
+        match permission_name:
+            case "edit":
+                if self.user == post.author:
+                    return True
+
+                community_member = CommunityMember.objects.filter(
+                    community=post.community,
+                    user=self.user
+                ).first()
+
+                if community_member and community_member.role in [CommunityMember.MODERATOR, CommunityMember.ADMIN]:
+                    return True
+            case _:
+                return False
 
     def process_avatar(self: "User", avatar: any) -> ContentFile:
         image = Image.open(avatar)
