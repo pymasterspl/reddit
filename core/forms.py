@@ -5,7 +5,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
 
-from .models import REPORT_CHOICES, Community, Post, PostReport
+from .models import Community, Post, PostReport
 
 
 class CommentForm(forms.Form):
@@ -44,7 +44,7 @@ class PostForm(forms.ModelForm):
 class CommunityForm(forms.ModelForm):
     class Meta:
         model = Community
-        fields: typing.ClassVar = ["name"]
+        fields: ClassVar = ["name"]
 
     def __init__(self: "CommunityForm", *args: list, **kwargs: dict) -> None:
         super().__init__(*args, **kwargs)
@@ -54,7 +54,37 @@ class CommunityForm(forms.ModelForm):
 
 
 class PostReportForm(forms.ModelForm):
-    report_type: ClassVar[forms.ChoiceField] = forms.ChoiceField(
+    BREAKS_RULES = "BREAKS_RULES"
+    EU_ILLEGAL_CONTENT = "EU_ILLEGAL_CONTENT"
+    HARASSMENT = "HARASSMENT"
+    THREATENING_VIOLENCE = "THREATENING_VIOLENCE"
+    HATE = "HATE"
+    MINOR_ABUSE_OR_SEXUALIZATION = "MINOR_ABUSE_OR_SEXUALIZATION"
+    SHARING_PERSONAL_INFORMATION = "SHARING_PERSONAL_INFORMATION"
+    NON_CONSENSUAL_INTIMATE_MEDIA = "NON_CONSENSUAL_INTIMATE_MEDIA"
+    PROHIBITED_TRANSACTION = "PROHIBITED_TRANSACTION"
+    IMPERSONATION = "IMPERSONATION"
+    COPYRIGHT_VIOLATION = "COPYRIGHT_VIOLATION"
+    TRADEMARK_VIOLATION = "TRADEMARK_VIOLATION"
+    SELF_HARM_OR_SUICIDE = "SELF_HARM_OR_SUICIDE"
+    SPAM = "SPAM"
+    REPORT_CHOICES: typing.ClassVar[list[tuple[str, str]]] = [
+        (BREAKS_RULES, "Breaks r/fatFIRE rules"),
+        (EU_ILLEGAL_CONTENT, "EU illegal content"),
+        (HARASSMENT, "Harassment"),
+        (THREATENING_VIOLENCE, "Threatening violence"),
+        (HATE, "Hate"),
+        (MINOR_ABUSE_OR_SEXUALIZATION, "Minor abuse or sexualization"),
+        (SHARING_PERSONAL_INFORMATION, "Sharing personal information"),
+        (NON_CONSENSUAL_INTIMATE_MEDIA, "Non-consensual intimate media"),
+        (PROHIBITED_TRANSACTION, "Prohibited transaction"),
+        (IMPERSONATION, "Impersonation"),
+        (COPYRIGHT_VIOLATION, "Copyright violation"),
+        (TRADEMARK_VIOLATION, "Trademark violation"),
+        (SELF_HARM_OR_SUICIDE, "Self-harm or suicide"),
+        (SPAM, "Spam"),
+    ]
+    report_type: forms.ChoiceField = forms.ChoiceField(
         choices=REPORT_CHOICES, widget=forms.Select(attrs={"class": "form-control"})
     )
 
@@ -67,13 +97,17 @@ class PostReportForm(forms.ModelForm):
 
 
 class AdminActionForm(forms.Form):
+    BAN = "BAN"
+    DELETE = "DELETE"
+    WARN = "WARN"
+    ACCEPT = "ACCEPT"
     ACTION_CHOICES: ClassVar[list[tuple[str, str]]] = [
-        ("BAN", "Ban User"),
-        ("DELETE", "Delete Post"),
-        ("WARN", "Warn User"),
-        ("OKEY", "Okey"),
+        (BAN, "Ban User"),
+        (DELETE, "Delete Post"),
+        (WARN, "Warn User"),
+        (ACCEPT, "Accept"),
     ]
-    action: ClassVar[forms.ChoiceField] = forms.ChoiceField(
+    action: forms.ChoiceField = forms.ChoiceField(
         choices=ACTION_CHOICES, widget=forms.Select(attrs={"class": "form-control"})
     )
-    comment: ClassVar[forms.Textarea] = forms.CharField(widget=forms.Textarea, required=False)
+    comment: forms.Textarea = forms.CharField(widget=forms.Textarea, required=False)
