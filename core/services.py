@@ -57,7 +57,7 @@ def handle_admin_action(action: str, report: PostReport, user: User, request: Ht
                 fail_silently=False,
             )
             messages.success(request, "User has been warned successfully.")
-    elif action == "ACCEPT":
+    elif action == "DISMISS_REPORT":
         report.verified = True
         report.save()
 
