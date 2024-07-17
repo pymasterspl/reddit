@@ -40,11 +40,15 @@ class ImageAdmin(admin.ModelAdmin):
     list_display = ("post", "image", "created_at", "updated_at")
 
 
+class BaseReportAdmin(admin.ModelAdmin):
+    list_display = ("created_at", "updated_at")
+
+
 @admin.register(PostReport)
-class PostReportAdmin(admin.ModelAdmin):
-    list_display = ("post", "report_type", "report_details", "report_person", "created_at", "updated_at")
+class PostReportAdmin(BaseReportAdmin):
+    list_display = (*BaseReportAdmin.list_display, "post", "report_type", "report_details", "report_person")
 
 
 @admin.register(AdminAction)
 class AdminActionAdmin(admin.ModelAdmin):
-    list_display = ("post_report", "action", "comment", "performed_by", "created_at", "updated_at")
+    list_display = (*BaseReportAdmin.list_display, "post_report", "action", "comment", "performed_by")

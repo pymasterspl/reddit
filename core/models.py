@@ -299,7 +299,7 @@ class PostReport(models.Model):
     report_type = models.CharField(max_length=50, choices=REPORT_CHOICES)
     report_details = models.TextField(blank=True)
     report_person = models.ForeignKey(User, on_delete=models.CASCADE)
-    verified: bool = models.BooleanField(default=False)
+    verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
