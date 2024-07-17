@@ -1,4 +1,3 @@
-import typing
 from typing import ClassVar
 
 from crispy_forms.helper import FormHelper
@@ -68,7 +67,7 @@ class PostReportForm(forms.ModelForm):
     TRADEMARK_VIOLATION = "TRADEMARK_VIOLATION"
     SELF_HARM_OR_SUICIDE = "SELF_HARM_OR_SUICIDE"
     SPAM = "SPAM"
-    REPORT_CHOICES: typing.ClassVar[list[tuple[str, str]]] = [
+    REPORT_CHOICES: ClassVar[list[tuple[str, str]]] = [
         (BREAKS_RULES, "Breaks r/fatFIRE rules"),
         (EU_ILLEGAL_CONTENT, "EU illegal content"),
         (HARASSMENT, "Harassment"),
@@ -100,12 +99,12 @@ class AdminActionForm(forms.Form):
     BAN = "BAN"
     DELETE = "DELETE"
     WARN = "WARN"
-    ACCEPT = "ACCEPT"
+    DISMISS_REPORT = "DISMISS_REPORT"
     ACTION_CHOICES: ClassVar[list[tuple[str, str]]] = [
         (BAN, "Ban User"),
         (DELETE, "Delete Post"),
         (WARN, "Warn User"),
-        (ACCEPT, "Accept"),
+        (DISMISS_REPORT, "Dismiss Report"),
     ]
     action: forms.ChoiceField = forms.ChoiceField(
         choices=ACTION_CHOICES, widget=forms.Select(attrs={"class": "form-control"})

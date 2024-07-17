@@ -1,6 +1,5 @@
 import hashlib
 import re
-import typing
 from datetime import timedelta
 from typing import ClassVar
 
@@ -292,7 +291,7 @@ class PostReport(models.Model):
     TRADEMARK_VIOLATION = "TRADEMARK_VIOLATION"
     SELF_HARM_OR_SUICIDE = "SELF_HARM_OR_SUICIDE"
     SPAM = "SPAM"
-    REPORT_CHOICES: typing.ClassVar[list[tuple[str, str]]] = [
+    REPORT_CHOICES: ClassVar[list[tuple[str, str]]] = [
         (BREAKS_RULES, "Breaks r/fatFIRE rules"),
         (EU_ILLEGAL_CONTENT, "EU illegal content"),
         (HARASSMENT, "Harassment"),
@@ -324,12 +323,12 @@ class AdminAction(models.Model):
     BAN = "BAN"
     DELETE = "DELETE"
     WARN = "WARN"
-    ACCEPT = "ACCEPT"
+    DISMISS_REPORT = "DISMISS_REPORT"
     ACTION_CHOICES: ClassVar[list[tuple[str, str]]] = [
         (BAN, "Ban User"),
         (DELETE, "Delete Post"),
         (WARN, "Warn User"),
-        (ACCEPT, "Accept"),
+        (DISMISS_REPORT, "Dismiss Report"),
     ]
     post_report = models.ForeignKey("PostReport", on_delete=models.CASCADE)
     action = models.CharField(max_length=10, choices=ACTION_CHOICES)

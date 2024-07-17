@@ -60,5 +60,4 @@ def handle_admin_action(action: str, report: PostReport, user: User, request: Ht
     elif action == "ACCEPT":
         report.verified = True
         report.save()
-    else:
-        pass
+
