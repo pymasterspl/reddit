@@ -8,22 +8,20 @@
 
 {% block content %}
     <div class="container mt-5">
-        <h1 class="mb-4">Dodaj zgłoszenie postu</h1>
+        <h1 class="mb-4">Add a post report</h1>
         <div class="card bg-dark shadow-sm mb-3 text-light">
 
             <div class="col">
                 <div class="d-flex flex-column">
                     <div>
-                        <a href="#"
+                        <a href="{% url 'post-detail' post.id %}"
                            class="link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-25-hover">
                             r/{{ post.community }}
                         </a>
                         • <small class="text-secondary">{{ post.created_at|timesince }} ago</small>
                     </div>
                     <div>
-                        <a href="#" class="link-light link-offset-2 link-underline-opacity-0 link-opacity-75-hover link-underline-opacity-25-hover">
-                            {{ post.author.nickname }}
-                        </a>
+                        {{ post.author.nickname }}
                     </div>
                 </div>
             </div>
@@ -40,7 +38,7 @@
                         <li><strong>{{  field.label }}</strong>{{ error }}</li>
                     {% endfor %}
                 {%  endfor %}
-            {%  for error in form.non_field_errors %}
+            {% for error in form.non_field_errors %}
                 <li>{{ error }}</li>
             {%  endfor %}
             </ul>
@@ -56,7 +54,7 @@
             <div class="mb-3">
                 {{ form.report_details|as_crispy_field }}
             </div>
-            <button type="submit" class="btn btn-primary mb-2">Wyślij zgłoszenie</button>
+            <button type="submit" class="btn btn-primary mb-2">Submit a report</button>
         </form>
     </div>
 
