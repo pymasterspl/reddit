@@ -1,11 +1,9 @@
 from typing import Any
 
 from django import forms
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.mail import send_mail
 from django.db import models
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -18,6 +16,7 @@ from django.views.generic import CreateView, DetailView, ListView
 
 from .forms import AdminActionForm, CommentForm, CommunityForm, PostForm, PostReportForm
 from .models import AdminAction, Community, CommunityMember, Post, PostReport, PostVote, SavedPost
+from .services import handle_admin_action
 
 
 class PostListView(ListView):
@@ -75,11 +74,6 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     def dispatch(
         self: "PostCreateView", request: HttpRequest, *args: tuple[Any], **kwargs: dict[str, Any]
     ) -> HttpResponse:
-        if not request.user.is_authenticated:
-            return redirect(reverse("login"))
-        if not request.user.create_post:
-            messages.error(request, "You do not have permission to create posts.")
-            return redirect(reverse("post-list"))
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self: "PostCreateView") -> dict[str, any]:
@@ -202,10 +196,10 @@ class PostListReportedView(UserPassesTestMixin, LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self: "PostListReportedView") -> QuerySet:
-        queryset = PostReport.objects.filter(verified=False)
         if not self.request.user.is_staff:
             messages.error(self.request, "You do not have permission to view this page.")
-        return queryset
+            return redirect("home")
+        return PostReport.objects.filter(verified=False)
 
     def test_func(self: "PostListReportedView") -> bool:
         return self.request.user.is_staff
@@ -229,8 +223,8 @@ class PostReportedView(UserPassesTestMixin, LoginRequiredMixin, DetailView):
             return queryset.none()
         return queryset
 
-    def get_context_data(self: "PostReportedView") -> dict[str, Any]:
-        context = super().get_context_data()
+    def get_context_data(self: "PostReportedView", **kwargs: dict[str, Any]) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
         context["form"] = AdminActionForm()
         return context
 
@@ -247,71 +241,19 @@ class PostReportedView(UserPassesTestMixin, LoginRequiredMixin, DetailView):
             admin_action = AdminAction(post_report=report, action=action, comment=comment, performed_by=request.user)
             admin_action.save()
 
-            if action == "BAN":
-                report.verified = True
-                report.save()
-                user.create_post = False
-                user.save()
-                post.delete()
-                send_mail(
-                    "Account Banned",
-                    "Your account has been banned for violating community rules, now you cannot access posts.",
-                    "admin@yourwebsite.com",
-                    [user.email],
-                    fail_silently=False,
-                )
-                messages.success(request, "User has been banned successfully.")
-
-            elif action == "DELETE":
-                report.verified = True
-                report.save()
-                post.delete()
-                send_mail(
-                    "Post Deleted",
-                    "Your post has been deleted due to violations of community guidelines.",
-                    settings.EMAIL_HOST_USER,
-                    [user.email],
-                    fail_silently=False,
-                )
-                messages.success(request, "Post has been deleted successfully.")
-            elif action == "WARN":
-                user.warnings += 1
-                report.verified = True
-                report.save()
-                if user.warnings >= settings.LIMIT_WARNINGS:
-                    post.delete()
-                    send_mail(
-                        "Post Deleted",
-                        "Your post has been deleted due to violations of community guidelines.",
-                        settings.EMAIL_HOST_USER,
-                        [user.email],
-                        fail_silently=False,
-                    )
-                    messages.success(request, "Post has been deleted successfully.")
-                else:
-                    send_mail(
-                        "Warning Issued",
-                        "You have received a warning due to violations of community guidelines.",
-                        settings.EMAIL_HOST_USER,
-                        [user.email],
-                        fail_silently=False,
-                    )
-                    messages.success(request, "User has been warned successfully.")
-            elif action == "OKEY":
-                report.verified = True
-                report.save()
-            return redirect(reverse_lazy("post-list-reported"))
+            handle_admin_action(action, report, user, request)
+            return redirect(reverse("post-list-reported"))
 
         context = self.get_context_data(**kwargs)
         context["form"] = form
         return self.render_to_response(context)
 
-    def get(self: "PostReportedView", request: HttpRequest) -> HttpResponse:
+    def get(self: "PostReportedView", request: HttpRequest, **kwargs: dict[str, Any]) -> HttpResponse:
         self.object = self.get_object()
         if not request.user.is_staff:
             messages.error(request, "You do not have permission to view this page.")
             return redirect("home")
-        context = self.get_context_data()
+        context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
 
     def get_object(self: "PostReportedView", queryset: QuerySet | None = None) -> PostReport:
