@@ -335,7 +335,7 @@ ACTION_CHOICES: list[tuple[str, str]] = [
 
 class AdminAction(models.Model):
     post_report = models.ForeignKey("PostReport", on_delete=models.CASCADE)
-    action = models.CharField(max_length=16, choices=ACTION_CHOICES)
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
     comment = models.TextField(blank=True)
     performed_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
