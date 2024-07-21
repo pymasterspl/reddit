@@ -45,11 +45,7 @@ def test_add_post_valid(client: Client, user: User, community: Community) -> Non
         image.save(tmp_file, format="JPEG")
         tmp_file.seek(0)
 
-        avatar_file = SimpleUploadedFile(
-            name="test_avatar.jpg",
-            content=tmp_file.read(),
-            content_type="image/jpeg"
-        )
+        avatar_file = SimpleUploadedFile(name="test_avatar.jpg", content=tmp_file.read(), content_type="image/jpeg")
 
         user.avatar = avatar_file
         user.save()
@@ -73,11 +69,7 @@ def test_add_post_invalid(client: Client, user: User, community: Community) -> N
         image.save(tmp_file, format="JPEG")
         tmp_file.seek(0)
 
-        avatar_file = SimpleUploadedFile(
-            name="test_avatar.jpg",
-            content=tmp_file.read(),
-            content_type="image/jpeg"
-        )
+        avatar_file = SimpleUploadedFile(name="test_avatar.jpg", content=tmp_file.read(), content_type="image/jpeg")
 
         user.avatar = avatar_file
         user.save()
@@ -107,11 +99,7 @@ def test_add_comment_valid(client: Client, user: User, post: Post) -> None:
         image.save(tmp_file, format="JPEG")
         tmp_file.seek(0)
 
-        avatar_file = SimpleUploadedFile(
-            name="test_avatar.jpg",
-            content=tmp_file.read(),
-            content_type="image/jpeg"
-        )
+        avatar_file = SimpleUploadedFile(name="test_avatar.jpg", content=tmp_file.read(), content_type="image/jpeg")
 
         user.avatar = avatar_file
         user.save()
@@ -137,11 +125,7 @@ def test_add_comment_invalid(client: Client, user: User, post: Post) -> None:
         image.save(tmp_file, format="JPEG")
         tmp_file.seek(0)
 
-        avatar_file = SimpleUploadedFile(
-            name="test_avatar.jpg",
-            content=tmp_file.read(),
-            content_type="image/jpeg"
-        )
+        avatar_file = SimpleUploadedFile(name="test_avatar.jpg", content=tmp_file.read(), content_type="image/jpeg")
 
         user.avatar = avatar_file
         user.save()
@@ -160,11 +144,7 @@ def test_add_comment_valid_special_characters(client: Client, user: User, post: 
         image.save(tmp_file, format="JPEG")
         tmp_file.seek(0)
 
-        avatar_file = SimpleUploadedFile(
-            name="test_avatar.jpg",
-            content=tmp_file.read(),
-            content_type="image/jpeg"
-        )
+        avatar_file = SimpleUploadedFile(name="test_avatar.jpg", content=tmp_file.read(), content_type="image/jpeg")
 
         user.avatar = avatar_file
         user.save()
@@ -192,11 +172,7 @@ def test_add_nested_comment_valid(client: Client, user: User, post: Post, commen
         image.save(tmp_file, format="JPEG")
         tmp_file.seek(0)
 
-        avatar_file = SimpleUploadedFile(
-            name="test_avatar.jpg",
-            content=tmp_file.read(),
-            content_type="image/jpeg"
-        )
+        avatar_file = SimpleUploadedFile(name="test_avatar.jpg", content=tmp_file.read(), content_type="image/jpeg")
 
         user.avatar = avatar_file
         user.save()
@@ -229,11 +205,7 @@ def test_add_nested_comment_invalid(client: Client, user: User, post: Post, comm
         image.save(tmp_file, format="JPEG")
         tmp_file.seek(0)
 
-        avatar_file = SimpleUploadedFile(
-            name="test_avatar.jpg",
-            content=tmp_file.read(),
-            content_type="image/jpeg"
-        )
+        avatar_file = SimpleUploadedFile(name="test_avatar.jpg", content=tmp_file.read(), content_type="image/jpeg")
 
         user.avatar = avatar_file
         user.save()
@@ -262,11 +234,7 @@ def test_add_deeply_nested_comment_valid(client: Client, user: User, post: Post)
         image.save(tmp_file, format="JPEG")
         tmp_file.seek(0)
 
-        avatar_file = SimpleUploadedFile(
-            name="test_avatar.jpg",
-            content=tmp_file.read(),
-            content_type="image/jpeg"
-        )
+        avatar_file = SimpleUploadedFile(name="test_avatar.jpg", content=tmp_file.read(), content_type="image/jpeg")
 
         user.avatar = avatar_file
         user.save()
