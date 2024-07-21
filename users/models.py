@@ -80,6 +80,7 @@ class User(AbstractUser):
 
     def process_avatar(self: "User", avatar: any) -> ContentFile:
         image = Image.open(avatar)
+        image = image.convert("RGB")
         image = image.resize((32, 32), Image.LANCZOS)
         image_io = io.BytesIO()
         image.save(image_io, format="JPEG")
