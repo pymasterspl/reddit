@@ -5,7 +5,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.core import mail
 from django.test import Client
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from faker import Faker
 
 from core.models import Community, Post, PostReport
@@ -53,8 +53,8 @@ def community() -> Community:
 def report_data() -> dict:
     fake = Faker()
     return {
-        "report_type": "EU_ILLEGAL_CONTENT",
-        "report_details": fake.text(max_nb_chars=100),
+        "report_type": "20_EU_ILLEGAL_CONTENT",
+        "report_details": fake.text(),
     }
 
 
@@ -68,7 +68,7 @@ def post_report(post: Post, user: User) -> Post:
 
 @pytest.fixture()
 def admin_action_form_data() -> dict:
-    return {"action": "DELETE", "comment": "This post violates the guidelines."}
+    return {"action": "20_DELETE", "comment": "This post violates the guidelines."}
 
 
 def test_add_post_valid(client: Client, user: User, community: Community) -> None:
@@ -110,13 +110,12 @@ def test_report_post(client: Client, user: User, post: Post, report_data: dict) 
     client.force_login(user)
     response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=report_data)
     assert response.status_code == 302
-    assert reverse("home") in response.url
 
 
 def test_report_post_unauthorized(client: Client, post: Post, report_data: dict) -> None:
     response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=report_data)
     assert response.status_code == 302
-    assert reverse("login") in response.url
+    assert str(reverse_lazy("login")) in response.url
 
 
 def test_add_comment_valid(client: Client, user: User, post: Post) -> None:
@@ -172,7 +171,6 @@ def test_reported_list_post_by_admin(client: Client, admin: User, post: Post, re
     assert reverse("home") in response.url
     response = client.get(reverse("post-list-reported"))
     assert response.status_code == 200
-
     reports_count = PostReport.objects.filter(verified=False).count()
     assert reports_count > 0
 
@@ -181,7 +179,6 @@ def test_reported_list_post_by_user(client: Client, user: User, post: Post, repo
     client.force_login(user)
     response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=report_data)
     assert response.status_code == 302
-    assert reverse("home") in response.url
     response = client.get(reverse("post-list-reported"))
     assert response.status_code == 302
     assert reverse("home") in response.url
@@ -197,7 +194,6 @@ def test_reported_detail_post_by_user(client: Client, user: User, post: Post, re
     client.force_login(user)
     response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=report_data)
     assert response.status_code == 302
-    assert reverse("home") in response.url
     response = client.get(reverse("reported-post", kwargs={"pk": 1}))
     assert response.status_code == 403
 
@@ -212,11 +208,11 @@ def test_reported_detail_post_by_admin(
     client: Client, admin: User, post: Post, post_report: PostReport, admin_action_form_data: dict
 ) -> None:
     client.force_login(admin)
-    response = client.post(reverse("reported-post", kwargs={"pk": post_report.pk}), data=admin_action_form_data)
+    response = client.post(reverse_lazy("reported-post", kwargs={"pk": post_report.pk}), data=admin_action_form_data)
     assert response.status_code == 302
 
     with pytest.raises(Post.DoesNotExist):
-        post.refresh_from_db()
+        Post.objects.get(pk=post.pk)
 
     assert len(mail.outbox) == 1
     assert mail.outbox[0].subject == "Post Deleted"

@@ -276,37 +276,39 @@ class SavedPost(models.Model):
         return SavedPost.objects.filter(user=user)
 
 
+BREAKS_RULES = "10_BREAKS_RULES"
+EU_ILLEGAL_CONTENT = "20_EU_ILLEGAL_CONTENT"
+HARASSMENT = "30_HARASSMENT"
+THREATENING_VIOLENCE = "40_THREATENING_VIOLENCE"
+HATE = "50_HATE"
+MINOR_ABUSE_OR_SEXUALIZATION = "60_MINOR_ABUSE_OR_SEXUALIZATION"
+SHARING_PERSONAL_INFORMATION = "70_SHARING_PERSONAL_INFORMATION"
+NON_CONSENSUAL_INTIMATE_MEDIA = "80_NON_CONSENSUAL_INTIMATE_MEDIA"
+PROHIBITED_TRANSACTION = "90_PROHIBITED_TRANSACTION"
+IMPERSONATION = "100_IMPERSONATION"
+COPYRIGHT_VIOLATION = "110_COPYRIGHT_VIOLATION"
+TRADEMARK_VIOLATION = "120_TRADEMARK_VIOLATION"
+SELF_HARM_OR_SUICIDE = "130_SELF_HARM_OR_SUICIDE"
+SPAM = "140_SPAM"
+REPORT_CHOICES: list[tuple[str, str]] = [
+    (BREAKS_RULES, "Breaks r/fatFIRE rules"),
+    (EU_ILLEGAL_CONTENT, "EU illegal content"),
+    (HARASSMENT, "Harassment"),
+    (THREATENING_VIOLENCE, "Threatening violence"),
+    (HATE, "Hate"),
+    (MINOR_ABUSE_OR_SEXUALIZATION, "Minor abuse or sexualization"),
+    (SHARING_PERSONAL_INFORMATION, "Sharing personal information"),
+    (NON_CONSENSUAL_INTIMATE_MEDIA, "Non-consensual intimate media"),
+    (PROHIBITED_TRANSACTION, "Prohibited transaction"),
+    (IMPERSONATION, "Impersonation"),
+    (COPYRIGHT_VIOLATION, "Copyright violation"),
+    (TRADEMARK_VIOLATION, "Trademark violation"),
+    (SELF_HARM_OR_SUICIDE, "Self-harm or suicide"),
+    (SPAM, "Spam"),
+]
+
+
 class PostReport(models.Model):
-    BREAKS_RULES = "BREAKS_RULES"
-    EU_ILLEGAL_CONTENT = "EU_ILLEGAL_CONTENT"
-    HARASSMENT = "HARASSMENT"
-    THREATENING_VIOLENCE = "THREATENING_VIOLENCE"
-    HATE = "HATE"
-    MINOR_ABUSE_OR_SEXUALIZATION = "MINOR_ABUSE_OR_SEXUALIZATION"
-    SHARING_PERSONAL_INFORMATION = "SHARING_PERSONAL_INFORMATION"
-    NON_CONSENSUAL_INTIMATE_MEDIA = "NON_CONSENSUAL_INTIMATE_MEDIA"
-    PROHIBITED_TRANSACTION = "PROHIBITED_TRANSACTION"
-    IMPERSONATION = "IMPERSONATION"
-    COPYRIGHT_VIOLATION = "COPYRIGHT_VIOLATION"
-    TRADEMARK_VIOLATION = "TRADEMARK_VIOLATION"
-    SELF_HARM_OR_SUICIDE = "SELF_HARM_OR_SUICIDE"
-    SPAM = "SPAM"
-    REPORT_CHOICES: ClassVar[list[tuple[str, str]]] = [
-        (BREAKS_RULES, "Breaks r/fatFIRE rules"),
-        (EU_ILLEGAL_CONTENT, "EU illegal content"),
-        (HARASSMENT, "Harassment"),
-        (THREATENING_VIOLENCE, "Threatening violence"),
-        (HATE, "Hate"),
-        (MINOR_ABUSE_OR_SEXUALIZATION, "Minor abuse or sexualization"),
-        (SHARING_PERSONAL_INFORMATION, "Sharing personal information"),
-        (NON_CONSENSUAL_INTIMATE_MEDIA, "Non-consensual intimate media"),
-        (PROHIBITED_TRANSACTION, "Prohibited transaction"),
-        (IMPERSONATION, "Impersonation"),
-        (COPYRIGHT_VIOLATION, "Copyright violation"),
-        (TRADEMARK_VIOLATION, "Trademark violation"),
-        (SELF_HARM_OR_SUICIDE, "Self-harm or suicide"),
-        (SPAM, "Spam"),
-    ]
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     report_type = models.CharField(max_length=50, choices=REPORT_CHOICES)
     report_details = models.TextField(blank=True)
@@ -319,17 +321,19 @@ class PostReport(models.Model):
         return f"Report for Post {self.post.id} - {self.report_type}"
 
 
+BAN = "10_BAN"
+DELETE = "20_DELETE"
+WARN = "30_WARN"
+DISMISS_REPORT = "40_DISMISS_REPORT"
+ACTION_CHOICES: list[tuple[str, str]] = [
+    (BAN, "Ban User"),
+    (DELETE, "Delete Post"),
+    (WARN, "Warn User"),
+    (DISMISS_REPORT, "Dismiss Report"),
+]
+
+
 class AdminAction(models.Model):
-    BAN = "BAN"
-    DELETE = "DELETE"
-    WARN = "WARN"
-    DISMISS_REPORT = "DISMISS_REPORT"
-    ACTION_CHOICES: ClassVar[list[tuple[str, str]]] = [
-        (BAN, "Ban User"),
-        (DELETE, "Delete Post"),
-        (WARN, "Warn User"),
-        (DISMISS_REPORT, "Dismiss Report"),
-    ]
     post_report = models.ForeignKey("PostReport", on_delete=models.CASCADE)
     action = models.CharField(max_length=16, choices=ACTION_CHOICES)
     comment = models.TextField(blank=True)

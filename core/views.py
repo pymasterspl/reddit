@@ -9,7 +9,7 @@ from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView
@@ -91,7 +91,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         return context
 
     def get_success_url(self: "PostCreateView") -> str:
-        return reverse("post-detail", kwargs={"pk": self.object.pk})
+        return reverse_lazy("post-detail", kwargs={"pk": self.object.pk})
 
 
 class PostVoteView(LoginRequiredMixin, View):
@@ -224,6 +224,8 @@ class PostReportedView(UserPassesTestMixin, LoginRequiredMixin, DetailView):
         return queryset
 
     def get_context_data(self: "PostReportedView", **kwargs: dict[str, Any]) -> dict[str, Any]:
+        if not hasattr(self, "object"):
+            self.object = self.get_object()
         context = super().get_context_data(**kwargs)
         context["form"] = AdminActionForm()
         return context
@@ -242,7 +244,7 @@ class PostReportedView(UserPassesTestMixin, LoginRequiredMixin, DetailView):
             admin_action.save()
 
             handle_admin_action(action, report, user, request)
-            return redirect(reverse("post-list-reported"))
+            return redirect(reverse_lazy("post-list-reported"))
 
         context = self.get_context_data(**kwargs)
         context["form"] = form
