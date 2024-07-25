@@ -115,7 +115,7 @@ class User(AbstractUser):
         return f"{delta.days} days ago"
 
     @property
-    def avatar_url(self):
+    def avatar_url(self: "User") -> str:
         try:
             if self.avatar and self.avatar.url:
                 return self.avatar.url
