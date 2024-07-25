@@ -165,3 +165,5 @@ EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="default@email.com")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="password")
 
 LOGIN_URL = reverse_lazy("login")
+
+DEFAULT_AVATAR_URL = "https://placehold.co/32x32.png"
