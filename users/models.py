@@ -80,7 +80,8 @@ class User(AbstractUser):
 
     def process_avatar(self: "User", avatar: any) -> ContentFile:
         image = Image.open(avatar)
-        image = image.convert("RGB")
+        if image.mode != "RGB":
+            image = image.convert("RGB")
         image = image.resize((32, 32), Image.LANCZOS)
         image_io = io.BytesIO()
         image.save(image_io, format="JPEG")
@@ -112,3 +113,12 @@ class User(AbstractUser):
         if delta.days == 1:
             return "1 day ago"
         return f"{delta.days} days ago"
+
+    @property
+    def avatar_url(self):
+        try:
+            if self.avatar and self.avatar.url:
+                return self.avatar.url
+        except (ValueError, AttributeError):
+            pass
+        return settings.DEFAULT_AVATAR_URL
