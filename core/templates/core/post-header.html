@@ -4,17 +4,10 @@
 <div class="card-header">
     <div class="row align-items-center">
         <div class="col-auto">
-             {% if post.author.avatar %}
-                 <img src="{{ post.author.avatar.url }}"
-                       alt="{{ post.author }} avatar image"
-                       class="rounded-circle"
-                       style="width: 32px; height: 32px;">
-            {% else %}
-                <img src="https://placehold.co/32x32.png"
-                     alt="{{ post.author }} avatar image"
-                     class="rounded-circle"
-                     style="width: 32px; height: 32px;">
-            {% endif %}
+             <img src="{% if post.author.avatar %}{{ post.author.avatar.url }}{% else %}{{ default_avatar_url }}{% endif %}"
+                   alt="{{ post.author }} avatar image"
+                   class="rounded-circle"
+                   style="width: 32px; height: 32px;">
         </div>
         <div class="col">
             <div class="d-flex flex-column">
