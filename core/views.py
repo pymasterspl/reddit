@@ -1,6 +1,7 @@
 from typing import Any
 
 from django import forms
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
@@ -24,6 +25,11 @@ class PostListView(ListView):
     def get_queryset(self: "PostListView") -> models.QuerySet:
         return Post.objects.filter(parent=None)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['default_avatar_url'] = settings.DEFAULT_AVATAR_URL
+        return context
+
 
 @method_decorator(login_required, name="post")
 class PostDetailView(DetailView):
@@ -40,6 +46,7 @@ class PostDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         comments = self.object.get_comments()
 
+        context['default_avatar_url'] = settings.DEFAULT_AVATAR_URL
         context["comments"] = comments
         context["form"] = self.object.get_comment_form()
         return context
