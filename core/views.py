@@ -46,7 +46,7 @@ class PostDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         comments = self.object.get_comments()
 
-        context["default_avatar_url"] = settings.DEFAULT_AVATAR_URL
+        context["default_avatar_url"] = context["post"].author.avatar_url
         context["comments"] = comments
         context["form"] = self.object.get_comment_form()
         return context
