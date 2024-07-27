@@ -4,7 +4,7 @@
 <div class="card-header">
     <div class="row align-items-center">
         <div class="col-auto">
-             <img src="{% if post.author.avatar %}{{ post.author.avatar.url }}{% else %}{{ default_avatar_url }}{% endif %}"
+             <img src="{{ post.author.avatar_url }}"
                    alt="{{ post.author }} avatar image"
                    class="rounded-circle"
                    style="width: 32px; height: 32px;">
