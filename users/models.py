@@ -68,7 +68,7 @@ class User(AbstractUser):
     username: None = None
     email = models.EmailField(unique=True)
     last_activity = models.DateTimeField(auto_now_add=True, db_index=True)
-    avatar = models.ImageField(upload_to="users_avatars/", null=True, blank=True, default=None)
+    avatar = models.ImageField(upload_to="users_avatars/", null=True, blank=True)
 
     def __str__(self: "User") -> str:
         return self.nickname
@@ -86,11 +86,6 @@ class User(AbstractUser):
         image_io = io.BytesIO()
         image.save(image_io, format="JPEG")
         return ContentFile(image_io.getvalue(), avatar.name)
-
-    def get_avatar_url(self: "User") -> str:
-        if self.avatar:
-            return self.avatar.url
-        return "/static/images/avatars/default_avatar.jpg"
 
     def update_last_activity(self: "User") -> None:
         User.objects.filter(pk=self.pk).update(last_activity=timezone.now())
@@ -116,9 +111,9 @@ class User(AbstractUser):
 
     @property
     def avatar_url(self: "User") -> str:
-        try:
-            if self.avatar and self.avatar.url:
+        if self.avatar and hasattr(self.avatar, 'url'):
+            try:
                 return self.avatar.url
-        except (ValueError, AttributeError):
-            pass
+            except ValueError:
+                return settings.DEFAULT_AVATAR_URL
         return settings.DEFAULT_AVATAR_URL
