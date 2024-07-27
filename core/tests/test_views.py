@@ -56,7 +56,6 @@ def default_avatar_url(settings: Settings) -> None:
 
 
 def test_add_post_valid(client: Client, user: User, community: Community) -> None:
-
     data = {
         "community": community.pk,
         "title": "Test Post Title",
@@ -93,7 +92,6 @@ def test_add_post_unauthorized(client: Client, community: Community) -> None:
 
 
 def test_add_comment_valid(client: Client, user: User, post: Post) -> None:
-
     data = {
         "parent_id": post.pk,
         "content": "This is a test comment content.",
@@ -121,7 +119,6 @@ def test_add_comment_invalid(client: Client, user: User, post: Post) -> None:
 
 
 def test_add_comment_valid_special_characters(client: Client, user: User, post: Post) -> None:
-
     data = {"parent_id": post.pk, "content": "This is a test comment with special characters! 😊🚀✨"}
     client.force_login(user)
     response = client.post(reverse("post-detail", kwargs={"pk": post.pk}), data=data, follow=True)
@@ -141,7 +138,6 @@ def test_add_comment_unauthorized(client: Client, post: Post) -> None:
 
 
 def test_add_nested_comment_valid(client: Client, user: User, post: Post, comment: Post) -> None:
-
     data = {
         "parent_id": comment.pk,
         "content": "This is a test nested comment content.",
