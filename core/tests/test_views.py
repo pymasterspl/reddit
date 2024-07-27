@@ -1,11 +1,14 @@
+import io
 import secrets
 import string
 
 import pytest
-from django.conf import Settings, settings
+from django.conf import Settings
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
 from django.urls import reverse
+from PIL import Image
 
 from core.models import Community, Post
 
@@ -33,16 +36,27 @@ def user(client: Client) -> User:
 
 
 @pytest.fixture()
-def user_with_avatar(client: Client) -> User:
+def user_with_avatar(client: Client, create_avatar: SimpleUploadedFile) -> User:
     password = generate_random_password()
     user = User.objects.create_user(
         email="test_user@example.com",
         nickname="TestUser",
         password=password,
     )
+    user.avatar = create_avatar
+    user.save()
     client.login(email=user.email, password=user.password)
 
     return user
+
+
+@pytest.fixture()
+def create_avatar() -> SimpleUploadedFile:
+    img = Image.new("RGB", (100, 100), color=(73, 109, 137))
+    img_io = io.BytesIO()
+    img.save(img_io, format="JPEG")
+    img_io.seek(0)
+    return SimpleUploadedFile(name="test_avatar.jpg", content=img_io.read(), content_type="image/jpeg")
 
 
 @pytest.fixture()
@@ -67,7 +81,6 @@ def test_add_post_valid(client: Client, user: User, community: Community) -> Non
     assert response.context["post"].author == user
     assert response.context["post"].title == data["title"]
     assert response.context["post"].content == data["content"]
-    assert response.context["post"].author.avatar == user.avatar
 
 
 def test_add_post_invalid(client: Client, user: User, community: Community) -> None:
@@ -210,8 +223,7 @@ def test_post_user_avatar_display(client: Client, community: Community, user_wit
     client.force_login(user_with_avatar)
     response = client.post(reverse("post-create"), data=data, follow=True)
     post = response.context["post"]
-    expected_avatar_url = user_with_avatar.avatar.url
-    assert post.author.avatar.url == expected_avatar_url
+    assert post.author.avatar.url == user_with_avatar.avatar_url
 
 
 @pytest.mark.django_db()
@@ -224,4 +236,4 @@ def test_post_user_without_avatar(client: Client, community: Community, user: Us
     client.force_login(user)
     response = client.post(reverse("post-create"), data=data, follow=True)
     post = response.context["post"]
-    assert post.author.avatar_url == settings.DEFAULT_AVATAR_URL
+    assert post.author.avatar_url == default_avatar_url
