@@ -2,7 +2,7 @@ import secrets
 import string
 
 import pytest
-from django.conf import Settings
+from django.conf import Settings, settings
 from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
@@ -41,7 +41,6 @@ def user_with_avatar(client: Client) -> User:
         nickname="TestUser",
         password=password,
     )
-    create_test_avatar(user)
     client.login(email=user.email, password=user.password)
 
     return user
@@ -58,7 +57,6 @@ def default_avatar_url(settings: Settings) -> None:
 
 
 def test_add_post_valid(client: Client, user: User, community: Community) -> None:
-    create_test_avatar(user)
 
     data = {
         "community": community.pk,
@@ -75,7 +73,6 @@ def test_add_post_valid(client: Client, user: User, community: Community) -> Non
 
 
 def test_add_post_invalid(client: Client, user: User, community: Community) -> None:
-    create_test_avatar(user)
     data = {"title": ""}
     client.force_login(user)
     response = client.post(reverse("post-create"), data=data)
@@ -97,7 +94,6 @@ def test_add_post_unauthorized(client: Client, community: Community) -> None:
 
 
 def test_add_comment_valid(client: Client, user: User, post: Post) -> None:
-    create_test_avatar(user)
 
     data = {
         "parent_id": post.pk,
@@ -116,7 +112,6 @@ def test_add_comment_valid(client: Client, user: User, post: Post) -> None:
 
 
 def test_add_comment_invalid(client: Client, user: User, post: Post) -> None:
-    create_test_avatar(user)
     data = {"parent_id": post.pk, "content": ""}
     client.force_login(user)
     response = client.post(reverse("post-detail", kwargs={"pk": post.pk}), data=data)
@@ -127,7 +122,6 @@ def test_add_comment_invalid(client: Client, user: User, post: Post) -> None:
 
 
 def test_add_comment_valid_special_characters(client: Client, user: User, post: Post) -> None:
-    create_test_avatar(user)
 
     data = {"parent_id": post.pk, "content": "This is a test comment with special characters! 😊🚀✨"}
     client.force_login(user)
@@ -148,7 +142,6 @@ def test_add_comment_unauthorized(client: Client, post: Post) -> None:
 
 
 def test_add_nested_comment_valid(client: Client, user: User, post: Post, comment: Post) -> None:
-    create_test_avatar(user)
 
     data = {
         "parent_id": comment.pk,
@@ -174,7 +167,6 @@ def test_add_nested_comment_valid(client: Client, user: User, post: Post, commen
 
 
 def test_add_nested_comment_invalid(client: Client, user: User, post: Post, comment: Post) -> None:
-    create_test_avatar(user)
     data = {"parent_id": comment.pk, "content": ""}
     client.force_login(user)
     response = client.post(reverse("post-detail", kwargs={"pk": post.pk}), data=data)
@@ -195,7 +187,6 @@ def test_add_nested_comment_unauthorized(client: Client, post: Post, comment: Po
 
 
 def test_add_deeply_nested_comment_valid(client: Client, user: User, post: Post) -> None:
-    create_test_avatar(user)
     client.force_login(user)
 
     parent_comment = post
@@ -238,4 +229,4 @@ def test_post_user_without_avatar(client: Client, community: Community, user: Us
     client.force_login(user)
     response = client.post(reverse("post-create"), data=data, follow=True)
     post = response.context["post"]
-    assert post.author.avatar_url == default_avatar_url
+    assert post.author.avatar_url == settings.DEFAULT_AVATAR_URL
