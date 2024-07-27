@@ -8,7 +8,6 @@ from django.test import Client
 from django.urls import reverse
 
 from core.models import Community, Post
-from utils.create_test_avatar import create_test_avatar
 
 pytestmark = pytest.mark.django_db
 

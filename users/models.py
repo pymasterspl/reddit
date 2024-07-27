@@ -111,7 +111,7 @@ class User(AbstractUser):
 
     @property
     def avatar_url(self: "User") -> str:
-        if self.avatar and hasattr(self.avatar, 'url'):
+        if self.avatar and hasattr(self.avatar, "url"):
             try:
                 return self.avatar.url
             except ValueError:
