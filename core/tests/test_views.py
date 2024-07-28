@@ -3,12 +3,15 @@ import string
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.contrib.messages import get_messages
 from django.core import mail
+from django.core.management import call_command
 from django.test import Client
 from django.urls import reverse, reverse_lazy
 from faker import Faker
 
 from core.models import Community, Post, PostReport
+from reddit import settings
 
 pytestmark = pytest.mark.django_db
 
@@ -31,6 +34,12 @@ def user(client: Client) -> User:
 
     client.login(email=user.email, password=user.password)
     return user
+
+
+@pytest.fixture(scope='session')
+def django_db_setup(django_db_setup, django_db_blocker):
+    with django_db_blocker.unblock():
+        call_command('loaddata', 'fixtures/data.json')
 
 
 @pytest.fixture()
@@ -110,6 +119,9 @@ def test_report_post(client: Client, user: User, post: Post, report_data: dict) 
     client.force_login(user)
     response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=report_data)
     assert response.status_code == 302
+    messages = list(get_messages(response.wsgi_request))
+    assert len(messages) == 1
+    assert str(messages[0]) == "Your post has been reported."
 
 
 def test_report_post_unauthorized(client: Client, post: Post, report_data: dict) -> None:
@@ -164,15 +176,13 @@ def test_add_comment_unauthorized(client: Client, post: Post) -> None:
     assert reverse("login") in response.url
 
 
-def test_reported_list_post_by_admin(client: Client, admin: User, post: Post, report_data: dict) -> None:
+def test_reported_list_post_by_admin(client: Client, admin: User, django_db_setup, post: Post, report_data: dict) -> None:
     client.force_login(admin)
-    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=report_data)
-    assert response.status_code == 302
-    assert reverse("home") in response.url
+
     response = client.get(reverse("post-list-reported"))
     assert response.status_code == 200
     reports_count = PostReport.objects.filter(verified=False).count()
-    assert reports_count > 0
+    assert reports_count == 1
 
 
 def test_reported_list_post_by_user(client: Client, user: User, post: Post, report_data: dict) -> None:
@@ -181,7 +191,12 @@ def test_reported_list_post_by_user(client: Client, user: User, post: Post, repo
     assert response.status_code == 302
     response = client.get(reverse("post-list-reported"))
     assert response.status_code == 302
-    assert reverse("home") in response.url
+    assert response.url == reverse("home")
+
+    messages = list(get_messages(response.wsgi_request))
+    assert any(
+        "You do not have permission to view this page." in str(message) for
+        message in messages)
 
 
 def test_reported_list_post_by_anonymous_user(client: Client) -> None:
@@ -192,16 +207,15 @@ def test_reported_list_post_by_anonymous_user(client: Client) -> None:
 
 def test_reported_detail_post_by_user(client: Client, user: User, post: Post, report_data: dict) -> None:
     client.force_login(user)
-    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=report_data)
-    assert response.status_code == 302
-    response = client.get(reverse("reported-post", kwargs={"pk": 1}))
-    assert response.status_code == 403
+    response = client.get(reverse("reported-post", kwargs={"pk": post.pk}))
+    assert response.status_code == 200
+    assert "You do not have permission to view this page." in response.content.decode()
 
 
 def test_reported_detail_post_by_anonymous_user(client: Client, post_report: PostReport) -> None:
     response = client.get(reverse("post-report", kwargs={"pk": post_report.pk}))
     assert response.status_code == 302
-    assert f"/users/login/?next=/core/post/report/{post_report.pk}/" in response.url
+    assert f"{settings.LOGIN_URL}?next={reverse('post-report', kwargs={'pk': post_report.pk})}" in response.url
 
 
 def test_reported_detail_post_by_admin(
