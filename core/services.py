@@ -58,7 +58,7 @@ def warn_user(request: HttpRequest, report: PostReport, user: User) -> None:
     report.verified = True
     report.save()
     if user.warnings >= settings.LIMIT_WARNINGS:
-        report.post.delete()
+        report.post.is_active = False
         send_mail(
             "Post Deleted",
             "Your post has been deleted due to violations of community guidelines.",
