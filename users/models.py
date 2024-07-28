@@ -2,6 +2,7 @@ import io
 from datetime import timedelta
 from typing import ClassVar
 
+from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
@@ -11,13 +12,18 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from PIL import Image
-from core.models import Post, CommunityMember
 
 
 class UserManager(BaseUserManager):
     use_in_migrations: bool = True
 
-    def _create_user(self: "UserManager", email: str, nickname: str, password: str, **extra_fields: dict) -> "User":
+    def _create_user(
+        self: "UserManager",
+        email: str,
+        nickname: str,
+        password: str,
+        **extra_fields: dict,
+    ) -> "User":
         if not email:
             message: str = "Users must have an email address"
             raise ValueError(message)
@@ -30,13 +36,25 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_user(self: "UserManager", email: str, nickname: str, password: str, **extra_fields: dict) -> "User":
+    def create_user(
+        self: "UserManager",
+        email: str,
+        nickname: str,
+        password: str,
+        **extra_fields: dict,
+    ) -> "User":
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
 
         return self._create_user(email, nickname, password, **extra_fields)
 
-    def create_superuser(self: "UserManager", email: str, nickname: str, password: str, **extra_fields: dict) -> "User":
+    def create_superuser(
+        self: "UserManager",
+        email: str,
+        nickname: str,
+        password: str,
+        **extra_fields: dict,
+    ) -> "User":
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
 
@@ -69,7 +87,9 @@ class User(AbstractUser):
     username: None = None
     email = models.EmailField(unique=True)
     last_activity = models.DateTimeField(auto_now_add=True, db_index=True)
-    avatar = models.ImageField(upload_to="users_avatars/", null=True, blank=True, default=None)
+    avatar = models.ImageField(
+        upload_to="users_avatars/", null=True, blank=True, default=None
+    )
 
     def __str__(self: "User") -> str:
         return self.nickname
@@ -80,20 +100,34 @@ class User(AbstractUser):
         super().save(*args, **kwargs)
 
     def has_permission(self, post_id: int, permission_name: str) -> bool:
-        post = Post.objects.get(id=post_id)
+        Post = apps.get_model("core", "Post")
+        CommunityMember = apps.get_model("core", "CommunityMember")
+
+        try:
+            post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            print(f"Post with id {post_id} does not exist.")
+            return False
+
         match permission_name:
             case "edit":
-                if self.user == post.author:
+                if self == post.author:
                     return True
-
-                community_member = CommunityMember.objects.filter(
-                    community=post.community,
-                    user=self.user
-                ).first()
-
-                if community_member and community_member.role in [CommunityMember.MODERATOR, CommunityMember.ADMIN]:
-                    return True
+                try:
+                    community_member = CommunityMember.objects.get(
+                        community=post.community, user=self
+                    )
+                except CommunityMember.DoesNotExist:
+                    print(
+                        f"User {self} is not a member of the community {post.community}."
+                    )
+                    return False
+                return community_member.role in {
+                    CommunityMember.MODERATOR,
+                    CommunityMember.ADMIN,
+                }
             case _:
+                print(f"Invalid permission name: {permission_name}")
                 return False
 
     def process_avatar(self: "User", avatar: any) -> ContentFile:
@@ -113,7 +147,9 @@ class User(AbstractUser):
 
     @property
     def is_online(self: "User") -> bool:
-        online_limit = timezone.now() - timedelta(minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES)
+        online_limit = timezone.now() - timedelta(
+            minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES
+        )
         return self.last_activity >= online_limit
 
     @property
