@@ -68,8 +68,8 @@ class User(AbstractUser):
     username: None = None
     email = models.EmailField(unique=True)
     last_activity = models.DateTimeField(auto_now_add=True, db_index=True)
-    create_post: bool = models.BooleanField(default=True)
-    warnings: int = models.IntegerField(default=0)
+    can_create_post = models.BooleanField(default=True)
+    warnings = models.IntegerField(default=0)
     avatar = models.ImageField(upload_to="users_avatars/", null=True, blank=True, default=None)
 
     def __str__(self: "User") -> str:
