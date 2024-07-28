@@ -24,7 +24,7 @@ class PostListView(ListView):
     context_object_name = "posts"
 
     def get_queryset(self: "PostListView") -> models.QuerySet:
-        return Post.objects.filter(parent=None)
+        return Post.objects.filter(parent=None, is_active=True)
 
 
 @method_decorator(login_required, name="post")
@@ -35,7 +35,10 @@ class PostDetailView(DetailView):
 
     def get_object(self: "Post", queryset: QuerySet[Post] | None = None) -> Post:
         obj = super().get_object(queryset=queryset)
-        obj.update_display_counter()
+        if not obj.is_active:
+            self.template_name = "core/post-inactive.html"
+        else:
+            obj.update_display_counter()
         return obj
 
     def get_context_data(self: "PostDetailView", **kwargs: dict[str, Any]) -> dict[str, Any]:
@@ -71,10 +74,6 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     template_name = "core/post-create.html"
     login_url = "login"
 
-    def dispatch(
-        self: "PostCreateView", request: HttpRequest, *args: tuple[Any], **kwargs: dict[str, Any]
-    ) -> HttpResponse:
-        return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self: "PostCreateView") -> dict[str, any]:
         kwargs = super().get_form_kwargs()
