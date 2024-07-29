@@ -35,10 +35,18 @@ class GenericModel(models.Model):
 
 
 class Community(GenericModel):
+    PRIVACY_CHOICES = [
+        ('PUBLIC', 'Public'),
+        ('PRIVATE', 'Private'),
+        ('RESTRICTED', 'Restricted'),
+    ]
+
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="authored_communities")
     members = models.ManyToManyField(User, through="CommunityMember", related_name="communities")
+    privacy = models.CharField(max_length=10, choices=PRIVACY_CHOICES, default='PUBLIC')
+    is_18_plus = models.BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = "Communities"
