@@ -1,21 +1,18 @@
-import secrets
-import string
-
 import pytest
 from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
 
-from core.models import Community, Post
+from core.models import Community, CommunityMember, Post
+
+from .test_utils import generate_random_password
 
 pytestmark = pytest.mark.django_db
 
 User = get_user_model()
 
 
-def generate_random_password(length: int = 12) -> str:
-    characters = string.ascii_letters + string.digits + string.punctuation
-    return "".join(secrets.choice(characters) for _ in range(length))
+
 
 
 @pytest.fixture()
@@ -177,3 +174,54 @@ def test_add_deeply_nested_comment_valid(client: Client, another_user: User, pos
     assert post.children_count == 10
     assert parent_comment.children_count == 0
     assert parent_comment.parent.children_count == 1
+
+
+@pytest.mark.django_db()
+def test_create_community_view(client: Client, user: User) -> None:
+    client.force_login(user)
+    url = reverse("community-create")
+    data = {
+        "name": "Test Community",
+        "privacy": "PUBLIC",
+        "is_18_plus": True,
+    }
+
+    response = client.post(url, data)
+    assert response.status_code == 302
+
+    community = Community.objects.get(name="Test Community")
+    assert community.name == "Test Community"
+    assert community.author == user
+    assert community.privacy == "PUBLIC"
+    assert community.is_18_plus is True
+
+
+@pytest.mark.django_db()
+def test_community_detail_view(client: Client, user: User, community: Community) -> None:
+    client.force_login(user)
+    url = reverse("community-detail", kwargs={"slug": community.slug})
+    response = client.get(url)
+
+    assert response.status_code == 200
+    assert "community" in response.context
+    assert response.context["community"] == community
+
+
+@pytest.mark.django_db()
+def test_update_community_view(client: Client, user: User, community: Community) -> None:
+    CommunityMember.objects.create(community=community, user=user, role=CommunityMember.ADMIN)
+    client.force_login(user)
+    url = reverse("community-update", kwargs={"slug": community.slug})
+    data = {
+        "name": "Updated Community",
+        "privacy": "RESTRICTED",
+        "is_18_plus": False,
+    }
+
+    response = client.post(url, data)
+    assert response.status_code == 302
+
+    updated_community = Community.objects.get(slug=community.slug)
+    assert updated_community.name == "Updated Community"
+    assert updated_community.privacy == "RESTRICTED"
+    assert updated_community.is_18_plus is False

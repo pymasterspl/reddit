@@ -4,11 +4,17 @@ import pytest
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
+from django.test import Client
+from django.urls import reverse
 from django.utils import timezone
 
 from core.models import Community, CommunityMember, Post, PostVote, SavedPost, Tag
 
+from .test_utils import generate_random_password
+
 User = get_user_model()
+
+
 
 
 @pytest.mark.django_db()
@@ -261,3 +267,44 @@ def test_create_community(user: object) -> None:
     assert community.name == "Test Community"
     assert community.author == user
     assert community.slug == "test-community"
+
+
+@pytest.mark.django_db()
+def test_add_moderator(client: Client, community: Community) -> None:
+    admin_password = generate_random_password()
+    user_password = generate_random_password()
+
+    admin = User.objects.create_user(email="admin@example.com", password=admin_password, nickname="adminnick")
+    user = User.objects.create_user(email="user@example.com", password=user_password, nickname="usernick")
+
+    client.force_login(admin)
+    CommunityMember.objects.create(community=community, user=admin, role=CommunityMember.ADMIN)
+
+    url = reverse("community-detail", kwargs={"slug": community.slug})
+    form_data = {"nickname": user.nickname}
+
+    response = client.post(url, {"add_moderator": "Add", **form_data})
+    assert response.status_code == 302
+
+    assert CommunityMember.objects.filter(community=community, user=user, role=CommunityMember.MODERATOR).exists()
+
+
+@pytest.mark.django_db()
+def test_remove_moderator(client: Client, community: Community) -> None:
+    admin_password = generate_random_password()
+    user_password = generate_random_password()
+
+    admin = User.objects.create_user(email="admin@example.com", password=admin_password, nickname="adminnick")
+    user = User.objects.create_user(email="user@example.com", password=user_password, nickname="usernick")
+
+    client.force_login(admin)
+    CommunityMember.objects.create(community=community, user=admin, role=CommunityMember.ADMIN)
+    CommunityMember.objects.create(community=community, user=user, role=CommunityMember.MODERATOR)
+
+    url = reverse("community-detail", kwargs={"slug": community.slug})
+    form_data = {"nickname": user.nickname}
+
+    response = client.post(url, {"remove_moderator": "Remove", **form_data})
+    assert response.status_code == 302
+
+    assert not CommunityMember.objects.filter(community=community, user=user, role=CommunityMember.MODERATOR).exists()
