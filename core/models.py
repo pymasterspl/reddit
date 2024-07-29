@@ -72,6 +72,27 @@ class Community(GenericModel):
         online_limit = timezone.now() - timedelta(minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES)
         return self.members.filter(last_activity__gte=online_limit).count()
 
+    def add_moderator(self, user):
+        CommunityMember.objects.update_or_create(
+            community=self,
+            user=user,
+            defaults={'role': CommunityMember.MODERATOR}
+        )
+
+    def remove_moderator(self, user):
+        CommunityMember.objects.filter(
+            community=self,
+            user=user,
+            role=CommunityMember.MODERATOR
+        ).delete()
+
+    def is_admin_or_moderator(self, user):
+        return CommunityMember.objects.filter(
+            community=self,
+            user=user,
+            role__in=[CommunityMember.ADMIN, CommunityMember.MODERATOR]
+        ).exists() or self.author == user
+
 
 class Tag(models.Model):
     name = models.SlugField()

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/style.css' %}" xmlns="http://www.w3.org/1999/html">
 {% endblock %}
 
 {% block content %}
@@ -21,9 +21,9 @@
                     {% elif community.privacy == "RESTRICTED" %}
                     <!-- Display content for restricted communities -->
                     {% if user.is_authenticated and user in community.members.all %}
-                    User is approved to contribute
+                    <!-- User is approved to contribute -->
                     {% else %}
-                    User is not approved to contribute
+                    <!-- User is not approved to contribute -->
                     {% endif %}
                     {% elif community.privacy == "PRIVATE" %}
                     {% if user.is_authenticated and user in community.members.all %}
@@ -42,9 +42,46 @@
                 <div class="card-footer">
                     {% if is_admin_or_moderator %}
                     <a href="{% url 'community-update' community.slug %}" class="btn btn-primary">Update Community</a>
+                    <div>
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            {{ add_moderator_form.nickname }}
+                            <button class="btn btn-secondary" name="add_moderator" type="submit">Add Moderator</button>
+                        </form>
+
+
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            {{ remove_moderator_form.nickname }}
+                            <button class="btn btn-danger" name="remove_moderator" type="submit">Remove Moderator
+                            </button>
+                        </form>
+                    </div>
                     {% endif %}
                 </div>
             </div>
+            {% if is_admin_or_moderator %}
+            <div class="card bg-dark shadow-sm mb-3 text-light">
+                <div class="card-header">
+                    <h5 class="h5">Moderators</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for moderator in moderators %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ moderator.user.nickname }} ({{ moderator.role|capfirst }})
+                                {% if is_admin_or_moderator %}
+                                    <!-- Optional: Add functionality to remove moderator if needed -->
+                                {% endif %}
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item">No moderators in this community.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
         </div>
     </div>
 </div>

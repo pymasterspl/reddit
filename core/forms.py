@@ -4,8 +4,9 @@ from typing import ClassVar
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
+from django.core.exceptions import ValidationError
 
-from .models import Community, Post
+from .models import Community, Post, User
 
 
 class CommentForm(forms.Form):
@@ -57,3 +58,27 @@ class CommunityForm(forms.ModelForm):
 
         self.fields['is_18_plus'].widget = forms.CheckboxInput()
         self.fields['is_18_plus'].label = "Mature (18+) - only users over 18 can view and contribute"
+
+
+class AddModeratorForm(forms.Form):
+    nickname = forms.CharField(max_length=150, help_text="Enter the nickname of the user to add as a moderator.")
+
+    def clean_nickname(self):
+        nickname = self.cleaned_data.get('nickname')
+        try:
+            user = User.objects.get(nickname=nickname)
+        except User.DoesNotExist:
+            raise ValidationError("User with this nickname does not exist.")
+        return user
+
+
+class RemoveModeratorForm(forms.Form):
+    nickname = forms.CharField(max_length=150, help_text="Enter the nickname of the user to remove from moderators.")
+
+    def clean_nickname(self):
+        nickname = self.cleaned_data.get('nickname')
+        try:
+            user = User.objects.get(nickname=nickname)
+        except User.DoesNotExist:
+            raise ValidationError("User with this nickname does not exist.")
+        return user

@@ -14,8 +14,8 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
-from .forms import CommentForm, CommunityForm, PostForm
-from .models import Community, CommunityMember, Post, PostVote, SavedPost
+from .forms import CommentForm, CommunityForm, PostForm, AddModeratorForm, RemoveModeratorForm
+from .models import Community, CommunityMember, Post, PostVote, SavedPost, User
 
 
 class PostListView(ListView):
@@ -159,16 +159,35 @@ class CommunityDetailView(DetailView):
         user = self.request.user
 
         if user.is_authenticated:
-            is_admin_or_moderator = CommunityMember.objects.filter(
-                community=community,
-                user=user,
-                role__in=[CommunityMember.ADMIN, CommunityMember.MODERATOR]
-            ).exists() or community.author == user
+            context['is_admin_or_moderator'] = community.is_admin_or_moderator(user)
         else:
-            is_admin_or_moderator = False
+            context['is_admin_or_moderator'] = False
 
-        context['is_admin_or_moderator'] = is_admin_or_moderator
+        context['add_moderator_form'] = AddModeratorForm()
+        context['remove_moderator_form'] = RemoveModeratorForm()
+        context['moderators'] = CommunityMember.objects.filter(
+            community=community,
+            role=CommunityMember.MODERATOR
+        ).select_related('user')
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if not self.object.is_admin_or_moderator(request.user):
+            raise PermissionDenied
+
+        add_moderator_form = AddModeratorForm(request.POST)
+        remove_moderator_form = RemoveModeratorForm(request.POST)
+
+        if 'add_moderator' in request.POST and add_moderator_form.is_valid():
+            user = get_object_or_404(User, nickname=add_moderator_form.cleaned_data['nickname'])
+            self.object.add_moderator(user)
+
+        if 'remove_moderator' in request.POST and remove_moderator_form.is_valid():
+            user = get_object_or_404(User, nickname=remove_moderator_form.cleaned_data['nickname'])
+            self.object.remove_moderator(user)
+
+        return redirect('community-detail', slug=self.object.slug)
 
 
 class CommunityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
