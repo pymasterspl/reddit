@@ -14,7 +14,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
-from .forms import CommentForm, CommunityForm, PostForm, AddModeratorForm, RemoveModeratorForm
+from .forms import AddModeratorForm, CommentForm, CommunityForm, PostForm, RemoveModeratorForm
 from .models import Community, CommunityMember, Post, PostVote, SavedPost, User
 
 
@@ -147,31 +147,30 @@ class CommunityDetailView(DetailView):
     template_name = "core/community-detail.html"
     context_object_name = "community"
 
-    def get_object(self):
+    def get_object(self: "CommunityDetailView") -> Community:
         community = Community.objects.get(slug=self.kwargs["slug"])
-        if community.privacy == 'PRIVATE' and not community.members.filter(id=self.request.user.id).exists():
+        if community.privacy == "PRIVATE" and not community.members.filter(id=self.request.user.id).exists():
             raise PermissionDenied
         return community
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self: "CommunityDetailView", **kwargs: any) -> dict[str, any]:
         context = super().get_context_data(**kwargs)
         community = self.get_object()
         user = self.request.user
 
         if user.is_authenticated:
-            context['is_admin_or_moderator'] = community.is_admin_or_moderator(user)
+            context["is_admin_or_moderator"] = community.is_admin_or_moderator(user)
         else:
-            context['is_admin_or_moderator'] = False
+            context["is_admin_or_moderator"] = False
 
-        context['add_moderator_form'] = AddModeratorForm()
-        context['remove_moderator_form'] = RemoveModeratorForm()
-        context['moderators'] = CommunityMember.objects.filter(
-            community=community,
-            role=CommunityMember.MODERATOR
-        ).select_related('user')
+        context["add_moderator_form"] = AddModeratorForm()
+        context["remove_moderator_form"] = RemoveModeratorForm()
+        context["moderators"] = CommunityMember.objects.filter(
+            community=community, role=CommunityMember.MODERATOR
+        ).select_related("user")
         return context
 
-    def post(self, request, *args, **kwargs):
+    def post(self: "CommunityDetailView", request: "HttpRequest", *args: any, **kwargs: any) -> any:
         self.object = self.get_object()
         if not self.object.is_admin_or_moderator(request.user):
             raise PermissionDenied
@@ -179,15 +178,15 @@ class CommunityDetailView(DetailView):
         add_moderator_form = AddModeratorForm(request.POST)
         remove_moderator_form = RemoveModeratorForm(request.POST)
 
-        if 'add_moderator' in request.POST and add_moderator_form.is_valid():
-            user = get_object_or_404(User, nickname=add_moderator_form.cleaned_data['nickname'])
+        if "add_moderator" in request.POST and add_moderator_form.is_valid():
+            user = get_object_or_404(User, nickname=add_moderator_form.cleaned_data["nickname"])
             self.object.add_moderator(user)
 
-        if 'remove_moderator' in request.POST and remove_moderator_form.is_valid():
-            user = get_object_or_404(User, nickname=remove_moderator_form.cleaned_data['nickname'])
+        if "remove_moderator" in request.POST and remove_moderator_form.is_valid():
+            user = get_object_or_404(User, nickname=remove_moderator_form.cleaned_data["nickname"])
             self.object.remove_moderator(user)
 
-        return redirect('community-detail', slug=self.object.slug)
+        return redirect("community-detail", slug=self.object.slug)
 
 
 class CommunityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -195,7 +194,7 @@ class CommunityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     form_class = CommunityForm
     template_name = "core/community-update.html"
 
-    def test_func(self):
+    def test_func(self: "CommunityUpdateView") -> bool:
         community = self.get_object()
         user = self.request.user
         is_author = community.author == user
@@ -209,5 +208,5 @@ class CommunityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
         return False
 
-    def get_success_url(self):
+    def get_success_url(self: "CommunityUpdateView") -> str:
         return reverse_lazy("community-detail", kwargs={"slug": self.object.slug})

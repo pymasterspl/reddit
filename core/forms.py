@@ -45,7 +45,7 @@ class PostForm(forms.ModelForm):
 class CommunityForm(forms.ModelForm):
     class Meta:
         model = Community
-        fields: typing.ClassVar = ["name", 'privacy', 'is_18_plus']
+        fields: typing.ClassVar = ["name", "privacy", "is_18_plus"]
 
     def __init__(self: "CommunityForm", *args: list, **kwargs: dict) -> None:
         super().__init__(*args, **kwargs)
@@ -53,32 +53,34 @@ class CommunityForm(forms.ModelForm):
         self.helper.form_method = "post"
         self.helper.add_input(Submit("submit", "Create Community"))
 
-        self.fields['privacy'].widget = forms.RadioSelect(choices=Community.PRIVACY_CHOICES)
-        self.fields['privacy'].initial = 'PUBLIC'
+        self.fields["privacy"].widget = forms.RadioSelect(choices=Community.PRIVACY_CHOICES)
+        self.fields["privacy"].initial = "PUBLIC"
 
-        self.fields['is_18_plus'].widget = forms.CheckboxInput()
-        self.fields['is_18_plus'].label = "Mature (18+) - only users over 18 can view and contribute"
+        self.fields["is_18_plus"].widget = forms.CheckboxInput()
+        self.fields["is_18_plus"].label = "Mature (18+) - only users over 18 can view and contribute"
 
 
 class AddModeratorForm(forms.Form):
     nickname = forms.CharField(max_length=150, help_text="Enter the nickname of the user to add as a moderator.")
 
-    def clean_nickname(self):
-        nickname = self.cleaned_data.get('nickname')
+    def clean_nickname(self: "AddModeratorForm") -> User:
+        nickname = self.cleaned_data.get("nickname")
+        user_not_found_message = "User with this nickname does not exist."
         try:
             user = User.objects.get(nickname=nickname)
-        except User.DoesNotExist:
-            raise ValidationError("User with this nickname does not exist.")
+        except User.DoesNotExist as err:
+            raise ValidationError(user_not_found_message) from err
         return user
 
 
 class RemoveModeratorForm(forms.Form):
     nickname = forms.CharField(max_length=150, help_text="Enter the nickname of the user to remove from moderators.")
 
-    def clean_nickname(self):
-        nickname = self.cleaned_data.get('nickname')
+    def clean_nickname(self: "RemoveModeratorForm") -> User:
+        nickname = self.cleaned_data.get("nickname")
+        user_not_found_message = "User with this nickname does not exist."
         try:
             user = User.objects.get(nickname=nickname)
-        except User.DoesNotExist:
-            raise ValidationError("User with this nickname does not exist.")
+        except User.DoesNotExist as err:
+            raise ValidationError(user_not_found_message) from err
         return user
