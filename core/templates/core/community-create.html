@@ -8,9 +8,9 @@
 
 {% block content %}
 <style>
-.hidden {
-    display: none;
-}
+    .hidden {
+        display: none;
+    }
 
 
 </style>
@@ -32,7 +32,17 @@
                             {% endfor %}
                         </div>
                         {% endif %}
-                        {{ form|crispy }}
+                        <div class="form-group">
+                            {{ form.name|as_crispy_field }}
+                        </div>
+
+                        <div class="form-group privacy-options">
+                            {{ form.privacy|as_crispy_field }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.is_18_plus|as_crispy_field }}
+                        </div>
                         <button class="btn btn-sm btn-success" type="submit">Create Community</button>
                     </form>
                 </div>
