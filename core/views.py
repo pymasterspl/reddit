@@ -27,7 +27,6 @@ class PostListView(ListView):
 
     def get_context_data(self: "PostListView", **kwargs: dict[str, Any]) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["default_avatar_url"] = settings.DEFAULT_AVATAR_URL
         return context
 
 
@@ -46,7 +45,6 @@ class PostDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         comments = self.object.get_comments()
 
-        context["default_avatar_url"] = context["post"].author.avatar_url
         context["comments"] = comments
         context["form"] = self.object.get_comment_form()
         return context

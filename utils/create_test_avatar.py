@@ -6,7 +6,7 @@ from PIL import Image
 from core.models import User
 
 
-def create_test_avatar(user: User) -> None:
+def create_avatar(user: User) -> None:
     with tempfile.NamedTemporaryFile(suffix=".jpg", delete=True) as tmp_file:
         image = Image.new("RGB", (100, 100), color=(73, 109, 137))
         image.save(tmp_file, format="JPEG")

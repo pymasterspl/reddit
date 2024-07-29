@@ -150,12 +150,12 @@ def test_add_comment_unauthorized(client: Client, post: Post) -> None:
     assert reverse("login") in response.url
 
 
-def test_add_nested_comment_valid(client: Client, user: User, post: Post, comment: Post) -> None:
+def test_add_nested_comment_valid(client: Client, another_user: User, post: Post, comment: Post) -> None:
     data = {
         "parent_id": comment.pk,
         "content": "This is a test nested comment content.",
     }
-    client.force_login(user)
+    client.force_login(another_user)
     assert post.children_count == 1
     assert post.get_comments().count() == 1
     assert comment.children_count == 0
@@ -170,7 +170,7 @@ def test_add_nested_comment_valid(client: Client, user: User, post: Post, commen
     assert comment.get_comments().count() == 1
 
     new_comment = Post.objects.get(content=data["content"])
-    assert new_comment.author == user
+    assert new_comment.author == another_user
     assert new_comment.parent == comment
 
 
@@ -194,9 +194,8 @@ def test_add_nested_comment_unauthorized(client: Client, post: Post, comment: Po
     assert reverse("login") in response.url
 
 
-def test_add_deeply_nested_comment_valid(client: Client, user: User, post: Post) -> None:
-    client.force_login(user)
-
+def test_add_deeply_nested_comment_valid(client: Client, another_user: User, post: Post) -> None:
+    client.force_login(another_user)
     parent_comment = post
     for _ in range(10):
         response = client.post(
@@ -235,5 +234,9 @@ def test_post_user_without_avatar(client: Client, community: Community, user: Us
     }
     client.force_login(user)
     response = client.post(reverse("post-create"), data=data, follow=True)
-    post = response.context["post"]
+    assert Post.objects.count() == 1
+    assert 'form' in response.context
+    form = response.context['form']
+    assert form.errors == {}
+    post = Post.objects.first()
     assert post.author.avatar_url == default_avatar_url
