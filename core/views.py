@@ -170,7 +170,7 @@ class CommunityDetailView(DetailView):
         ).select_related("user")
         return context
 
-    def post(self: "CommunityDetailView", request: "HttpRequest") -> any:
+    def post(self: "CommunityDetailView", request: "HttpRequest", *args: any, **kwargs: any) -> any:
         self.object = self.get_object()
         if not self.object.is_admin_or_moderator(request.user):
             raise PermissionDenied
