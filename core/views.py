@@ -170,23 +170,27 @@ class CommunityDetailView(DetailView):
         ).select_related("user")
         return context
 
-    def post(self: "CommunityDetailView", request: "HttpRequest", *args: any, **kwargs: any) -> any:
+    def post(self: "CommunityDetailView", request: "HttpRequest", *args: any, **kwargs: any) -> any: # noqa: ARG002
         self.object = self.get_object()
-        if not self.object.is_admin_or_moderator(request.user):
-            raise PermissionDenied
+        try:
+            if not self.object.is_admin_or_moderator(request.user):
+                raise PermissionDenied
 
-        add_moderator_form = AddModeratorForm(request.POST)
-        remove_moderator_form = RemoveModeratorForm(request.POST)
+            add_moderator_form = AddModeratorForm(request.POST)
+            remove_moderator_form = RemoveModeratorForm(request.POST)
 
-        if "add_moderator" in request.POST and add_moderator_form.is_valid():
-            user = get_object_or_404(User, nickname=add_moderator_form.cleaned_data["nickname"])
-            self.object.add_moderator(user)
+            if "add_moderator" in request.POST and add_moderator_form.is_valid():
+                user = get_object_or_404(User, nickname=add_moderator_form.cleaned_data["nickname"])
+                self.object.add_moderator(user)
 
-        if "remove_moderator" in request.POST and remove_moderator_form.is_valid():
-            user = get_object_or_404(User, nickname=remove_moderator_form.cleaned_data["nickname"])
-            self.object.remove_moderator(user)
+            if "remove_moderator" in request.POST and remove_moderator_form.is_valid():
+                user = get_object_or_404(User, nickname=remove_moderator_form.cleaned_data["nickname"])
+                self.object.remove_moderator(user)
 
-        return redirect("community-detail", slug=self.object.slug)
+            return redirect("community-detail", slug=self.object.slug)
+
+        except PermissionError as e:
+            return HttpResponse(str(e), status=403)
 
 
 class CommunityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
