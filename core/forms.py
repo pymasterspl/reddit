@@ -44,10 +44,16 @@ class PostForm(forms.ModelForm):
 class CommunityForm(forms.ModelForm):
     class Meta:
         model = Community
-        fields: typing.ClassVar = ["name"]
+        fields: typing.ClassVar = ["name", 'privacy', 'is_18_plus']
 
     def __init__(self: "CommunityForm", *args: list, **kwargs: dict) -> None:
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = "post"
         self.helper.add_input(Submit("submit", "Create Community"))
+
+        self.fields['privacy'].widget = forms.RadioSelect(choices=Community.PRIVACY_CHOICES)
+        self.fields['privacy'].initial = 'PUBLIC'
+
+        self.fields['is_18_plus'].widget = forms.CheckboxInput()
+        self.fields['is_18_plus'].label = "Mature (18+) - only users over 18 can view and contribute"

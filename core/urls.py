@@ -9,6 +9,7 @@ from .views import (
     PostListView,
     PostSaveView,
     PostVoteView,
+    CommunityUpdateView,
 )
 
 urlpatterns = [
@@ -20,4 +21,5 @@ urlpatterns = [
     path("communities/", CommunityListView.as_view(), name="community-list"),
     path("community/create/", CommunityCreateView.as_view(), name="community-create"),
     path("community/<slug:slug>/", CommunityDetailView.as_view(), name="community-detail"),
+    path("community/<slug:slug>/update/", CommunityUpdateView.as_view(), name="community-update"),
 ]

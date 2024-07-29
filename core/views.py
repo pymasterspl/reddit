@@ -2,7 +2,8 @@ from typing import Any
 
 from django import forms
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -11,7 +12,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
-from django.views.generic import CreateView, DetailView, ListView
+from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
 from .forms import CommentForm, CommunityForm, PostForm
 from .models import Community, CommunityMember, Post, PostVote, SavedPost
@@ -146,5 +147,48 @@ class CommunityDetailView(DetailView):
     template_name = "core/community-detail.html"
     context_object_name = "community"
 
-    def get_object(self: "CommunityDetailView") -> Community:
-        return Community.objects.get(slug=self.kwargs["slug"])
+    def get_object(self):
+        community = Community.objects.get(slug=self.kwargs["slug"])
+        if community.privacy == 'PRIVATE' and not community.members.filter(id=self.request.user.id).exists():
+            raise PermissionDenied
+        return community
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        community = self.get_object()
+        user = self.request.user
+
+        if user.is_authenticated:
+            is_admin_or_moderator = CommunityMember.objects.filter(
+                community=community,
+                user=user,
+                role__in=[CommunityMember.ADMIN, CommunityMember.MODERATOR]
+            ).exists() or community.author == user
+        else:
+            is_admin_or_moderator = False
+
+        context['is_admin_or_moderator'] = is_admin_or_moderator
+        return context
+
+
+class CommunityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Community
+    form_class = CommunityForm
+    template_name = "core/community-update.html"
+
+    def test_func(self):
+        community = self.get_object()
+        user = self.request.user
+        is_author = community.author == user
+        user_role = CommunityMember.objects.filter(community=community, user=user).first()
+
+        if is_author:
+            return True
+
+        if user_role:
+            return user_role.role in [CommunityMember.ADMIN, CommunityMember.MODERATOR]
+
+        return False
+
+    def get_success_url(self):
+        return reverse_lazy("community-detail", kwargs={"slug": self.object.slug})

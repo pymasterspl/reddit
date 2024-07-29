@@ -36,9 +36,9 @@ class GenericModel(models.Model):
 
 class Community(GenericModel):
     PRIVACY_CHOICES = [
-        ('PUBLIC', 'Public'),
-        ('PRIVATE', 'Private'),
-        ('RESTRICTED', 'Restricted'),
+        ('PUBLIC', 'Public - anyone can view and contribute'),
+        ('RESTRICTED', 'Restricted - anyone can view, but only approved users can contribute'),
+        ('PRIVATE', 'Private - only approved users can view and contribute'),
     ]
 
     name = models.CharField(max_length=255)
