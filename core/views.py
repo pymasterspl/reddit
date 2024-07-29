@@ -170,7 +170,7 @@ class CommunityDetailView(DetailView):
         ).select_related("user")
         return context
 
-    def post(self: "CommunityDetailView", request: "HttpRequest", *args: any, **kwargs: any) -> any: # noqa: ARG002
+    def post(self: "CommunityDetailView", request: "HttpRequest", *args: any, **kwargs: any) -> any:  # noqa: ARG002
         self.object = self.get_object()
         try:
             if not self.object.is_admin_or_moderator(request.user):

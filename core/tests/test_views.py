@@ -12,9 +12,6 @@ pytestmark = pytest.mark.django_db
 User = get_user_model()
 
 
-
-
-
 @pytest.fixture()
 def user(client: Client) -> User:
     password = generate_random_password()

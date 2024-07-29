@@ -15,8 +15,6 @@ from .test_utils import generate_random_password
 User = get_user_model()
 
 
-
-
 @pytest.mark.django_db()
 def test_post_score_initial(post: Post) -> None:
     assert post.score == 0
