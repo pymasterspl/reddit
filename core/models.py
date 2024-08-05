@@ -78,12 +78,10 @@ class Community(GenericModel):
         return self.members.filter(last_activity__gte=online_limit).count()
 
     def add_moderator(self: "Community", user: User) -> None:
-        CommunityMember.objects.update_or_create(
-            community=self, user=user, defaults={"role": CommunityMember.MODERATOR}
-        )
+        CommunityService.add_moderator(self, user)
 
     def remove_moderator(self: "Community", user: User) -> None:
-        CommunityMember.objects.filter(community=self, user=user, role=CommunityMember.MODERATOR).delete()
+        CommunityService.remove_moderator(self, user)
 
     def is_admin_or_moderator(self: "Community", user: User) -> bool:
         return (
@@ -92,6 +90,18 @@ class Community(GenericModel):
             ).exists()
             or self.author == user
         )
+
+
+class CommunityService:
+    @staticmethod
+    def add_moderator(community: Community, user: User) -> None:
+        CommunityMember.objects.update_or_create(
+            community=community, user=user, defaults={"role": CommunityMember.MODERATOR}
+        )
+
+    @staticmethod
+    def remove_moderator(community: Community, user: User) -> None:
+        CommunityMember.objects.filter(community=community, user=user, role=CommunityMember.MODERATOR).delete()
 
 
 class Tag(models.Model):
