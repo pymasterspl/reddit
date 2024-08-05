@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
 
-from core.models import Community, CommunityMember, Post
+from core.models import Community, Post
 
 from .test_utils import generate_random_password
 
@@ -218,7 +218,7 @@ def test_community_detail_view(client: Client, user: User, community: Community)
 @pytest.mark.django_db()
 def test_update_community_view_without_permission(client: Client, community: Community, user: User) -> None:
     client.force_login(user)
-    response = client.post(reverse('community-update', kwargs={'slug': community.slug}), {'name': 'Updated Community'})
+    response = client.post(reverse("community-update", kwargs={"slug": community.slug}), {"name": "Updated Community"})
     assert response.status_code == 403
     community.refresh_from_db()
-    assert community.name == 'Test Community'
+    assert community.name == "Test Community"
