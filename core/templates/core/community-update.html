@@ -25,32 +25,13 @@
                         </div>
                         {% endif %}
 
+                        {% for field in form %}
                         <div class="form-group">
-                            {{ form.name|as_crispy_field }}
+                            {{ field|as_crispy_field }}
                         </div>
-
-                        <div class="form-group privacy-options">
-                            <label>Privacy Settings</label>
-                            {{ form.privacy|as_crispy_field }}
-                        </div>
-
-                        <div class="form-group">
-                            {{ form.is_18_plus|as_crispy_field }}
-                        </div>
-
+                        {% endfor %}
                         <button class="btn btn-sm btn-success" type="submit">Update Community</button>
                     </form>
-                    {% if form.errors %}
-                    <div class="alert alert-danger mt-3">
-                        <ul>
-                            {% for field, errors in form.errors.items %}
-                            {% for error in errors %}
-                            <li>{{ field }}: {{ error }}</li>
-                            {% endfor %}
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
