@@ -161,11 +161,12 @@ class CommunityDetailView(DetailView):
 
         if user.is_authenticated:
             context["is_admin_or_moderator"] = community.is_admin_or_moderator(user)
+            if context["is_admin_or_moderator"]:
+                context["add_moderator_form"] = AddModeratorForm()
+                context["remove_moderator_form"] = RemoveModeratorForm()
         else:
             context["is_admin_or_moderator"] = False
 
-        context["add_moderator_form"] = AddModeratorForm()
-        context["remove_moderator_form"] = RemoveModeratorForm()
         context["moderators"] = CommunityMember.objects.filter(
             community=community, role=CommunityMember.MODERATOR
         ).select_related("user")
