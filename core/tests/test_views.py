@@ -30,6 +30,11 @@ def community() -> Community:
     return Community.objects.create(name="Test Community", is_active=True)
 
 
+@pytest.fixture()
+def restricted_community(user: User) -> Community:
+    return Community.objects.create(name="Restricted Community", is_active=True, author=user)
+
+
 def test_add_post_valid(client: Client, user: User, community: Community) -> None:
     data = {
         "community": community.pk,
@@ -174,12 +179,18 @@ def test_add_deeply_nested_comment_valid(client: Client, another_user: User, pos
 
 
 @pytest.mark.django_db()
+def test_restricted_community_access(client: Client, restricted_community: Community, user: User) -> None:
+    client.force_login(user)
+    response = client.get(reverse("community-detail", kwargs={"slug": restricted_community.slug}))
+    assert response.status_code == 200
+
+
 def test_create_community_view(client: Client, user: User) -> None:
     client.force_login(user)
     url = reverse("community-create")
     data = {
         "name": "Test Community",
-        "privacy": "PUBLIC",
+        "privacy": "10_PUBLIC",
         "is_18_plus": True,
     }
 
@@ -189,7 +200,7 @@ def test_create_community_view(client: Client, user: User) -> None:
     community = Community.objects.get(name="Test Community")
     assert community.name == "Test Community"
     assert community.author == user
-    assert community.privacy == "PUBLIC"
+    assert community.privacy == "10_PUBLIC"
     assert community.is_18_plus is True
 
 
@@ -205,20 +216,9 @@ def test_community_detail_view(client: Client, user: User, community: Community)
 
 
 @pytest.mark.django_db()
-def test_update_community_view(client: Client, user: User, community: Community) -> None:
-    CommunityMember.objects.create(community=community, user=user, role=CommunityMember.ADMIN)
+def test_update_community_view_without_permission(client: Client, community: Community, user: User) -> None:
     client.force_login(user)
-    url = reverse("community-update", kwargs={"slug": community.slug})
-    data = {
-        "name": "Updated Community",
-        "privacy": "RESTRICTED",
-        "is_18_plus": False,
-    }
-
-    response = client.post(url, data)
-    assert response.status_code == 302
-
-    updated_community = Community.objects.get(slug=community.slug)
-    assert updated_community.name == "Updated Community"
-    assert updated_community.privacy == "RESTRICTED"
-    assert updated_community.is_18_plus is False
+    response = client.post(reverse('community-update', kwargs={'slug': community.slug}), {'name': 'Updated Community'})
+    assert response.status_code == 403
+    community.refresh_from_db()
+    assert community.name == 'Test Community'

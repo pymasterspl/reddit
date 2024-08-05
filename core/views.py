@@ -150,7 +150,7 @@ class CommunityDetailView(DetailView):
 
     def get_object(self: "CommunityDetailView") -> Community:
         community = Community.objects.get(slug=self.kwargs["slug"])
-        if community.privacy == "PRIVATE" and not community.members.filter(id=self.request.user.id).exists():
+        if community.privacy == "30_PRIVATE" and not community.members.filter(id=self.request.user.id).exists():
             raise PermissionDenied
         return community
 

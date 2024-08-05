@@ -36,21 +36,21 @@ class GenericModel(models.Model):
 
 
 class Community(GenericModel):
-    PRIVACY_PUBLIC: typing.ClassVar[str] = "10_PUBLIC"
-    PRIVACY_RESTRICTED: typing.ClassVar[str] = "20_RESTRICTED"
-    PRIVACY_PRIVATE: typing.ClassVar[str] = "30_PRIVATE"
+    PUBLIC: typing.ClassVar[str] = "10_PUBLIC"
+    RESTRICTED: typing.ClassVar[str] = "20_RESTRICTED"
+    PRIVATE: typing.ClassVar[str] = "30_PRIVATE"
 
     PRIVACY_CHOICES: typing.ClassVar[list[tuple[str, str]]] = [
-        (PRIVACY_PUBLIC, "Public - anyone can view and contribute"),
-        (PRIVACY_RESTRICTED, "Restricted - anyone can view, but only approved users can contribute"),
-        (PRIVACY_PRIVATE, "Private - only approved users can view and contribute"),
+        (PUBLIC, "Public - anyone can view and contribute"),
+        (RESTRICTED, "Restricted - anyone can view, but only approved users can contribute"),
+        (PRIVATE, "Private - only approved users can view and contribute"),
     ]
 
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="authored_communities")
     members = models.ManyToManyField(User, through="CommunityMember", related_name="communities")
-    privacy = models.CharField(max_length=10, choices=PRIVACY_CHOICES, default="PUBLIC")
+    privacy = models.CharField(max_length=15, choices=PRIVACY_CHOICES, default=RESTRICTED)
     is_18_plus = models.BooleanField(default=False)
 
     class Meta:

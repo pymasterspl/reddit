@@ -15,7 +15,7 @@ def test_community_form() -> None:
     user = User.objects.create_user(email="test@example.com", password=user_password, nickname="testnick")
     form_data = {
         "name": "Test Community",
-        "privacy": "PUBLIC",
+        "privacy": "10_PUBLIC",
         "is_18_plus": True,
     }
 
