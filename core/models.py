@@ -36,10 +36,14 @@ class GenericModel(models.Model):
 
 
 class Community(GenericModel):
-    PRIVACY_CHOICES: typing.ClassVar = [
-        ("PUBLIC", "Public - anyone can view and contribute"),
-        ("RESTRICTED", "Restricted - anyone can view, but only approved users can contribute"),
-        ("PRIVATE", "Private - only approved users can view and contribute"),
+    PRIVACY_PUBLIC: typing.ClassVar[str] = "10_PUBLIC"
+    PRIVACY_RESTRICTED: typing.ClassVar[str] = "20_RESTRICTED"
+    PRIVACY_PRIVATE: typing.ClassVar[str] = "30_PRIVATE"
+
+    PRIVACY_CHOICES: typing.ClassVar[list[tuple[str, str]]] = [
+        (PRIVACY_PUBLIC, "Public - anyone can view and contribute"),
+        (PRIVACY_RESTRICTED, "Restricted - anyone can view, but only approved users can contribute"),
+        (PRIVACY_PRIVATE, "Private - only approved users can view and contribute"),
     ]
 
     name = models.CharField(max_length=255)
