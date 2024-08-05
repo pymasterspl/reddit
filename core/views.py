@@ -1,6 +1,7 @@
 from typing import Any
 
 from django import forms
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
@@ -189,8 +190,9 @@ class CommunityDetailView(DetailView):
 
             return redirect("community-detail", slug=self.object.slug)
 
-        except PermissionError as e:
-            return HttpResponse(str(e), status=403)
+        except PermissionError:
+            messages.error(request, "You do not have permission to perform this action.")
+            return self.get(request, *args, **kwargs)
 
 
 class CommunityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -201,16 +203,7 @@ class CommunityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self: "CommunityUpdateView") -> bool:
         community = self.get_object()
         user = self.request.user
-        is_author = community.author == user
-        user_role = CommunityMember.objects.filter(community=community, user=user).first()
-
-        if is_author:
-            return True
-
-        if user_role:
-            return user_role.role in [CommunityMember.ADMIN, CommunityMember.MODERATOR]
-
-        return False
+        return community.is_admin_or_moderator(user) or community.author == user
 
     def get_success_url(self: "CommunityUpdateView") -> str:
         return reverse_lazy("community-detail", kwargs={"slug": self.object.slug})
