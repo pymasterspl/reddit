@@ -99,14 +99,13 @@ class User(AbstractUser):
             self.avatar = self.process_avatar(self.avatar)
         super().save(*args, **kwargs)
 
-    def has_permission(self, post_id: int, permission_name: str) -> bool:
+    def has_permission(self: "User", post_id: int, permission_name: str) -> bool:
         Post = apps.get_model("core", "Post")
         CommunityMember = apps.get_model("core", "CommunityMember")
 
         try:
             post = Post.objects.get(id=post_id)
         except Post.DoesNotExist:
-            print(f"Post with id {post_id} does not exist.")
             return False
 
         match permission_name:
@@ -118,16 +117,12 @@ class User(AbstractUser):
                         community=post.community, user=self
                     )
                 except CommunityMember.DoesNotExist:
-                    print(
-                        f"User {self} is not a member of the community {post.community}."
-                    )
                     return False
                 return community_member.role in {
-                    CommunityMember.MODERATOR,
-                    CommunityMember.ADMIN,
-                }
+                        CommunityMember.MODERATOR,
+                        CommunityMember.ADMIN,
+                    }
             case _:
-                print(f"Invalid permission name: {permission_name}")
                 return False
 
     def process_avatar(self: "User", avatar: any) -> ContentFile:

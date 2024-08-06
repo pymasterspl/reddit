@@ -3,7 +3,6 @@ import re
 from datetime import timedelta
 from typing import ClassVar
 
-from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -14,8 +13,6 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 User = get_user_model()
-# User = apps.get_model('users', 'User')
-
 
 class ActiveOnlyManager(models.Manager):
     def get_queryset(self: "ActiveOnlyManager") -> models.QuerySet:
