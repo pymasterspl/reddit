@@ -119,9 +119,9 @@ class User(AbstractUser):
                 except CommunityMember.DoesNotExist:
                     return False
                 return community_member.role in {
-                        CommunityMember.MODERATOR,
-                        CommunityMember.ADMIN,
-                    }
+                    CommunityMember.MODERATOR,
+                    CommunityMember.ADMIN,
+                }
             case _:
                 return False
 

@@ -14,6 +14,7 @@ from django.utils.text import slugify
 
 User = get_user_model()
 
+
 class ActiveOnlyManager(models.Manager):
     def get_queryset(self: "ActiveOnlyManager") -> models.QuerySet:
         return super().get_queryset().filter(is_active=True)
@@ -37,9 +38,11 @@ class Community(GenericModel):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     author = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, related_name="authored_communities")
+        User, on_delete=models.SET_NULL, null=True, related_name="authored_communities"
+    )
     members = models.ManyToManyField(
-        User, through="CommunityMember", related_name="communities")
+        User, through="CommunityMember", related_name="communities"
+    )
 
     class Meta:
         verbose_name_plural = "Communities"
@@ -62,8 +65,9 @@ class Community(GenericModel):
         return unique_slug
 
     def count_online_users(self: "Community") -> int:
-        online_limit = timezone.now(
-        ) - timedelta(minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES)
+        online_limit = timezone.now() - timedelta(
+            minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES
+        )
         return self.members.filter(last_activity__gte=online_limit).count()
 
 
@@ -157,8 +161,7 @@ class Post(GenericModel):
         return Image.objects.filter(post=self)
 
     def update_display_counter(self: "Post") -> None:
-        Post.objects.filter(pk=self.pk).update(
-            display_counter=F("display_counter") + 1)
+        Post.objects.filter(pk=self.pk).update(display_counter=F("display_counter") + 1)
 
     @property
     def children_count(self: "Post") -> int:
@@ -191,10 +194,8 @@ class PostVote(models.Model):
         (DOWNVOTE, "Down Vote"),
     ]
 
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="post_votes")
-    post = models.ForeignKey(
-        Post, on_delete=models.CASCADE, related_name="post_votes")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="post_votes")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="post_votes")
     choice = models.CharField(max_length=20, choices=VOTE_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -210,12 +211,12 @@ class PostVote(models.Model):
         up_votes = post_votes.filter(choice=PostVote.UPVOTE).count()
         down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
         Post.objects.filter(pk=self.post.pk).update(
-            up_votes=up_votes, down_votes=down_votes)
+            up_votes=up_votes, down_votes=down_votes
+        )
 
 
 class Image(models.Model):
-    post = models.ForeignKey(
-        Post, on_delete=models.CASCADE, related_name="images")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="images")
     image = models.ImageField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -247,8 +248,7 @@ class CommunityMember(models.Model):
 
     community = models.ForeignKey(Community, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    role = models.CharField(
-        max_length=13, choices=ROLE_CHOICES, default=MEMBER)
+    role = models.CharField(max_length=13, choices=ROLE_CHOICES, default=MEMBER)
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -259,10 +259,8 @@ class CommunityMember(models.Model):
 
 
 class SavedPost(models.Model):
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="saved_posts")
-    post = models.ForeignKey(
-        Post, on_delete=models.CASCADE, related_name="saved_posts")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="saved_posts")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="saved_posts")
     saved_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

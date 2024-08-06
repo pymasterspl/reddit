@@ -15,14 +15,18 @@ def user() -> User:
 @pytest.fixture()
 def user_without_post() -> User:
     return User.objects.create_user(
-        email="user2@example.com", nickname="user_without_task", password=make_password("password")
+        email="user2@example.com",
+        nickname="user_without_task",
+        password=make_password("password"),
     )
 
 
 @pytest.fixture()
 def moderator() -> User:
     return User.objects.create_user(
-        email="moderator@example.com", nickname="moderator", password=make_password("password")
+        email="moderator@example.com",
+        nickname="moderator",
+        password=make_password("password"),
     )
 
 
