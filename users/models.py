@@ -87,9 +87,7 @@ class User(AbstractUser):
     username: None = None
     email = models.EmailField(unique=True)
     last_activity = models.DateTimeField(auto_now_add=True, db_index=True)
-    avatar = models.ImageField(
-        upload_to="users_avatars/", null=True, blank=True, default=None
-    )
+    avatar = models.ImageField(upload_to="users_avatars/", null=True, blank=True, default=None)
 
     def __str__(self: "User") -> str:
         return self.nickname
@@ -113,9 +111,7 @@ class User(AbstractUser):
                 if self == post.author:
                     return True
                 try:
-                    community_member = CommunityMember.objects.get(
-                        community=post.community, user=self
-                    )
+                    community_member = CommunityMember.objects.get(community=post.community, user=self)
                 except CommunityMember.DoesNotExist:
                     return False
                 return community_member.role in {
@@ -142,9 +138,7 @@ class User(AbstractUser):
 
     @property
     def is_online(self: "User") -> bool:
-        online_limit = timezone.now() - timedelta(
-            minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES
-        )
+        online_limit = timezone.now() - timedelta(minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES)
         return self.last_activity >= online_limit
 
     @property
