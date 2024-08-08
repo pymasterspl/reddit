@@ -87,7 +87,9 @@ class User(AbstractUser):
     username: None = None
     email = models.EmailField(unique=True)
     last_activity = models.DateTimeField(auto_now_add=True, db_index=True)
-    avatar = models.ImageField(upload_to="users_avatars/", null=True, blank=True, default=None)
+    avatar = models.ImageField(
+        upload_to="users_avatars/", null=True, blank=True, default=None
+    )
 
     def __str__(self: "User") -> str:
         return self.nickname
@@ -98,6 +100,16 @@ class User(AbstractUser):
         super().save(*args, **kwargs)
 
     def has_permission(self: "User", post_id: int, permission_name: str) -> bool:
+        permission_checkers = {
+            "edit": self.__check_permission_post_edit,
+            # Add more permissions here if needed
+        }
+        checker = permission_checkers.get(permission_name)
+        if checker:
+            return checker(post_id)
+        return False
+
+    def __check_permission_post_edit(self: "User", post_id: int) -> bool:
         Post = apps.get_model("core", "Post")
         CommunityMember = apps.get_model("core", "CommunityMember")
 
@@ -106,20 +118,20 @@ class User(AbstractUser):
         except Post.DoesNotExist:
             return False
 
-        match permission_name:
-            case "edit":
-                if self == post.author:
-                    return True
-                try:
-                    community_member = CommunityMember.objects.get(community=post.community, user=self)
-                except CommunityMember.DoesNotExist:
-                    return False
-                return community_member.role in {
-                    CommunityMember.MODERATOR,
-                    CommunityMember.ADMIN,
-                }
-            case _:
-                return False
+        if self == post.author:
+            return True
+
+        try:
+            community_member = CommunityMember.objects.get(
+                community=post.community, user=self
+            )
+        except CommunityMember.DoesNotExist:
+            return False
+
+        return community_member.role in {
+            CommunityMember.MODERATOR,
+            CommunityMember.ADMIN,
+        }
 
     def process_avatar(self: "User", avatar: any) -> ContentFile:
         image = Image.open(avatar)
@@ -138,7 +150,9 @@ class User(AbstractUser):
 
     @property
     def is_online(self: "User") -> bool:
-        online_limit = timezone.now() - timedelta(minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES)
+        online_limit = timezone.now() - timedelta(
+            minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES
+        )
         return self.last_activity >= online_limit
 
     @property

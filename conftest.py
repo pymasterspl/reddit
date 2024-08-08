@@ -28,7 +28,9 @@ def user_model() -> type[get_user_model()]:
 
 @pytest.fixture()
 def user(generated_password: str) -> User:
-    user = User.objects.create_user(email="test@example.com", nickname="test_user", password=generated_password)
+    user = User.objects.create_user(
+        email="test@example.com", nickname="test_user", password=generated_password
+    )
     user.plain_password = generated_password
     return user
 
@@ -46,7 +48,11 @@ def another_user(generated_password: str) -> User:
 
 @pytest.fixture()
 def admin_user(generated_password: str) -> User:
-    admin_user = User.objects.create_superuser(email="admin@example.com", nickname="admin", password=generated_password)
+    admin_user = User.objects.create_superuser(
+        email="admin_user@example.com",
+        nickname="admin_user",
+        password=generated_password,
+    )
     admin_user.plain_password = generated_password
     return admin_user
 
@@ -57,12 +63,27 @@ def community(user: User) -> Generator[Community, None, None]:
 
 
 @pytest.fixture()
+def community2(user: User) -> Generator[Community, None, None]:
+    return Community.objects.create(author=user, name="Test Community2")
+
+
+@pytest.fixture()
 def post(user: User, community: Community) -> Generator[Post, None, None]:
     return Post.objects.create(
         author=user,
         community=community,
         title="Test Post",
         content="This is a test post",
+    )
+
+
+@pytest.fixture()
+def post2(user: User, community2: Community) -> Generator[Post, None, None]:
+    return Post.objects.create(
+        author=user,
+        community=community2,
+        title="Test Post2",
+        content="This is a test post2",
     )
 
 
