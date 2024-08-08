@@ -76,6 +76,12 @@ def test_has_permission_calls_check_permission_post_edit(user: User, post: Post)
 def test_has_permission_integration(user: User, post: Post) -> None:
     assert user.has_permission(post_id=post.id, permission_name="edit") is True
 
+@pytest.mark.django_db()
+def test_user_cannot_edit_nonexistent_post(user: User) -> None:
+    assert user.has_permission(post_id=9999, permission_name="edit") is False
+def test_user_can_edit_own_post(user: User, post: Post) -> None:
+    assert user.has_permission(post_id=post.id, permission_name="edit") is True
+
 
 @pytest.mark.django_db
 def test_has_permission_no_permission(user: User, post: Post) -> None:
