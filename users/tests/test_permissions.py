@@ -57,6 +57,12 @@ def community_member_admin(admin: User, community: Community) -> CommunityMember
 def test_user_can_edit_own_post(user: User, post: Post) -> None:
     assert user.has_permission(post_id=post.id, permission_name="edit") is True
 
+@pytest.mark.django_db()
+def test_user_cannot_edit_nonexistent_post(user: User) -> None:
+    assert user.has_permission(post_id=9999, permission_name="edit") is False
+def test_user_can_edit_own_post(user: User, post: Post) -> None:
+    assert user.has_permission(post_id=post.id, permission_name="edit") is True
+
 
 @pytest.mark.django_db()
 def test_user_cannot_edit_others_post(post: Post, user_without_post: User) -> None:
