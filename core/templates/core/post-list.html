@@ -10,7 +10,7 @@
     <div class="mx-auto col-10 col-md-8 col-lg-8 mt-lg-3">
         <a href="{% url 'admin:core_post_add' %}" class="admin-link mb-3X">Add New Post</a>
         {% for post in posts %}
-        <div class="card bg-dark shadow-sm mb-3 text-light border">
+        <div id="post-{{ post.id }}" class="card bg-dark shadow-sm mb-3 text-light border">
             {% include 'core/post-header.html' with post=post %}
 
             <div class="card-body text-light border">

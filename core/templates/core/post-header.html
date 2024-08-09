@@ -38,12 +38,12 @@
                     <li>
                         {% if request.user.is_authenticated %}
                         {% if post|is_saved:request.user %}
-                        <form method="POST" class="d-none" id="unsave-form-{{ post.pk }}" action="{% url 'post-save-unsave' pk=post.pk action_type='unsave' %}?next={{ request.path }}">
+                        <form method="POST" class="d-none" id="unsave-form-{{ post.pk }}" action="{% url 'post-save-unsave' pk=post.pk action_type='unsave' %}?next={{ request.path }}#post-{{post.id}}">
                             {% csrf_token %}
                         </form>
                         <a href="#" class="dropdown-item" onclick="event.preventDefault(); document.getElementById('unsave-form-{{ post.pk }}').submit();"><i class="bi bi-bookmark-fill"></i> Unsave</a>
                         {% else %}
-                        <form method="POST" class="d-none" id="save-form-{{ post.pk }}" action="{% url 'post-save-unsave' pk=post.pk action_type='save' %}?next={{ request.path }}">
+                        <form method="POST" class="d-none" id="save-form-{{ post.pk }}" action="{% url 'post-save-unsave' pk=post.pk action_type='save' %}?next={{ request.path }}#post-{{post.id}}">
                             {% csrf_token %}
                         </form>
                         <a href="#" class="dropdown-item" onclick="event.preventDefault(); document.getElementById('save-form-{{ post.pk }}').submit();"><i class="bi bi-bookmark"></i> Save</a>

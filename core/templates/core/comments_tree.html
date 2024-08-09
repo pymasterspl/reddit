@@ -3,7 +3,7 @@
 <ul class="list-unstyled">
     {% for comment in comments %}
         <li>
-            <div class="card bg-dark shadow-sm mb-3 text-light">
+            <div id="post-{{ comment.id }}" class="card bg-dark shadow-sm mb-3 text-light">
                 {% include 'core/comment.html' with comment=comment %}
             </div>
             <div class="mb-3">
