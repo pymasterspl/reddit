@@ -98,6 +98,7 @@ class User(AbstractUser):
     objects = UserManager()
     username: None = None
     avatar = models.ImageField(upload_to="users_avatars/", null=True, blank=True, default=None)
+    email: str = models.EmailField(unique=True)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: ClassVar[list[str]] = ["nickname"]
     last_activity = models.DateTimeField(auto_now_add=True, db_index=True)
