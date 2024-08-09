@@ -2,9 +2,11 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse_lazy
+from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
+
 
 User = get_user_model()
-
 HTTP_SUCCESS = 200
 
 
@@ -71,22 +73,28 @@ def test_login_user_view_get(client: Client) -> None:
 
 
 @pytest.mark.django_db()
+def test_nickname_is_null(user):
+    with pytest.raises(IntegrityError):
+        user.nickname = None
+        user.save()
+
+
+@pytest.mark.django_db()
+def test_no_nickname_user_create():
+    with pytest.raises(ValidationError):
+        user_1 = User.objects.create(email="john@doe.com")
+        user_1.clean_fields()
+
+
+@pytest.mark.django_db()
 def test_user_signals():
-    user_1 = User.objects.create(email="user@bbb.com")
-    user_2 = User.objects.create(email="user@aaa.com")
-    # nicknames infered from email
+    user_1 = User.objects.create(nickname="User1", email="user@bbb.com")
+    user_2 = User.objects.create(nickname="User2", email="user@aaa.com")
+    assert user_1.nickname == "User1"
+    assert user_2.nickname == "User2"
+    assert user_1.email == "user@bbb.com"
+    assert user_2.email == "user@aaa.com"
     assert user_1.profile
     assert user_2.profile
     assert user_1.user_settings
     assert user_2.user_settings
-    assert user_1.nickname == "user"
-    assert user_2.nickname == "user_1"
-
-
-@pytest.mark.django_db()
-def test_user_nicknames():
-    user = User.objects.create(email="user@bbb.com", nickname="user1")
-    assert user.profile.nickname == "user1"
-    # User.objects.filter(email="user@bbb.com").update(nickname="user2")
-    # user.refresh_from_db()
-    # assert user.nickname == "user2"

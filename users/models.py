@@ -1,6 +1,5 @@
 from datetime import timedelta
 from typing import ClassVar
-
 from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
@@ -8,6 +7,7 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from .choices import GENDER_CHOICES, LANGUAGE_CHOICES, LOCATION_CHOICES
 
 
 class UserManager(BaseUserManager):
@@ -47,20 +47,14 @@ class UserManager(BaseUserManager):
 
 
 class UserSettings(models.Model):
-
-    # https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes
     content_lang = models.CharField(
-        max_length= 2,
-        choices= [
-            ("en", "English")
-        ]
+        max_length=2,
+        choices=LANGUAGE_CHOICES
     )
-   #  https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+   
     location = models.CharField(
         max_length=2,
-        choices = [
-            ("US", "United States")
-        ]
+        choices=LOCATION_CHOICES
     )
     
     is_beta = models.BooleanField(default=False)
@@ -69,7 +63,23 @@ class UserSettings(models.Model):
     def __str__(self: "UserSettings") -> str:
        return f"{self.user} settings"
 
+
 class Profile(models.Model):
+    bio = models.TextField(default="")
+    is_nfsw_visible = models.BooleanField(default=False)
+    is_followable = models.BooleanField(default=True)
+    is_content_visible = models.BooleanField(default=True)
+    is_communities_visible = models.BooleanField(default=True)
+    gender = models.CharField(choices=GENDER_CHOICES, max_length=1)
+
+    def __str__(self: "Profile") -> str:
+        return f"{self.user.nickname} profile"
+
+    def username(self: "Profile") -> str:
+        return self.user.nickname
+    
+    
+class User(AbstractUser):
     nickname_validator = UnicodeUsernameValidator()
     nickname = models.CharField(
         max_length=150,
@@ -81,38 +91,13 @@ class Profile(models.Model):
         ),
         validators=[nickname_validator],
     )
-    bio = models.TextField(default="")
-    is_nfsw_visible = models.BooleanField(default=False)
-    is_followable = models.BooleanField(default=True)
-    is_content_visible = models.BooleanField(default=True)
-    is_communities_visible = models.BooleanField(default=True)
-
-    def __str__(self: "Profile") -> str:
-        return f"{self.nickname} settings"
-
-
-class User(AbstractUser):
-    MALE = "M"
-    FEMALE = "F"
-    NON_BINARY = "B"
-    OTHER = "O"
-    NON_SPECIFIED = "N"
-
-    GENDER_CHOICES = {
-        MALE: "Male",
-        FEMALE: "Female",
-        NON_BINARY: "Non-binary",
-        OTHER: "Other",
-        NON_SPECIFIED: "Non-specified",
-    }
-
-    USERNAME_FIELD = "email"
     objects = UserManager()
     username: None = None
+
     email: str = models.EmailField(unique=True)
-    gender = models.CharField(choices=GENDER_CHOICES, max_length=1)
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["nickname"]
     last_activity = models.DateTimeField(auto_now_add=True, db_index=True)
-    REQUIRED_FIELDS = ["gender"]
     user_settings = models.OneToOneField(UserSettings, related_name="user", on_delete=models.SET_NULL, null=True)
     profile = models.OneToOneField(Profile, on_delete=models.SET_NULL, null=True)
 
@@ -142,16 +127,6 @@ class User(AbstractUser):
 
         return result
     
-    @property
-    def nickname(self):
-        return self.profile.nickname if self.profile else "not-yet-named"
-
-    @nickname.setter
-    def nickname(self, value):
-        if self.profile:
-            self.profile.nickname = value
-            self.profile.save()
-            
 
 class SocialLink(models.Model):
     name = models.CharField(max_length=150)

@@ -8,20 +8,13 @@ from .helpers import nickname_from_email
 
 @receiver(post_save, sender=User)
 def create_profile(sender, instance, created, **kwargs):
-    if created:
-        profile = Profile.objects.create()
-        if instance.profile and instance.nickname:
-            nickname = instance.profile.nickname
-        else:
-            nickname = nickname_from_email(User, instance)
-        profile.nickname = nickname
-        profile.save()
-        instance.profile = profile
+    if created or not instance.profile:
+        instance.profile = Profile.objects.create()
         instance.save()
+        
 
 @receiver(post_save, sender=User)
 def create_user_settings(sender, instance, created, **kwargs):
-    if created:
-        user_settings = UserSettings.objects.create()
-        instance.user_settings = user_settings
-        instance.save()
+    if created or not instance.user_settings:
+        instance.user_settings = UserSettings.objects.create()
+        instance.save() 
