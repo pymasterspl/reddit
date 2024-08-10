@@ -11,9 +11,10 @@ from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
-from django.views.generic import CreateView, DetailView, ListView
+from django.views.generic import CreateView, DetailView, ListView, FormView
+from django.core.mail import send_mail
 
-from .forms import CommentForm, CommunityForm, PostForm
+from .forms import CommentForm, CommunityForm, ContactForm, PostForm
 from .models import Community, CommunityMember, Post, PostVote, SavedPost
 
 
@@ -148,3 +149,19 @@ class CommunityDetailView(DetailView):
 
     def get_object(self: "CommunityDetailView") -> Community:
         return Community.objects.get(slug=self.kwargs["slug"])
+
+class ContactFormView(FormView):
+    template_name = "core/contact.html"
+    form_class = ContactForm
+    success_url = reverse_lazy("contact")
+
+    def form_valid(self: "ContactFormView", form: ContactForm) -> HttpResponse:
+        __valid = super().form_valid(form)
+        # subject = "contact form"
+        # message = form.cleaned_data["message"]
+        # sender = form.cleaned_data["email"]
+        # recipients = ["admin@pymasters.pl"]
+
+        # send_mail(subject, message, sender, recipients)
+        return __valid
+    

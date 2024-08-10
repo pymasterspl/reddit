@@ -51,3 +51,20 @@ class CommunityForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = "post"
         self.helper.add_input(Submit("submit", "Create Community"))
+
+class ContactForm(forms.Form):
+    name = forms.CharField(max_length=100)
+    email = forms.EmailField()
+    message = forms.CharField(widget=forms.Textarea, max_length=2000)
+    hidden_field = forms.CharField(widget=forms.HiddenInput(), initial="hidden_value")
+
+    def clean_name(self):
+        raise forms.ValidationError("Pole nie może zawierać liter.")
+        name = self.cleaned_data["name"]
+        return name
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        raise forms.ValidationError("Non field error")
+        return cleaned_data
+
