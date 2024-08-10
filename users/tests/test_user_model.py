@@ -110,6 +110,20 @@ def test_no_nickname_user_create() -> None:
 
 
 @pytest.mark.django_db()
+def test_duplicate_user_email() -> None:
+    User.objects.create(email="user@bbb.com")
+    with pytest.raises(IntegrityError):
+        User.objects.create(email="user@bbb.com")
+
+
+@pytest.mark.django_db()
+def test_duplicate_user_nickname() -> None:
+    User.objects.create(user="user", email="some_user@some.com")
+    with pytest.raises(IntegrityError):
+        User.objects.create(user="user", email="other_user@other.com")
+
+
+@pytest.mark.django_db()
 def test_user_signals() -> None:
     user_1 = User.objects.create(nickname="User1", email="user@bbb.com")
     user_2 = User.objects.create(nickname="User2", email="user@aaa.com")
