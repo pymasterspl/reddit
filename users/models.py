@@ -52,21 +52,15 @@ class UserManager(BaseUserManager):
 
 
 class UserSettings(models.Model):
-    content_lang = models.CharField(
-        max_length=2,
-        choices=LANGUAGE_CHOICES
-    )
+    content_lang = models.CharField(max_length=2, choices=LANGUAGE_CHOICES)
 
-    location = models.CharField(
-        max_length=2,
-        choices=LOCATION_CHOICES
-    )
+    location = models.CharField(max_length=2, choices=LOCATION_CHOICES)
 
     is_beta = models.BooleanField(default=False)
     is_over_18 = models.BooleanField(default=False)
 
     def __str__(self: "UserSettings") -> str:
-       return f"{self.user} settings"
+        return f"{self.user} settings"
 
 
 class Profile(models.Model):

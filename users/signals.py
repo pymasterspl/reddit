@@ -7,14 +7,14 @@ from .models import Profile, User, UserSettings
 
 
 @receiver(post_save, sender=User)
-def create_profile(sender: type, instance: User, created: bool, **kwargs: Any) -> None: # noqa: ARG001, ANN401, FBT001
+def create_profile(sender: type, instance: User, created: bool, **kwargs: Any) -> None:  # noqa: ARG001, ANN401, FBT001
     if created or not instance.profile:
         instance.profile = Profile.objects.create()
         instance.save()
 
 
 @receiver(post_save, sender=User)
-def create_user_settings(sender: type, instance: User, created: bool, **kwargs: Any) -> None: # noqa: ARG001, ANN401, FBT001
+def create_user_settings(sender: type, instance: User, created: bool, **kwargs: Any) -> None:  # noqa: ARG001, ANN401, FBT001
     if created or not instance.user_settings:
         instance.user_settings = UserSettings.objects.create()
         instance.save()
