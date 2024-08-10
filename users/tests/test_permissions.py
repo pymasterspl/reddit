@@ -17,19 +17,13 @@ def moderator() -> User:
 
 
 @pytest.fixture()
-def community_member_moderator(
-    moderator: User, community: Community
-) -> CommunityMember:
-    return CommunityMember.objects.create(
-        user=moderator, community=community, role=CommunityMember.MODERATOR
-    )
+def community_member_moderator(moderator: User, community: Community) -> CommunityMember:
+    return CommunityMember.objects.create(user=moderator, community=community, role=CommunityMember.MODERATOR)
 
 
 @pytest.fixture()
 def community_member_admin(admin_user: User, community: Community) -> CommunityMember:
-    return CommunityMember.objects.create(
-        user=admin_user, community=community, role=CommunityMember.ADMIN
-    )
+    return CommunityMember.objects.create(user=admin_user, community=community, role=CommunityMember.ADMIN)
 
 
 @pytest.mark.django_db()
@@ -45,9 +39,7 @@ def test_check_permission_post_edit_moderator(
 
 
 @pytest.mark.django_db()
-def test_check_permission_post_edit_not_a_moderator(
-    moderator: User, post2: Post
-) -> None:
+def test_check_permission_post_edit_not_a_moderator(moderator: User, post2: Post) -> None:
     assert (
         moderator._User__check_permission_post_edit(post2.id) is False  # noqa: SLF001
     )
@@ -68,9 +60,7 @@ def test_check_permission_post_edit_not_an_admin(admin_user: User, post2: Post) 
 
 
 @pytest.mark.django_db()
-def test_check_permission_post_edit_user_not_post_owner(
-    another_user: User, post: Post
-) -> None:
+def test_check_permission_post_edit_user_not_post_owner(another_user: User, post: Post) -> None:
     assert (
         another_user._User__check_permission_post_edit(post.id) is False  # noqa: SLF001
     )
@@ -82,9 +72,7 @@ def test_check_permission_post_edit_non_existent_post(user: User) -> None:
 
 
 @pytest.mark.django_db()
-def test_has_permission_calls_check_permission_post_edit(
-    user: User, post: Post
-) -> None:
+def test_has_permission_calls_check_permission_post_edit(user: User, post: Post) -> None:
     mock = MagicMock()
     user._User__check_permission_post_edit = mock  # noqa: SLF001
     user.has_permission(post_id=post.id, permission_name="edit")
@@ -108,7 +96,4 @@ def test_user_can_edit_own_post(user: User, post: Post) -> None:
 
 @pytest.mark.django_db()
 def test_has_permission_no_permission(user: User, post: Post) -> None:
-    assert (
-        user.has_permission(post_id=post.id, permission_name="nonexistent_permission")
-        is False
-    )
+    assert user.has_permission(post_id=post.id, permission_name="nonexistent_permission") is False
