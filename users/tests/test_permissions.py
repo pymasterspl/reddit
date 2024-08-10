@@ -49,8 +49,8 @@ def test_check_permission_post_edit_not_a_moderator(
     moderator: User, post2: Post
 ) -> None:
     assert (
-        moderator._User__check_permission_post_edit(post2.id) is False
-    )  # noqa: SLF001
+        moderator._User__check_permission_post_edit(post2.id) is False  # noqa: SLF001
+    )
 
 
 @pytest.mark.django_db()
@@ -63,8 +63,8 @@ def test_check_permission_post_edit_admin(
 @pytest.mark.django_db()
 def test_check_permission_post_edit_not_an_admin(admin_user: User, post2: Post) -> None:
     assert (
-        admin_user._User__check_permission_post_edit(post2.id) is False
-    )  # noqa: SLF001
+        admin_user._User__check_permission_post_edit(post2.id) is False  # noqa: SLF001
+    )
 
 
 @pytest.mark.django_db()
@@ -72,8 +72,8 @@ def test_check_permission_post_edit_user_not_post_owner(
     another_user: User, post: Post
 ) -> None:
     assert (
-        another_user._User__check_permission_post_edit(post.id) is False
-    )  # noqa: SLF001
+        another_user._User__check_permission_post_edit(post.id) is False  # noqa: SLF001
+    )
 
 
 @pytest.mark.django_db()
