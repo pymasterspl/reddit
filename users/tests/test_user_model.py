@@ -2,13 +2,12 @@ import io
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db.utils import IntegrityError
 from django.test import Client
 from django.urls import reverse_lazy
 from PIL import Image
-from django.core.exceptions import ValidationError
-from django.db.utils import IntegrityError
-
 
 User = get_user_model()
 HTTP_SUCCESS = 200
@@ -97,21 +96,21 @@ def test_get_avatar_url(user: User) -> None:
 
 
 @pytest.mark.django_db()
-def test_nickname_is_null(user):
+def test_nickname_is_null(user: User) -> None:
+    user.nickname = None
     with pytest.raises(IntegrityError):
-        user.nickname = None
         user.save()
 
 
 @pytest.mark.django_db()
-def test_no_nickname_user_create():
+def test_no_nickname_user_create() -> None:
+    user_1 = User.objects.create(email="john@doe.com")
     with pytest.raises(ValidationError):
-        user_1 = User.objects.create(email="john@doe.com")
         user_1.clean_fields()
 
 
 @pytest.mark.django_db()
-def test_user_signals():
+def test_user_signals() -> None:
     user_1 = User.objects.create(nickname="User1", email="user@bbb.com")
     user_2 = User.objects.create(nickname="User2", email="user@aaa.com")
     assert user_1.nickname == "User1"

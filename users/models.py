@@ -1,6 +1,7 @@
 import io
 from datetime import timedelta
 from typing import ClassVar
+
 from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
@@ -9,8 +10,9 @@ from django.core.files.base import ContentFile
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from .choices import GENDER_CHOICES, LANGUAGE_CHOICES, LOCATION_CHOICES
 from PIL import Image
+
+from .choices import GENDER_CHOICES, LANGUAGE_CHOICES, LOCATION_CHOICES
 
 
 class UserManager(BaseUserManager):
@@ -54,12 +56,12 @@ class UserSettings(models.Model):
         max_length=2,
         choices=LANGUAGE_CHOICES
     )
-   
+
     location = models.CharField(
         max_length=2,
         choices=LOCATION_CHOICES
     )
-    
+
     is_beta = models.BooleanField(default=False)
     is_over_18 = models.BooleanField(default=False)
 
@@ -80,8 +82,8 @@ class Profile(models.Model):
 
     def username(self: "Profile") -> str:
         return self.user.nickname
-    
-    
+
+
 class User(AbstractUser):
     nickname_validator = UnicodeUsernameValidator()
     nickname = models.CharField(
@@ -147,9 +149,13 @@ class User(AbstractUser):
             result = f"{delta.days} days ago"
 
         return result
-    
+
 
 class SocialLink(models.Model):
     name = models.CharField(max_length=150)
     url = models.URLField()
     user_profile = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self: "SocialLink") -> str:
+        # fix using related name
+        return self.name
