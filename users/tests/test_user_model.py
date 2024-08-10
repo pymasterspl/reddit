@@ -135,3 +135,35 @@ def test_user_signals() -> None:
     assert user_2.profile
     assert user_1.user_settings
     assert user_2.user_settings
+
+
+@pytest.mark.django_db()
+def test_language(user: "User") -> None:
+    user.user_settings.content_lang = "en"
+    assert user.user_settings.get_content_lang_display() == "English"
+
+
+@pytest.mark.django_db()
+def test_location(user: "User") -> None:
+    for code, location in zip(
+        ["AQ", "BR", "PL", "US", "FR", "AU", "JP", "UG", "TR"],
+        ["Antarctica", "Brazil", "Poland", "United States", "France", "Australia", "Japan", "Uganda", "Türkiye"],
+        strict=True,
+    ):
+        user.user_settings.location = code
+        assert user.user_settings.get_location_display() == location
+
+
+@pytest.mark.django_db()
+def test_non_existing_locaton(user: "User") -> None:
+    user.user_settings.location = "XX"
+    with pytest.raises(ValidationError):
+        user.user_settings.clean_fields()
+
+
+@pytest.mark.django_db()
+def test_language_location_there_are_some_defaults(user: "User") -> None:
+    loc = user.user_settings.location
+    lang = user.user_settings.content_lang
+    assert loc
+    assert lang

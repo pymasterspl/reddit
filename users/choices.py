@@ -1,3 +1,5 @@
+import pycountry
+
 MALE = "M"
 FEMALE = "F"
 NON_BINARY = "B"
@@ -12,8 +14,13 @@ GENDER_CHOICES = [
     (NON_SPECIFIED, "Non-specified"),
 ]
 
+# https://pypi.org/project/pycountry/
+
 
 # https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
-LOCATION_CHOICES = [("US", "United States")]
+def get_locations() -> list[tuple[str, str]]:
+    return [(location.alpha_2, location.name) for location in pycountry.countries]
+
+
 # https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes
 LANGUAGE_CHOICES = [("en", "English")]
