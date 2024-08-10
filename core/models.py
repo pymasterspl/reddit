@@ -37,12 +37,8 @@ class GenericModel(models.Model):
 class Community(GenericModel):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
-    author = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, related_name="authored_communities"
-    )
-    members = models.ManyToManyField(
-        User, through="CommunityMember", related_name="communities"
-    )
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="authored_communities")
+    members = models.ManyToManyField(User, through="CommunityMember", related_name="communities")
 
     class Meta:
         verbose_name_plural = "Communities"
@@ -65,9 +61,7 @@ class Community(GenericModel):
         return unique_slug
 
     def count_online_users(self: "Community") -> int:
-        online_limit = timezone.now() - timedelta(
-            minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES
-        )
+        online_limit = timezone.now() - timedelta(minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES)
         return self.members.filter(last_activity__gte=online_limit).count()
 
 
@@ -210,9 +204,7 @@ class PostVote(models.Model):
         post_votes = PostVote.objects.filter(post=self.post)
         up_votes = post_votes.filter(choice=PostVote.UPVOTE).count()
         down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
-        Post.objects.filter(pk=self.post.pk).update(
-            up_votes=up_votes, down_votes=down_votes
-        )
+        Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
 
 
 class Image(models.Model):
