@@ -60,7 +60,7 @@ class UserSettings(models.Model):
     is_over_18 = models.BooleanField(default=False)
 
     def __str__(self: "UserSettings") -> str:
-        return f"{self.user} settings"
+        return f"Settings: {self.user}"
 
 
 class Profile(models.Model):
@@ -72,10 +72,13 @@ class Profile(models.Model):
     gender = models.CharField(choices=GENDER_CHOICES, max_length=1)
 
     def __str__(self: "Profile") -> str:
-        return f"{self.user.nickname} profile"
+        return f"Profile: {self.user.nickname}"
 
-    def username(self: "Profile") -> str:
+    def nickname(self: "Profile") -> str:
         return self.user.nickname
+
+    def email(self: "Profile") -> str:
+        return self.user.email
 
 
 class User(AbstractUser):
@@ -98,8 +101,8 @@ class User(AbstractUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: ClassVar[list[str]] = ["nickname"]
     last_activity = models.DateTimeField(auto_now_add=True, db_index=True)
-    user_settings = models.OneToOneField(UserSettings, related_name="user", on_delete=models.SET_NULL, null=True)
-    profile = models.OneToOneField(Profile, on_delete=models.SET_NULL, null=True, related_name="user")
+    user_settings = models.OneToOneField(UserSettings, on_delete=models.SET_NULL, null=True)
+    profile = models.OneToOneField(Profile, on_delete=models.SET_NULL, null=True)
 
     def save(self: "User", *args: any, **kwargs: dict) -> None:
         if self.avatar:
@@ -151,4 +154,4 @@ class SocialLink(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="social_link", null=True)
 
     def __str__(self: "SocialLink") -> str:
-        return f"social link: {self.url}"
+        return f"Social link: {self.url}"

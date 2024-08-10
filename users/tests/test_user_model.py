@@ -118,9 +118,9 @@ def test_duplicate_user_email() -> None:
 
 @pytest.mark.django_db()
 def test_duplicate_user_nickname() -> None:
-    User.objects.create(user="user", email="some_user@some.com")
+    User.objects.create(nickname="user", email="some_user@some.com")
     with pytest.raises(IntegrityError):
-        User.objects.create(user="user", email="other_user@other.com")
+        User.objects.create(nickname="user", email="other_user@other.com")
 
 
 @pytest.mark.django_db()
