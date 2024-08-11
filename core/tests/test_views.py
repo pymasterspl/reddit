@@ -1,4 +1,3 @@
-import glob
 import io
 import secrets
 import string
@@ -54,25 +53,25 @@ def user_with_avatar(client: Client, create_avatar: SimpleUploadedFile) -> User:
 
 @pytest.fixture()
 def create_avatar() -> SimpleUploadedFile:
-    avatar_dir = Path.join(settings.MEDIA_ROOT, "users_avatars/")
-    Path.makedirs(avatar_dir, exist_ok=True)
+    avatar_dir = Path(settings.MEDIA_ROOT, "users_avatars/")
+    Path.mkdir(avatar_dir, exist_ok=True)
     img = Image.new("RGB", (100, 100), color=(73, 109, 137))
     img_io = io.BytesIO()
     img.save(img_io, format="JPEG")
     img_io.seek(0)
     base_filename = "test_avatar"
 
-    avatar_path = Path.join(f"{avatar_dir}/{base_filename}.jpg")
+    avatar_path = Path(f"{avatar_dir}/{base_filename}.jpg")
 
     with Path.open(avatar_path, "wb") as f:
         f.write(img_io.read())
 
     with Path.open(avatar_path, "rb") as f:
-        avatar = SimpleUploadedFile(name=Path.name(f.name), content=f.read(), content_type="image/jpeg")
+        avatar = SimpleUploadedFile(name=avatar_path, content=f.read(), content_type="image/jpeg")
 
     yield avatar
 
-    for file_path in glob.rglob(Path(f"{avatar_dir}/{base_filename}*")):
+    for file_path in avatar_dir.glob(f"{base_filename}*"):
         if Path.exists(file_path):
             Path.unlink(file_path)
 
