@@ -103,30 +103,42 @@ def test_nickname_is_null(user: User) -> None:
 
 
 @pytest.mark.django_db()
-def test_no_nickname_user_create() -> None:
-    user_1 = User.objects.create(email="john@doe.com")
-    with pytest.raises(ValidationError):
+def test_blank_fields_user_create() -> None:
+    user_1 = User.objects.create(nickname="", email="", password="")
+    with pytest.raises(ValidationError) as exception_info:
         user_1.clean_fields()
+    error_dict = exception_info.value.error_dict
+    assert "nickname" in error_dict
+    assert "email" in error_dict
+    assert "password" in error_dict
 
 
 @pytest.mark.django_db()
-def test_duplicate_user_email() -> None:
-    User.objects.create(email="user@bbb.com")
+@pytest.mark.parametrize("null_field_name", ["nickname", "email", "password"])
+def test_null_fields_user_create(user: User, null_field_name: str) -> None:
+    setattr(user, null_field_name, None)
     with pytest.raises(IntegrityError):
-        User.objects.create(email="user@bbb.com")
+        user.save()
 
 
 @pytest.mark.django_db()
-def test_duplicate_user_nickname() -> None:
-    User.objects.create(nickname="user", email="some_user@some.com")
+def test_duplicate_user_email(generated_password: str) -> None:
+    User.objects.create(email="user@bbb.com", password=generated_password)
     with pytest.raises(IntegrityError):
-        User.objects.create(nickname="user", email="other_user@other.com")
+        User.objects.create(email="user@bbb.com", password=generated_password)
 
 
 @pytest.mark.django_db()
-def test_user_signals() -> None:
-    user_1 = User.objects.create(nickname="User1", email="user@bbb.com")
-    user_2 = User.objects.create(nickname="User2", email="user@aaa.com")
+def test_duplicate_user_nickname(generated_password: str) -> None:
+    User.objects.create(nickname="user", email="some_user@some.com", password=generated_password)
+    with pytest.raises(IntegrityError):
+        User.objects.create(nickname="user", email="other_user@other.com", password=generated_password)
+
+
+@pytest.mark.django_db()
+def test_user_signals(generated_password: str) -> None:
+    user_1 = User.objects.create(nickname="User1", email="user@bbb.com", password=generated_password)
+    user_2 = User.objects.create(nickname="User2", email="user@aaa.com", password=generated_password)
     assert user_1.nickname == "User1"
     assert user_2.nickname == "User2"
     assert user_1.email == "user@bbb.com"
@@ -138,13 +150,13 @@ def test_user_signals() -> None:
 
 
 @pytest.mark.django_db()
-def test_language(user: "User") -> None:
+def test_language(user: User) -> None:
     user.user_settings.content_lang = "en"
     assert user.user_settings.get_content_lang_display() == "English"
 
 
 @pytest.mark.django_db()
-def test_location(user: "User") -> None:
+def test_location(user: User) -> None:
     for code, location in zip(
         ["AQ", "BR", "PL", "US", "FR", "AU", "JP", "UG", "TR"],
         ["Antarctica", "Brazil", "Poland", "United States", "France", "Australia", "Japan", "Uganda", "Türkiye"],
@@ -155,15 +167,16 @@ def test_location(user: "User") -> None:
 
 
 @pytest.mark.django_db()
-def test_non_existing_locaton(user: "User") -> None:
+def test_non_existing_locaton(user: User) -> None:
     user.user_settings.location = "XX"
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError) as exception_info:
         user.user_settings.clean_fields()
+    assert "location" in exception_info.value.error_dict
 
 
 @pytest.mark.django_db()
-def test_language_location_there_are_some_defaults(user: "User") -> None:
-    loc = user.user_settings.location
-    lang = user.user_settings.content_lang
-    assert loc
-    assert lang
+def test_language_location_there_are_some_defaults(user: User) -> None:
+    location = user.user_settings.location
+    language = user.user_settings.content_lang
+    assert location
+    assert language
