@@ -1,7 +1,6 @@
 from typing import Any
 
 from django import forms
-from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
@@ -24,10 +23,6 @@ class PostListView(ListView):
 
     def get_queryset(self: "PostListView") -> models.QuerySet:
         return Post.objects.filter(parent=None)
-
-    def get_context_data(self: "PostListView", **kwargs: dict[str, Any]) -> dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        return context
 
 
 @method_decorator(login_required, name="post")
