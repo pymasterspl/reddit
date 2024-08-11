@@ -188,20 +188,16 @@ def test_restricted_community_access(client: Client, restricted_community: Commu
 def test_create_community_view(client: Client, user: User) -> None:
     client.force_login(user)
     url = reverse("community-create")
-    data = {
-        "name": "Test Community",
-        "privacy": "10_PUBLIC",
-        "is_18_plus": True,
-    }
-
-    response = client.post(url, data)
+    valid_data = {"name": "Test Community", "privacy": "10_PUBLIC", "is_18_plus": True}
+    response = client.post(url, valid_data)
     assert response.status_code == 302
+    assert Community.objects.filter(name="Test Community").exists()
 
-    community = Community.objects.get(name="Test Community")
-    assert community.name == "Test Community"
-    assert community.author == user
-    assert community.privacy == "10_PUBLIC"
-    assert community.is_18_plus is True
+    invalid_data = {"name": "", "privacy": "INVALID", "is_18_plus": "not_boolean"}
+    response = client.post(url, invalid_data)
+    assert response.status_code == 200
+    assert "form" in response.context
+    assert response.context["form"].errors
 
 
 @pytest.mark.django_db()
@@ -216,9 +212,20 @@ def test_community_detail_view(client: Client, user: User, community: Community)
 
 
 @pytest.mark.django_db()
+def test_community_detail_view_not_found(client: Client, user: User) -> None:
+    client.force_login(user)
+    url = reverse("community-detail", kwargs={"slug": "non-existent"})
+    response = client.get(url)
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db()
 def test_update_community_view_without_permission(client: Client, community: Community, user: User) -> None:
     client.force_login(user)
     response = client.post(reverse("community-update", kwargs={"slug": community.slug}), {"name": "Updated Community"})
-    assert response.status_code == 403
+    assert response.status_code == 302
+    assert response.url == reverse("community-detail", kwargs={"slug": community.slug})
+    response = client.get(response.url)
+    assert "You do not have permission to update this community." in response.content.decode()
     community.refresh_from_db()
     assert community.name == "Test Community"

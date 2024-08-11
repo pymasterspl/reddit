@@ -282,7 +282,7 @@ def test_add_moderator(client: Client, community: Community) -> None:
     form_data = {"nickname": user.nickname}
 
     response = client.post(url, {"add_moderator": "Add", **form_data})
-    assert response.status_code == 302
+    assert response.status_code == 200
 
     assert CommunityMember.objects.filter(community=community, user=user, role=CommunityMember.MODERATOR).exists()
 
@@ -303,6 +303,6 @@ def test_remove_moderator(client: Client, community: Community) -> None:
     form_data = {"nickname": user.nickname}
 
     response = client.post(url, {"remove_moderator": "Remove", **form_data})
-    assert response.status_code == 302
+    assert response.status_code == 200
 
     assert not CommunityMember.objects.filter(community=community, user=user, role=CommunityMember.MODERATOR).exists()

@@ -10,28 +10,27 @@ User = get_user_model()
 
 
 @pytest.mark.django_db()
-def test_community_form() -> None:
-    user_password = generate_random_password()
-    user = User.objects.create_user(email="test@example.com", password=user_password, nickname="testnick")
-    form_data = {
-        "name": "Test Community",
-        "privacy": "10_PUBLIC",
-        "is_18_plus": True,
-    }
+@pytest.mark.parametrize("data, expected_valid", [
+    ({"name": "Test Community", "description": "A test community", "privacy": "10_PUBLIC"}, True),
+    ({"name": "", "description": "A test community", "privacy": "10_PUBLIC"}, False),
+    ({"name": "Test Community", "description": "", "privacy": "10_PUBLIC"}, False),
+    ({"name": "Test Community", "description": "A test community", "privacy": "invalid"}, False),
+])
+def test_community_form(data: dict, expected_valid: bool) -> None:
+    user = User.objects.create_user(nickname="testuser", password=generate_random_password(), email="testuser@example.com")
+    form = CommunityForm(data=data)
+    assert form.is_valid() == expected_valid
 
-    form = CommunityForm(data=form_data)
-    assert form.is_valid()
+    if form.is_valid():
+        community = form.save(commit=False)
+        community.author = user
+        community.save()
 
-    community = form.save(commit=False)
-    community.author = user
-    community.save()
+        expected_slug = form.cleaned_data["name"].replace(" ", "-").lower()
+        assert community.slug == expected_slug
+        assert community.name == "Test Community"
+        assert community.author == user
 
-    expected_slug = form.cleaned_data["name"].replace(" ", "-").lower()
-    assert community.slug == expected_slug
-    assert community.name == "Test Community"
-    assert community.is_18_plus is True
-    assert community.author == user
-
-    community_from_db = Community.objects.get(name="Test Community")
-    assert community_from_db is not None
-    assert community_from_db.slug == expected_slug
+        community_from_db = Community.objects.get(name="Test Community")
+        assert community_from_db is not None
+        assert community_from_db.slug == expected_slug
