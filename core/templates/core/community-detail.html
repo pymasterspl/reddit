@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'core/css/style.css' %}" xmlns="http://www.w3.org/1999/html">
 {% endblock %}
@@ -16,16 +17,16 @@
                     {% if community.is_18_plus %}
                     <p>This community contains 18+ content. Users must be over 18 to view and contribute.</p>
                     {% endif %}
-                    {% if community.privacy == "PUBLIC" %}
+                    {% if community.privacy == "10_PUBLIC" %}
                     <!-- Display content for public communities -->
-                    {% elif community.privacy == "RESTRICTED" %}
+                    {% elif community.privacy == "20_RESTRICTED" %}
                     <!-- Display content for restricted communities -->
                     {% if user.is_authenticated and user in community.members.all %}
                     <!-- User is approved to contribute -->
                     {% else %}
                     <!-- User is not approved to contribute -->
                     {% endif %}
-                    {% elif community.privacy == "PRIVATE" %}
+                    {% elif community.privacy == "30_PRIVATE" %}
                     {% if user.is_authenticated and user in community.members.all %}
                     <!-- User is approved to view and contribute -->
                     {% else %}
@@ -43,18 +44,18 @@
                     {% if is_admin_or_moderator %}
                     <a href="{% url 'community-update' community.slug %}" class="btn btn-primary">Update Community</a>
                     <div>
-                        <form method="post" class="d-inline">
+                        <form method="post" action="{% url 'community-detail' community.slug %}">
                             {% csrf_token %}
+                            <input type="hidden" name="action" value="add_moderator">
                             {{ add_moderator_form.nickname }}
-                            <button class="btn btn-secondary" name="add_moderator" type="submit">Add Moderator</button>
+                            <button class="btn btn-secondary" type="submit">Add Moderator</button>
                         </form>
 
-
-                        <form method="post" class="d-inline">
+                        <form method="post" action="{% url 'community-detail' community.slug %}">
                             {% csrf_token %}
+                            <input type="hidden" name="action" value="remove_moderator">
                             {{ remove_moderator_form.nickname }}
-                            <button class="btn btn-danger" name="remove_moderator" type="submit">Remove Moderator
-                            </button>
+                            <button class="btn btn-danger" type="submit">Remove Moderator</button>
                         </form>
                     </div>
                     {% endif %}
@@ -68,21 +69,18 @@
                 <div class="card-body">
                     <ul class="list-group">
                         {% for moderator in moderators %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                {{ moderator.user.nickname }} ({{ moderator.role|capfirst }})
-                                {% if is_admin_or_moderator %}
-                                    <!-- Optional: Add functionality to remove moderator if needed -->
-                                {% endif %}
-                            </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ moderator.user.nickname }} ({{ moderator.role|capfirst }})
+                        </li>
                         {% empty %}
-                            <li class="list-group-item">No moderators in this community.</li>
+                        <li class="list-group-item">No moderators in this community.</li>
                         {% endfor %}
                     </ul>
                 </div>
             </div>
             {% endif %}
         </div>
-        </div>
     </div>
+</div>
 </div>
 {% endblock content %}

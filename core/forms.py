@@ -59,6 +59,12 @@ class CommunityForm(forms.ModelForm):
         self.fields["is_18_plus"].widget = forms.CheckboxInput()
         self.fields["is_18_plus"].label = "Mature (18+) - only users over 18 can view and contribute"
 
+    def clean_name(self):
+        name = self.cleaned_data.get("name")
+        if not name:
+            raise forms.ValidationError("This field is required.")
+        return name
+
 
 class AddModeratorForm(forms.Form):
     nickname = forms.CharField(max_length=150, help_text="Enter the nickname of the user to add as a moderator.")
