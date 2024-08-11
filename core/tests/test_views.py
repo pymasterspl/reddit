@@ -54,7 +54,7 @@ def user_with_avatar(client: Client, create_avatar: SimpleUploadedFile) -> User:
 @pytest.fixture()
 def create_avatar() -> SimpleUploadedFile:
     avatar_dir = Path(settings.MEDIA_ROOT) / "users_avatars"
-    Path.mkdir(avatar_dir, exist_ok=True)
+    avatar_dir.mkdir(parents=True, exist_ok=True)
     img = Image.new("RGB", (100, 100), color=(73, 109, 137))
     img_io = io.BytesIO()
     img.save(img_io, format="JPEG")
