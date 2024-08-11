@@ -1,8 +1,8 @@
 import glob
 import io
-import os
 import secrets
 import string
+from pathlib import Path
 
 import pytest
 from django.conf import Settings, settings
@@ -54,29 +54,28 @@ def user_with_avatar(client: Client, create_avatar: SimpleUploadedFile) -> User:
 
 @pytest.fixture()
 def create_avatar() -> SimpleUploadedFile:
-    avatar_dir = os.path.join(settings.MEDIA_ROOT, 'users_avatars/')
-    os.makedirs(avatar_dir, exist_ok=True)
+    avatar_dir = Path.join(settings.MEDIA_ROOT, "users_avatars/")
+    Path.makedirs(avatar_dir, exist_ok=True)
     img = Image.new("RGB", (100, 100), color=(73, 109, 137))
     img_io = io.BytesIO()
     img.save(img_io, format="JPEG")
     img_io.seek(0)
     base_filename = "test_avatar"
 
-    avatar_path = os.path.join(avatar_dir, f"{base_filename}.jpg")
+    avatar_path = Path.join(f"{avatar_dir}/{base_filename}.jpg")
 
-    with open(avatar_path, 'wb') as f:
+    with Path.open(avatar_path, "wb") as f:
         f.write(img_io.read())
 
-    with open(avatar_path, 'rb') as f:
-        avatar = SimpleUploadedFile(name=os.path.basename(f.name),
-                                    content=f.read(),
-                                    content_type="image/jpeg")
+    with Path.open(avatar_path, "rb") as f:
+        avatar = SimpleUploadedFile(name=Path.name(f.name), content=f.read(), content_type="image/jpeg")
 
     yield avatar
 
-    for file_path in glob.glob(os.path.join(avatar_dir, f"{base_filename}*")):
-        if os.path.exists(file_path):
-            os.remove(file_path)
+    for file_path in glob.rglob(Path(f"{avatar_dir}/{base_filename}*")):
+        if Path.exists(file_path):
+            Path.unlink(file_path)
+
 
 @pytest.fixture()
 def community() -> Community:
@@ -254,8 +253,8 @@ def test_post_user_without_avatar(client: Client, community: Community, user: Us
     client.force_login(user)
     response = client.post(reverse("post-create"), data=data, follow=True)
     assert Post.objects.count() == 1
-    assert 'form' in response.context
-    form = response.context['form']
+    assert "form" in response.context
+    form = response.context["form"]
     assert form.errors == {}
     post = Post.objects.first()
     assert post.author.avatar_url == default_avatar_url
