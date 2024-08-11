@@ -101,8 +101,8 @@ class User(AbstractUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: ClassVar[list[str]] = ["nickname"]
     last_activity = models.DateTimeField(auto_now_add=True, db_index=True)
-    user_settings = models.OneToOneField(UserSettings, on_delete=models.SET_NULL, null=True)
-    profile = models.OneToOneField(Profile, on_delete=models.SET_NULL, null=True)
+    user_settings = models.OneToOneField(UserSettings, on_delete=models.PROTECT, null=False)
+    profile = models.OneToOneField(Profile, on_delete=models.PROTECT, null=False)
 
     def save(self: "User", *args: any, **kwargs: dict) -> None:
         if self.avatar:
@@ -151,7 +151,7 @@ class User(AbstractUser):
 class SocialLink(models.Model):
     name = models.CharField(max_length=150)
     url = models.URLField()
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="social_link", null=True)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="social_link", null=False)
 
     def __str__(self: "SocialLink") -> str:
         return f"Social link: {self.url}"

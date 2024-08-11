@@ -9,6 +9,8 @@ from django.test import Client
 from django.urls import reverse_lazy
 from PIL import Image
 
+from users.models import Profile, UserSettings
+
 User = get_user_model()
 HTTP_SUCCESS = 200
 
@@ -180,3 +182,12 @@ def test_language_location_there_are_some_defaults(user: User) -> None:
     language = user.user_settings.content_lang
     assert location
     assert language
+
+
+@pytest.mark.django_db()
+def test_deletion(user):
+    profile_id = user.profile.id
+    user_settings_id = user.user_settings.id
+    user.delete()
+    assert not Profile.objects.filter(id=profile_id)
+    assert not UserSettings.objects.filter(id=user_settings_id)
