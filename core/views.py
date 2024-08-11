@@ -4,10 +4,10 @@ from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db import models
 from django.db.models import QuerySet
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
@@ -149,7 +149,10 @@ class CommunityDetailView(DetailView):
     context_object_name = "community"
 
     def get_object(self: "CommunityDetailView") -> Community:
-        community = Community.objects.get(slug=self.kwargs["slug"])
+        try:
+            community = Community.objects.get(slug=self.kwargs["slug"])
+        except ObjectDoesNotExist:
+            raise Http404("Community does not exist")
         if community.privacy == "30_PRIVATE" and not community.members.filter(id=self.request.user.id).exists():
             raise PermissionDenied
         return community
