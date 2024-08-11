@@ -1,9 +1,11 @@
+import glob
 import io
+import os
 import secrets
 import string
 
 import pytest
-from django.conf import Settings
+from django.conf import Settings, settings
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
@@ -52,12 +54,29 @@ def user_with_avatar(client: Client, create_avatar: SimpleUploadedFile) -> User:
 
 @pytest.fixture()
 def create_avatar() -> SimpleUploadedFile:
+    avatar_dir = os.path.join(settings.MEDIA_ROOT, 'users_avatars/')
+    os.makedirs(avatar_dir, exist_ok=True)
     img = Image.new("RGB", (100, 100), color=(73, 109, 137))
     img_io = io.BytesIO()
     img.save(img_io, format="JPEG")
     img_io.seek(0)
-    return SimpleUploadedFile(name="test_avatar.jpg", content=img_io.read(), content_type="image/jpeg")
+    base_filename = "test_avatar"
 
+    avatar_path = os.path.join(avatar_dir, f"{base_filename}.jpg")
+
+    with open(avatar_path, 'wb') as f:
+        f.write(img_io.read())
+
+    with open(avatar_path, 'rb') as f:
+        avatar = SimpleUploadedFile(name=os.path.basename(f.name),
+                                    content=f.read(),
+                                    content_type="image/jpeg")
+
+    yield avatar
+
+    for file_path in glob.glob(os.path.join(avatar_dir, f"{base_filename}*")):
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
 @pytest.fixture()
 def community() -> Community:
