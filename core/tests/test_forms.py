@@ -10,13 +10,18 @@ User = get_user_model()
 
 
 @pytest.mark.django_db()
-@pytest.mark.parametrize("data, expected_valid", [
-    ({"name": "Test Community", "privacy": "10_PUBLIC"}, True),
-    ({"name": "", "privacy": "10_PUBLIC"}, False),
-    ({"name": "Test Community", "privacy": "invalid"}, False),
-])
+@pytest.mark.parametrize(
+    ("data", "expected_valid"),
+    [
+        ({"name": "Test Community", "privacy": "10_PUBLIC"}, True),
+        ({"name": "", "privacy": "10_PUBLIC"}, False),
+        ({"name": "Test Community", "privacy": "invalid"}, False),
+    ],
+)
 def test_community_form(data: dict, expected_valid: bool) -> None:
-    user = User.objects.create_user(nickname="testuser", password=generate_random_password(), email="testuser@example.com")
+    user = User.objects.create_user(
+        nickname="testuser", password=generate_random_password(), email="testuser@example.com"
+    )
     form = CommunityForm(data=data)
     assert form.is_valid() == expected_valid
 

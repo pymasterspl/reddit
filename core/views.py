@@ -4,10 +4,10 @@ from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db import models
 from django.db.models import QuerySet
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, Http404
+from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
@@ -149,10 +149,11 @@ class CommunityDetailView(DetailView):
     context_object_name = "community"
 
     def get_object(self: "CommunityDetailView") -> Community:
+        error_message = "Community does not exist"
         try:
             community = Community.objects.get(slug=self.kwargs["slug"])
         except ObjectDoesNotExist:
-            raise Http404("Community does not exist")
+            raise Http404(error_message) from None
         if community.privacy == "30_PRIVATE" and not community.members.filter(id=self.request.user.id).exists():
             raise PermissionDenied
         return community
@@ -175,14 +176,14 @@ class CommunityDetailView(DetailView):
         ).select_related("user")
         return context
 
-    def post_add_moderator(self: "CommunityDetailView", request: "HttpRequest", *args: any, **kwargs: any) -> any:
+    def post_add_moderator(self: "CommunityDetailView", request: "HttpRequest", *args: any, **kwargs: any) -> any:  # noqa: ARG002
         add_moderator_form = AddModeratorForm(request.POST)
         if add_moderator_form.is_valid():
             user = get_object_or_404(User, nickname=add_moderator_form.cleaned_data["nickname"])
             self.object.add_moderator(user)
         return redirect("community-detail", slug=self.object.slug)
 
-    def post_remove_moderator(self: "CommunityDetailView", request: "HttpRequest", *args: any, **kwargs: any) -> any:
+    def post_remove_moderator(self: "CommunityDetailView", request: "HttpRequest", *args: any, **kwargs: any) -> any:  # noqa: ARG002
         remove_moderator_form = RemoveModeratorForm(request.POST)
         if remove_moderator_form.is_valid():
             user = get_object_or_404(User, nickname=remove_moderator_form.cleaned_data["nickname"])
@@ -197,11 +198,11 @@ class CommunityDetailView(DetailView):
         action = request.POST.get("action")
         if action == "add_moderator":
             return self.post_add_moderator(request, *args, **kwargs)
-        elif action == "remove_moderator":
+        if action == "remove_moderator":
             return self.post_remove_moderator(request, *args, **kwargs)
-        else:
-            messages.error(request, "Invalid action.")
-            return self.get(request, *args, **kwargs)
+
+        messages.error(request, "Invalid action.")
+        return self.get(request, *args, **kwargs)
 
 
 class CommunityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):

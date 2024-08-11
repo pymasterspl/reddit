@@ -59,10 +59,11 @@ class CommunityForm(forms.ModelForm):
         self.fields["is_18_plus"].widget = forms.CheckboxInput()
         self.fields["is_18_plus"].label = "Mature (18+) - only users over 18 can view and contribute"
 
-    def clean_name(self):
+    def clean_name(self: "CommunityForm") -> str:
         name = self.cleaned_data.get("name")
+        error_message = "This field is required."
         if not name:
-            raise forms.ValidationError("This field is required.")
+            raise forms.ValidationError(error_message)
         return name
 
 
