@@ -189,5 +189,11 @@ def test_deletion(user):
     profile_id = user.profile.id
     user_settings_id = user.user_settings.id
     user.delete()
-    assert not Profile.objects.filter(id=profile_id)
-    assert not UserSettings.objects.filter(id=user_settings_id)
+    assert not Profile.objects.filter(id=profile_id).exists()
+    assert not UserSettings.objects.filter(id=user_settings_id).exists()
+
+@pytest.mark.django_db()
+def test_deletion_2(user):
+    user.profile.delete()
+    user.user_settings.delete()
+    user.save()

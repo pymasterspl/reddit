@@ -2,6 +2,8 @@
 
 from django.db import migrations
 
+def reverse(apps, schema_editor):
+    pass
 
 def add_empty_profiles_and_settings_to_users(apps, schema_editor):
     User = apps.get_model("users", "User")
@@ -31,6 +33,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(add_empty_profiles_and_settings_to_users),
-        migrations.RunPython(remove_unrelated_models),
+        migrations.RunPython(add_empty_profiles_and_settings_to_users, reverse),
+        migrations.RunPython(remove_unrelated_models, reverse),
     ]
