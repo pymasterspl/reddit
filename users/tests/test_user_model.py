@@ -9,7 +9,7 @@ from django.test import Client
 from django.urls import reverse_lazy
 from PIL import Image
 
-from users.models import Profile, UserSettings
+from users.models import Profile, SocialLink, UserSettings
 
 User = get_user_model()
 HTTP_SUCCESS = 200
@@ -147,14 +147,14 @@ def test_user_signals(generated_password: str) -> None:
     assert user_2.email == "user@aaa.com"
     assert user_1.profile
     assert user_2.profile
-    assert user_1.user_settings
-    assert user_2.user_settings
+    assert user_1.usersettings
+    assert user_2.usersettings
 
 
 @pytest.mark.django_db()
 def test_language(user: User) -> None:
-    user.user_settings.content_lang = "en"
-    assert user.user_settings.get_content_lang_display() == "English"
+    user.usersettings.content_lang = "en"
+    assert user.usersettings.get_content_lang_display() == "English"
 
 
 @pytest.mark.django_db()
@@ -164,30 +164,44 @@ def test_location(user: User) -> None:
         ["Antarctica", "Brazil", "Poland", "United States", "France", "Australia", "Japan", "Uganda", "Türkiye"],
         strict=True,
     ):
-        user.user_settings.location = code
-        assert user.user_settings.get_location_display() == location
+        user.usersettings.location = code
+        assert user.usersettings.get_location_display() == location
 
 
 @pytest.mark.django_db()
 def test_non_existing_locaton(user: User) -> None:
-    user.user_settings.location = "XX"
+    user.usersettings.location = "XX"
     with pytest.raises(ValidationError) as exception_info:
-        user.user_settings.clean_fields()
+        user.usersettings.clean_fields()
     assert "location" in exception_info.value.error_dict
 
 
 @pytest.mark.django_db()
 def test_language_location_there_are_some_defaults(user: User) -> None:
-    location = user.user_settings.location
-    language = user.user_settings.content_lang
+    location = user.usersettings.location
+    language = user.usersettings.content_lang
     assert location
     assert language
 
 
 @pytest.mark.django_db()
-def test_deletion(user):
+def test_user_deletion(user):
     profile_id = user.profile.id
-    user_settings_id = user.user_settings.id
+    usersettings_id = user.usersettings.id
     user.delete()
     assert not Profile.objects.filter(id=profile_id)
-    assert not UserSettings.objects.filter(id=user_settings_id)
+    assert not UserSettings.objects.filter(id=usersettings_id)
+
+
+@pytest.mark.django_db()
+def test_cascade_profile_sociallink_deletion(user):
+    profile_id = user.profile.id
+    sociallink = SocialLink.objects.create(profile=user.profile, name="facebook", url="https://www.facebook.com/username.27")
+    sociallink_id = sociallink.id
+    user_id = user.id
+    user.save()
+    assert user.profile.sociallink
+    user.delete()
+    assert not User.objects.filter(id=user_id).exists()
+    assert not Profile.objects.filter(id=profile_id).exists()
+    assert not SocialLink.objects.filter(id=sociallink_id).exists()

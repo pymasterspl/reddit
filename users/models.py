@@ -53,7 +53,7 @@ class UserManager(BaseUserManager):
 
 class UserSettings(models.Model):
     content_lang = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default="en")
-
+    user = models.OneToOneField("User", on_delete=models.CASCADE, null=False) #default name usessetigns
     location = models.CharField(max_length=2, choices=get_locations, default="PL")
 
     is_beta = models.BooleanField(default=False)
@@ -70,6 +70,7 @@ class Profile(models.Model):
     is_content_visible = models.BooleanField(default=True)
     is_communities_visible = models.BooleanField(default=True)
     gender = models.CharField(choices=GENDER_CHOICES, max_length=1)
+    user = models.OneToOneField("User", on_delete=models.CASCADE, null=False)
 
     def __str__(self: "Profile") -> str:
         return f"Profile: {self.user.nickname}"
@@ -101,8 +102,6 @@ class User(AbstractUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: ClassVar[list[str]] = ["nickname"]
     last_activity = models.DateTimeField(auto_now_add=True, db_index=True)
-    user_settings = models.OneToOneField(UserSettings, on_delete=models.PROTECT, null=False)
-    profile = models.OneToOneField(Profile, on_delete=models.PROTECT, null=False)
 
     def save(self: "User", *args: any, **kwargs: dict) -> None:
         if self.avatar:
@@ -151,7 +150,7 @@ class User(AbstractUser):
 class SocialLink(models.Model):
     name = models.CharField(max_length=150)
     url = models.URLField()
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="social_link", null=False)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, null=False, related_name="sociallink")
 
     def __str__(self: "SocialLink") -> str:
         return f"Social link: {self.url}"
