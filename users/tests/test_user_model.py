@@ -185,7 +185,7 @@ def test_language_location_there_are_some_defaults(user: User) -> None:
 
 
 @pytest.mark.django_db()
-def test_user_deletion(user):
+def test_user_deletion(user: "User") -> None:
     profile_id = user.profile.id
     usersettings_id = user.usersettings.id
     user.delete()
@@ -194,9 +194,11 @@ def test_user_deletion(user):
 
 
 @pytest.mark.django_db()
-def test_cascade_profile_sociallink_deletion(user):
+def test_cascade_profile_sociallink_deletion(user: "User") -> None:
     profile_id = user.profile.id
-    sociallink = SocialLink.objects.create(profile=user.profile, name="facebook", url="https://www.facebook.com/username.27")
+    sociallink = SocialLink.objects.create(
+        profile=user.profile, name="facebook", url="https://www.facebook.com/username.27"
+    )
     sociallink_id = sociallink.id
     user_id = user.id
     user.save()
