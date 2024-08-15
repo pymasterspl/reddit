@@ -53,9 +53,6 @@ class CommunityForm(forms.ModelForm):
         self.helper.form_method = "post"
         self.helper.add_input(Submit("submit", "Create Community"))
 
-        self.fields["privacy"].widget = forms.RadioSelect(choices=Community.PRIVACY_CHOICES)
-        self.fields["privacy"].initial = "10_PUBLIC"
-
         self.fields["is_18_plus"].widget = forms.CheckboxInput()
         self.fields["is_18_plus"].label = "Mature (18+) - only users over 18 can view and contribute"
 
