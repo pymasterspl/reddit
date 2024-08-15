@@ -6,11 +6,11 @@ from .models import Profile, User, UserSettings
 
 @receiver(post_save, sender=User)
 def create_profile(sender: type, instance: User, created: bool, **kwargs: dict) -> None:  # noqa: ARG001, FBT001
-    if created or not instance.profile:
+    if created:
         Profile.objects.create(user=instance)
 
 
 @receiver(post_save, sender=User)
 def create_usersettings(sender: type, instance: User, created: bool, **kwargs: dict) -> None:  # noqa: ARG001, FBT001
-    if created or not instance.usersettings:
+    if created:
         UserSettings.objects.create(user=instance)
