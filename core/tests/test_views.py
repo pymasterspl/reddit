@@ -178,7 +178,6 @@ def test_add_deeply_nested_comment_valid(client: Client, another_user: User, pos
     assert parent_comment.parent.children_count == 1
 
 
-@pytest.mark.django_db()
 def test_restricted_community_access(client: Client, restricted_community: Community, user: User) -> None:
     client.force_login(user)
     response = client.get(reverse("community-detail", kwargs={"slug": restricted_community.slug}))
@@ -200,12 +199,11 @@ def test_create_community_view(client: Client, user: User) -> None:
     assert len(response.context["form"].errors) == 2
     assert "This field is required." in response.context["form"].errors["name"]
     assert (
-        "Select a valid choice. INVALID is not one of the available choices."
-        in response.context["form"].errors["privacy"]
+            "Select a valid choice. INVALID is not one of the available choices."
+            in response.context["form"].errors["privacy"]
     )
 
 
-@pytest.mark.django_db()
 def test_community_detail_view(client: Client, user: User, community: Community) -> None:
     client.force_login(user)
     url = reverse("community-detail", kwargs={"slug": community.slug})
@@ -216,7 +214,6 @@ def test_community_detail_view(client: Client, user: User, community: Community)
     assert response.context["community"] == community
 
 
-@pytest.mark.django_db()
 def test_community_detail_view_not_found(client: Client, user: User) -> None:
     client.force_login(user)
     url = reverse("community-detail", kwargs={"slug": "non-existent"})
@@ -224,7 +221,6 @@ def test_community_detail_view_not_found(client: Client, user: User) -> None:
     assert response.status_code == 404
 
 
-@pytest.mark.django_db()
 def test_update_community_view_without_permission(client: Client, community: Community, user: User) -> None:
     client.force_login(user)
     response = client.post(reverse("community-update", kwargs={"slug": community.slug}), {"name": "Updated Community"})
