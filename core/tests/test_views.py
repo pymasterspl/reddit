@@ -199,8 +199,8 @@ def test_create_community_view(client: Client, user: User) -> None:
     assert len(response.context["form"].errors) == 2
     assert "This field is required." in response.context["form"].errors["name"]
     assert (
-            "Select a valid choice. INVALID is not one of the available choices."
-            in response.context["form"].errors["privacy"]
+        "Select a valid choice. INVALID is not one of the available choices."
+        in response.context["form"].errors["privacy"]
     )
 
 
