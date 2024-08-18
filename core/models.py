@@ -33,6 +33,15 @@ class GenericModel(models.Model):
     class Meta:
         abstract = True
 
+class CommentManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(parent__isnull=False)
+    
+
+class RootPostManager(models.Manager):
+    def get_queryset(self) -> models.QuerySet:
+        return super().get_queryset().filter(parent__isnull=True)
+
 
 class Community(GenericModel):
     name = models.CharField(max_length=255)
@@ -168,6 +177,9 @@ class Post(GenericModel):
 
         return count_descendants(self)
 
+    def is_top_level(self: "Post"):
+        return self.parent is None
+
     def is_saved(self: "Post", user: User) -> bool:
         return SavedPost.objects.filter(user=user, post=self).exists()
 
@@ -179,6 +191,8 @@ class Post(GenericModel):
 
         return CommentForm(initial={"parent_id": self.pk})
 
+    root_posts = RootPostManager()
+    comment_posts = CommentManager()
 
 class PostVote(models.Model):
     UPVOTE = "10_UPVOTE"

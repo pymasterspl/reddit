@@ -261,3 +261,27 @@ def test_create_community(user: object) -> None:
     assert community.name == "Test Community"
     assert community.author == user
     assert community.slug == "test-community"
+
+
+@pytest.mark.django_db()
+def test_post_managers(comment: Post) -> None:
+    comment_id = comment.id
+    root_post_id = comment.parent.id
+    
+    assert Post.root_posts.filter(id=root_post_id).exists()
+    assert not Post.comment_posts.filter(id=root_post_id).exists()
+    assert Post.comment_posts.filter(id=comment_id).exists()
+    assert not Post.root_posts.filter(id=comment_id).exists()
+
+
+@pytest.mark.django_db()
+def test_parent_children_post(post):
+    # Problem appearing also in PostDetailView.post()
+    p = Post.objects.create(parent=post, community=post.community, content="lorem")
+    assert Post.objects.filter(id=post.id).exists()
+    assert Post.objects.filter(id=p.id).exists() 
+    assert p.parent == post
+    post.refresh_from_db()
+    p.refresh_from_db()
+    assert post.children.exists()
+    assert post.children.first() == p
