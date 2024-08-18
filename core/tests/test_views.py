@@ -30,7 +30,7 @@ def community() -> Community:
     return Community.objects.create(name="Test Community", is_active=True)
 
 
-@pytest.fixture
+@pytest.fixture()
 def restricted_community(user: User) -> Community:
     return Community.objects.create(name="Restricted Community", is_active=True, author=user)
 

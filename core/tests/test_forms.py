@@ -9,7 +9,7 @@ from .test_utils import generate_random_password
 User = get_user_model()
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 @pytest.mark.parametrize(
     ("data", "expected_valid"),
     [

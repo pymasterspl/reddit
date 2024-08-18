@@ -258,7 +258,7 @@ def test_update_display_counter_multiple_updates(post: Post) -> None:
     assert post.display_counter == 5
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_create_community(user: object) -> None:
     community = Community.objects.create(name="Test Community", author=user)
 
@@ -267,7 +267,7 @@ def test_create_community(user: object) -> None:
     assert community.slug == "test-community"
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_add_moderator(client: Client, community: Community) -> None:
     admin_password = generate_random_password()
     user_password = generate_random_password()
@@ -287,7 +287,7 @@ def test_add_moderator(client: Client, community: Community) -> None:
     assert CommunityMember.objects.filter(community=community, user=user, role=CommunityMember.MODERATOR).exists()
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_remove_moderator(client: Client, community: Community) -> None:
     admin_password = generate_random_password()
     user_password = generate_random_password()
