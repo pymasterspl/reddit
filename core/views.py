@@ -179,14 +179,14 @@ class CommunityDetailView(DetailView):
     def post_add_moderator(self: "CommunityDetailView", request: "HttpRequest", *args: any, **kwargs: any) -> any:  # noqa: ARG002
         add_moderator_form = AddModeratorForm(request.POST)
         if add_moderator_form.is_valid():
-            user = get_object_or_404(User, nickname=add_moderator_form.cleaned_data["nickname"])
+            user = add_moderator_form.cleaned_data["nickname"]
             self.object.add_moderator(user)
         return redirect("community-detail", slug=self.object.slug)
 
     def post_remove_moderator(self: "CommunityDetailView", request: "HttpRequest", *args: any, **kwargs: any) -> any:  # noqa: ARG002
         remove_moderator_form = RemoveModeratorForm(request.POST)
         if remove_moderator_form.is_valid():
-            user = get_object_or_404(User, nickname=remove_moderator_form.cleaned_data["nickname"])
+            user = remove_moderator_form.cleaned_data["nickname"]
             self.object.remove_moderator(user)
         return redirect("community-detail", slug=self.object.slug)
 
