@@ -241,9 +241,9 @@ def test_add_moderator(client: Client, community: Community, user: User) -> None
     CommunityMember.objects.create(community=community, user=admin, role=CommunityMember.ADMIN)
 
     url = reverse("community-detail", kwargs={"slug": community.slug})
-    data = {"action": "add_moderator", "nickname": user.nickname}
+    form_data = {"nickname": user.nickname}
 
-    response = client.post(url, data)
+    response = client.post(url, {"action": "add_moderator", **form_data})
     assert response.status_code == 302
 
     community.refresh_from_db()
