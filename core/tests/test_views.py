@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
 
-from core.models import Community, Post
+from core.models import Community, Post, CommunityMember
 
 from .test_utils import generate_random_password
 
@@ -230,3 +230,39 @@ def test_update_community_view_without_permission(client: Client, community: Com
     assert "You do not have permission to update this community." in response.content.decode()
     community.refresh_from_db()
     assert community.name == "Test Community"
+
+
+def test_add_moderator(client: Client, community: Community, user: User) -> None:
+    admin_password = generate_random_password()
+
+    admin = User.objects.create_user(email="admin@example.com", password=admin_password, nickname="adminnick")
+
+    client.force_login(admin)
+    CommunityMember.objects.create(community=community, user=admin, role=CommunityMember.ADMIN)
+
+    url = reverse("community-detail", kwargs={"slug": community.slug})
+    data = {"action": "add_moderator", "nickname": user.nickname}
+
+    response = client.post(url, data)
+    assert response.status_code == 302
+
+    community.refresh_from_db()
+    assert CommunityMember.objects.filter(community=community, user=user, role=CommunityMember.MODERATOR).exists()
+
+
+def test_remove_moderator(client: Client, user: User, community: Community) -> None:
+    admin_password = generate_random_password()
+
+    admin = User.objects.create_user(email="admin@example.com", password=admin_password, nickname="adminnick")
+
+    client.force_login(admin)
+    CommunityMember.objects.create(community=community, user=admin, role=CommunityMember.ADMIN)
+    CommunityMember.objects.create(community=community, user=user, role=CommunityMember.MODERATOR)
+
+    url = reverse("community-detail", kwargs={"slug": community.slug})
+    form_data = {"nickname": user.nickname}
+
+    response = client.post(url, {"action": "remove_moderator", **form_data})
+    assert response.status_code == 302
+
+    assert not CommunityMember.objects.filter(community=community, user=user, role=CommunityMember.MODERATOR).exists()
