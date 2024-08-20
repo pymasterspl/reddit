@@ -16,7 +16,7 @@ from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
 from .forms import AddModeratorForm, CommentForm, CommunityForm, PostForm, RemoveModeratorForm
-from .models import Community, CommunityMember, Post, PostVote, SavedPost, User
+from .models import Community, CommunityMember, Post, PostVote, SavedPost
 
 
 class PostListView(ListView):

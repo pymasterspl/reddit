@@ -4,13 +4,9 @@ import pytest
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
-from django.test import Client
-from django.urls import reverse
 from django.utils import timezone
 
 from core.models import Community, CommunityMember, Post, PostVote, SavedPost, Tag
-
-from .test_utils import generate_random_password
 
 User = get_user_model()
 

@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
 
-from core.models import Community, Post, CommunityMember
+from core.models import Community, CommunityMember, Post
 
 from .test_utils import generate_random_password
 
