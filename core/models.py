@@ -33,14 +33,21 @@ class GenericModel(models.Model):
     class Meta:
         abstract = True
 
-class CommentManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(parent__isnull=False)
-    
 
-class RootPostManager(models.Manager):
-    def get_queryset(self) -> models.QuerySet:
-        return super().get_queryset().filter(parent__isnull=True)
+class ActivePostManagers(ActiveOnlyManager):
+    def roots(self, **kwargs):
+        return self.get_queryset().filter(parent__isnull=True, **kwargs)
+    
+    def comments(self, **kwargs):
+        return self.get_queryset().filter(parent__isnull=False, **kwargs)
+
+
+class AllObjectsPostManager(models.Manager):
+    def roots(self, **kwargs):
+        return self.get_queryset().filter(parent__isnull=True, **kwargs)
+    
+    def comments(self, **kwargs):
+        return self.get_queryset().filter(parent__isnull=False, **kwargs)
 
 
 class Community(GenericModel):
@@ -191,8 +198,9 @@ class Post(GenericModel):
 
         return CommentForm(initial={"parent_id": self.pk})
 
-    root_posts = RootPostManager()
-    comment_posts = CommentManager()
+    objects = ActivePostManagers()
+    all_objects = AllObjectsPostManager()
+
 
 class PostVote(models.Model):
     UPVOTE = "10_UPVOTE"

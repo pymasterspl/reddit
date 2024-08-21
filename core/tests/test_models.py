@@ -266,13 +266,29 @@ def test_create_community(user: object) -> None:
 @pytest.mark.django_db()
 def test_post_managers(comment: Post) -> None:
     comment_id = comment.id
-    root_post_id = comment.parent.id
-    
-    assert Post.root_posts.filter(id=root_post_id).exists()
-    assert not Post.comment_posts.filter(id=root_post_id).exists()
-    assert Post.comment_posts.filter(id=comment_id).exists()
-    assert not Post.root_posts.filter(id=comment_id).exists()
+    root_post_id = comment.parent.id    
 
+    non_active_root = Post.objects.roots(id=root_post_id).first()
+    non_active_root.is_active = False
+    non_active_root.pk = None
+    non_active_root.id = None
+    non_active_root.save()
+
+    non_active_comment = Post.objects.comments(id=comment_id).first()
+    non_active_comment.is_active = False
+    non_active_comment.pk = None
+    non_active_comment.id = None
+    non_active_comment.save()
+
+    assert Post.objects.roots(id=root_post_id).exists()
+    assert not Post.objects.roots(id=comment_id).exists()
+    assert Post.objects.comments(id=comment_id).exists()
+    assert not Post.objects.comments(id=root_post_id).exists()
+
+    assert not Post.objects.comments(id=non_active_comment.id, is_active=False).exists()
+    assert Post.all_objects.comments(id=non_active_comment.id, is_active=False).exists()
+    assert not Post.objects.roots(id=non_active_root.id, is_active=False).exists()
+    assert Post.all_objects.roots(id=non_active_root.id, is_active=False).exists()
 
 @pytest.mark.django_db()
 def test_parent_children_post(post):
