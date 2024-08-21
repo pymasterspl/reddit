@@ -10,12 +10,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = "__all__"
-
-
-# class PostTopSerializer(PostSerializer):
-#     queryset = Post.objects.filter(parent__is=None)
-
+        exclude = ["version"]
 
 class CommunitySerializer(serializers.ModelSerializer):
     count_online_users = serializers.SerializerMethodField()
@@ -28,23 +23,23 @@ class CommunitySerializer(serializers.ModelSerializer):
         return obj.count_online_users()
     
 
-class CommunityPostsSerializer(CommunitySerializer):
-    # posts = PostSerializer(many=True, read_only=True)
-    # posts = PostSerializer(many=True, read_only=True)
-    posts = PostSerializer(many=True, queryset=Post.root_posts.all())
+class MinimalCommunitySerializer(CommunitySerializer):
+    class Meta(CommunitySerializer.Meta):
+        fields = ("id", "name", "slug")
+
 
 class MinimalUserSerializer(serializers.ModelSerializer):
-    is_online = serializers.SerializerMethodField()
-
+    is_online = serializers.ReadOnlyField()
+    last_activity_ago = serializers.ReadOnlyField()
+    
     class Meta:
         model = User
         fields = ("nickname", "avatar", "is_online", "last_activity_ago")
 
-    def get_is_online(self, obj):
-        return obj.is_online
-
-    def get_last_activity_ago(self, obj):
-        return obj.last_activity_ago
 
 class CommunityMembersSerializer(CommunitySerializer):
     members = MinimalUserSerializer(read_only=True, many=True)
+
+
+class CommunityPostsSerializer(CommunitySerializer):
+    posts = PostSerializer(many=True, read_only=True)

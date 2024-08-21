@@ -56,6 +56,29 @@ def community(user: User) -> Generator[Community, None, None]:
     return Community.objects.create(author=user, name="Test Community")
 
 
+def create_posts(community, count, start_idx=1):
+    result = []
+    for i in range(start_idx, start_idx + count):
+        result.append(Post.objects.create(
+                author=community.author,
+                community=community,
+                title=f"Test Post {i}",
+                content="This is a test post {i}",
+            )
+        )
+    print(result)
+    return result
+
+def create_communities(author, count, posts_per_community):
+    result = []
+    for i in range(1, count + 1):
+        community = Community.objects.create(author=author, name=f"Test community {i}")
+        result.append(community)
+        create_posts(community, count=posts_per_community, start_idx=(i - 1) * posts_per_community + 1)
+    print(result)
+    return result
+
+
 @pytest.fixture()
 def post(user: User, community: Community) -> Generator[Post, None, None]:
     return Post.objects.create(

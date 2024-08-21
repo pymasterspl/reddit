@@ -167,3 +167,9 @@ EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="default@email.com")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="password")
 
 LOGIN_URL = reverse_lazy("login")
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
+}
