@@ -1,5 +1,5 @@
 from rest_framework.urls import path
-from .views import CommunitiesAPIList, CommunityDetailAPIView, CommunityPostsListAPIView, PostAPIListView
+from .api_views import CommunitiesAPIList, CommunityDetailAPIView, CommunityPostsListAPIView, PostAPIListView
 
 
 urlpatterns = [

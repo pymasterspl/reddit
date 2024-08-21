@@ -1,5 +1,5 @@
 from rest_framework.generics import ListAPIView, RetrieveAPIView
-from .serializers import CommunitySerializer, MinimalCommunitySerializer, PostSerializer
+from core.serializers import CommunitySerializer, MinimalCommunitySerializer, PostSerializer
 from core.models import Community, Post
 from django.shortcuts import get_object_or_404
 

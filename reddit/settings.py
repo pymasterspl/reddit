@@ -53,7 +53,6 @@ INSTALLED_APPS = [
     "users",
     "articles",
     "core",
-    "api",
 ]
 
 MIDDLEWARE = [
