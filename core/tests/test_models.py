@@ -255,7 +255,7 @@ def test_update_display_counter_multiple_updates(post: Post) -> None:
 
 
 @pytest.mark.django_db()
-def test_create_community(user: object) -> None:
+def test_create_community(user: User) -> None:
     community = Community.objects.create(name="Test Community", author=user)
 
     assert community.name == "Test Community"

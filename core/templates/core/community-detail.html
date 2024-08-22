@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
+
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/style.css' %}" xmlns="http://www.w3.org/1999/html">
 {% endblock %}
 
 {% block content %}
@@ -12,13 +13,74 @@
                 <div class="card-header">
                     <h3 class="h3">{{ community.name }}</h3>
                 </div>
+                <div>
+                    {% if community.is_18_plus %}
+                    <p>This community contains 18+ content. Users must be over 18 to view and contribute.</p>
+                    {% endif %}
+                    {% if community.privacy == "10_PUBLIC" %}
+                    <!-- Display content for public communities -->
+                    {% elif community.privacy == "20_RESTRICTED" %}
+                    <!-- Display content for restricted communities -->
+                    {% if user.is_authenticated and user in community.members.all %}
+                    <!-- User is approved to contribute -->
+                    {% else %}
+                    <!-- User is not approved to contribute -->
+                    {% endif %}
+                    {% elif community.privacy == "30_PRIVATE" %}
+                    {% if user.is_authenticated and user in community.members.all %}
+                    <!-- User is approved to view and contribute -->
+                    {% else %}
+                    <p>You need to be a member to view this community's content.</p>
+                    {% endif %}
+                    {% endif %}
+                </div>
                 <div class="card-body">
                     <p>Author: {{ community.author.nickname }}</p>
                     <p>Members: {{ community.members.count }}</p>
                     <p>Created at: {{ community.created_at }}</p>
+                    <p>Privacy: {{ community.get_privacy_display }}</p>
+                </div>
+                <div class="card-footer">
+                    {% if is_admin_or_moderator %}
+                    <a href="{% url 'community-update' community.slug %}" class="btn btn-primary">Update Community</a>
+                    <div>
+                        <form method="post" action="{% url 'community-detail' community.slug %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="add_moderator">
+                            {{ add_moderator_form.nickname }}
+                            <button class="btn btn-secondary" type="submit">Add Moderator</button>
+                        </form>
+
+                        <form method="post" action="{% url 'community-detail' community.slug %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="remove_moderator">
+                            {{ remove_moderator_form.nickname }}
+                            <button class="btn btn-danger" type="submit">Remove Moderator</button>
+                        </form>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
+            {% if is_admin_or_moderator %}
+            <div class="card bg-dark shadow-sm mb-3 text-light">
+                <div class="card-header">
+                    <h5 class="h5">Moderators</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for moderator in moderators %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ moderator.user.nickname }} ({{ moderator.role|capfirst }})
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item">No moderators in this community.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
+</div>
 </div>
 {% endblock content %}

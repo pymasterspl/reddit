@@ -1,21 +1,15 @@
-import secrets
-import string
-
 import pytest
 from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
 
-from core.models import Community, Post
+from core.models import Community, CommunityMember, Post
+
+from .test_utils import generate_random_password
 
 pytestmark = pytest.mark.django_db
 
 User = get_user_model()
-
-
-def generate_random_password(length: int = 12) -> str:
-    characters = string.ascii_letters + string.digits + string.punctuation
-    return "".join(secrets.choice(characters) for _ in range(length))
 
 
 @pytest.fixture()
@@ -34,6 +28,11 @@ def user(client: Client) -> User:
 @pytest.fixture()
 def community() -> Community:
     return Community.objects.create(name="Test Community", is_active=True)
+
+
+@pytest.fixture()
+def restricted_community(user: User) -> Community:
+    return Community.objects.create(name="Restricted Community", is_active=True, author=user)
 
 
 def test_add_post_valid(client: Client, user: User, community: Community) -> None:
@@ -177,3 +176,93 @@ def test_add_deeply_nested_comment_valid(client: Client, another_user: User, pos
     assert post.children_count == 10
     assert parent_comment.children_count == 0
     assert parent_comment.parent.children_count == 1
+
+
+def test_restricted_community_access(client: Client, restricted_community: Community, user: User) -> None:
+    client.force_login(user)
+    response = client.get(reverse("community-detail", kwargs={"slug": restricted_community.slug}))
+    assert response.status_code == 200
+
+
+def test_create_community_view(client: Client, user: User) -> None:
+    client.force_login(user)
+    url = reverse("community-create")
+    valid_data = {"name": "Test Community", "privacy": "10_PUBLIC", "is_18_plus": True}
+    response = client.post(url, valid_data)
+    assert response.status_code == 302
+    assert Community.objects.filter(name="Test Community").exists()
+
+    invalid_data = {"name": "", "privacy": "INVALID", "is_18_plus": "not_boolean"}
+    response = client.post(url, invalid_data)
+    assert response.status_code == 200
+    assert "form" in response.context
+    assert len(response.context["form"].errors) == 2
+    assert "This field is required." in response.context["form"].errors["name"]
+    assert (
+        "Select a valid choice. INVALID is not one of the available choices."
+        in response.context["form"].errors["privacy"]
+    )
+
+
+def test_community_detail_view(client: Client, user: User, community: Community) -> None:
+    client.force_login(user)
+    url = reverse("community-detail", kwargs={"slug": community.slug})
+    response = client.get(url)
+
+    assert response.status_code == 200
+    assert "community" in response.context
+    assert response.context["community"] == community
+
+
+def test_community_detail_view_not_found(client: Client, user: User) -> None:
+    client.force_login(user)
+    url = reverse("community-detail", kwargs={"slug": "non-existent"})
+    response = client.get(url)
+    assert response.status_code == 404
+
+
+def test_update_community_view_without_permission(client: Client, community: Community, user: User) -> None:
+    client.force_login(user)
+    response = client.post(reverse("community-update", kwargs={"slug": community.slug}), {"name": "Updated Community"})
+    assert response.status_code == 302
+    assert response.url == reverse("community-detail", kwargs={"slug": community.slug})
+    response = client.get(response.url)
+    assert "You do not have permission to update this community." in response.content.decode()
+    community.refresh_from_db()
+    assert community.name == "Test Community"
+
+
+def test_add_moderator(client: Client, community: Community, user: User) -> None:
+    admin_password = generate_random_password()
+
+    admin = User.objects.create_user(email="admin@example.com", password=admin_password, nickname="adminnick")
+
+    client.force_login(admin)
+    CommunityMember.objects.create(community=community, user=admin, role=CommunityMember.ADMIN)
+
+    url = reverse("community-detail", kwargs={"slug": community.slug})
+    form_data = {"nickname": user.nickname}
+
+    response = client.post(url, {"action": "add_moderator", **form_data})
+    assert response.status_code == 302
+
+    community.refresh_from_db()
+    assert CommunityMember.objects.filter(community=community, user=user, role=CommunityMember.MODERATOR).exists()
+
+
+def test_remove_moderator(client: Client, user: User, community: Community) -> None:
+    admin_password = generate_random_password()
+
+    admin = User.objects.create_user(email="admin@example.com", password=admin_password, nickname="adminnick")
+
+    client.force_login(admin)
+    CommunityMember.objects.create(community=community, user=admin, role=CommunityMember.ADMIN)
+    CommunityMember.objects.create(community=community, user=user, role=CommunityMember.MODERATOR)
+
+    url = reverse("community-detail", kwargs={"slug": community.slug})
+    form_data = {"nickname": user.nickname}
+
+    response = client.post(url, {"action": "remove_moderator", **form_data})
+    assert response.status_code == 302
+
+    assert not CommunityMember.objects.filter(community=community, user=user, role=CommunityMember.MODERATOR).exists()
