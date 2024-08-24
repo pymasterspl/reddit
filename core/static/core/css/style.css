@@ -45,3 +45,35 @@
         border: 2px solid transparent;
         transition: border-color 0.3s ease;
     }
+.privacy-options .radio {
+    margin-bottom: 10px;
+}
+
+.privacy-options .radio label {
+    display: flex;
+    align-items: center;
+    color: white;
+}
+
+.privacy-options .radio input {
+    margin-right: 10px;
+}
+
+.form-check-label {
+    color: white;
+}
+
+.btn-create-community,
+.btn-update-community {
+    border-radius: 50px;
+    background-color: #353c3f;
+    border-color: #353c3f;
+    color: white;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-create-community:hover,
+.btn-update-community:hover {
+    background-color: #2c3235;
+    border-color: #2c3235;
+}

@@ -7,20 +7,12 @@
 {% endblock %}
 
 {% block content %}
-<style>
-    .hidden {
-        display: none;
-    }
-
-
-</style>
-
 <div class="container">
     <div class="d-flex justify-content-center text-light">
         <div class="mx-auto col-10 col-md-8 col-lg-8 mt-lg-3">
             <div class="card bg-dark shadow-sm mb-3 text-light">
                 <div class="card-header">
-                    <h3 class="h3">Create a New Community</h3>
+                    <h3 class="h3">Update Community: {{ community.name }}</h3>
                 </div>
                 <div class="card-body">
                     <form method="post">
@@ -32,12 +24,13 @@
                             {% endfor %}
                         </div>
                         {% endif %}
+
                         {% for field in form %}
                         <div class="form-group">
                             {{ field|as_crispy_field }}
                         </div>
                         {% endfor %}
-                        <button class="btn btn-sm btn-success" type="submit">Create Community</button>
+                        <button class="btn btn-sm btn-success" type="submit">Update Community</button>
                     </form>
                 </div>
             </div>
