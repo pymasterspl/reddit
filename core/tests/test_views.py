@@ -80,6 +80,7 @@ def community() -> Community:
 def default_avatar_url(settings: Settings) -> None:
     return settings.DEFAULT_AVATAR_URL
 
+
 @pytest.fixture()
 def restricted_community(user: User) -> Community:
     return Community.objects.create(name="Restricted Community", is_active=True, author=user)
