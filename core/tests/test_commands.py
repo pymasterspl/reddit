@@ -12,11 +12,15 @@ User = get_user_model()
 
 
 @pytest.mark.django_db()
-def test_calculate_karma_score_one_post(user: User, community: Community) -> None:
+@pytest.mark.parametrize("up_votes,down_votes,expected_karma", [
+    (10, 2, 8),
+    (2, 10, -8),
+])
+def test_calculate_karma_score_one_post(user: User, community: Community, up_votes: int, down_votes: int, expected_karma: int) -> None:
     Post.objects.create(
         author=user,
-        up_votes=10,
-        down_votes=2,
+        up_votes=up_votes,
+        down_votes=down_votes,
         community=community,
         created_at=timezone.now() - timedelta(days=100)
     )
@@ -25,7 +29,7 @@ def test_calculate_karma_score_one_post(user: User, community: Community) -> Non
 
     profile = Profile.objects.filter(user_id=user.id).get()
 
-    assert profile.karma_score == 8
+    assert profile.karma_score == expected_karma
 
 
 @pytest.mark.django_db()
