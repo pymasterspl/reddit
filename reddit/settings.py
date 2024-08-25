@@ -166,3 +166,5 @@ EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="password")
 
 LIMIT_WARNINGS = 5
 LOGIN_URL = reverse_lazy("login")
+
+DEFAULT_AVATAR_URL = "/media/users_avatars/default.png"

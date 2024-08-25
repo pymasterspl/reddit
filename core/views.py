@@ -4,17 +4,26 @@ from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db import models
 from django.db.models import QuerySet
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
-from django.views.generic import CreateView, DetailView, ListView
+from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
-from .forms import AdminActionForm, CommentForm, CommunityForm, PostForm, PostReportForm
+from .forms import (
+    AddModeratorForm,
+    AdminActionForm,
+    CommentForm,
+    CommunityForm,
+    PostForm,
+    PostReportForm,
+    RemoveModeratorForm,
+)
 from .models import AdminAction, Community, CommunityMember, Post, PostReport, PostVote, SavedPost
 from .services import handle_admin_action
 
@@ -153,7 +162,88 @@ class CommunityDetailView(DetailView):
     context_object_name = "community"
 
     def get_object(self: "CommunityDetailView") -> Community:
-        return Community.objects.get(slug=self.kwargs["slug"])
+        error_message = "Community does not exist"
+        try:
+            community = Community.objects.get(slug=self.kwargs["slug"])
+        except ObjectDoesNotExist:
+            raise Http404(error_message) from None
+        if community.privacy == "30_PRIVATE" and not community.members.filter(
+                id=self.request.user.id).exists():
+            raise PermissionDenied
+        return community
+
+    def get_context_data(self: "CommunityDetailView", **kwargs: any) -> \
+        dict[str, any]:
+            context = super().get_context_data(**kwargs)
+            community = self.get_object()
+            user = self.request.user
+
+            if user.is_authenticated:
+                context[
+                    "is_admin_or_moderator"] = community.is_admin_or_moderator(
+                    user)
+                if context["is_admin_or_moderator"]:
+                    context["add_moderator_form"] = AddModeratorForm()
+                    context["remove_moderator_form"] = RemoveModeratorForm()
+            else:
+                context["is_admin_or_moderator"] = False
+
+            context["moderators"] = CommunityMember.objects.filter(
+                community=community, role=CommunityMember.MODERATOR
+            ).select_related("user")
+            return context
+
+    def post_add_moderator(self: "CommunityDetailView",
+                           request: "HttpRequest") -> any:
+        add_moderator_form = AddModeratorForm(request.POST)
+        if add_moderator_form.is_valid():
+            user = add_moderator_form.cleaned_data["nickname"]
+            self.object.add_moderator(user)
+        return redirect("community-detail", slug=self.object.slug)
+
+    def post_remove_moderator(self: "CommunityDetailView",
+                              request: "HttpRequest") -> any:
+        remove_moderator_form = RemoveModeratorForm(request.POST)
+        if remove_moderator_form.is_valid():
+            user = remove_moderator_form.cleaned_data["nickname"]
+            self.object.remove_moderator(user)
+        return redirect("community-detail", slug=self.object.slug)
+
+    def post(self: "CommunityDetailView", request: "HttpRequest",
+             *args: any, **kwargs: any) -> any:
+        self.object = self.get_object()
+        if not self.object.is_admin_or_moderator(request.user):
+            raise PermissionDenied
+
+        action = request.POST.get("action")
+        if action == "add_moderator":
+            return self.post_add_moderator(request, *args, **kwargs)
+        if action == "remove_moderator":
+            return self.post_remove_moderator(request, *args, **kwargs)
+
+        messages.error(request, "Invalid action.")
+        return self.get(request, *args, **kwargs)
+
+class CommunityUpdateView(LoginRequiredMixin, UserPassesTestMixin,
+                          UpdateView):
+    model = Community
+    form_class = CommunityForm
+    template_name = "core/community-update.html"
+
+    def test_func(self: "CommunityUpdateView") -> bool:
+        community = self.get_object()
+        user = self.request.user
+        return community.is_admin_or_moderator(
+            user) or community.author == user
+
+    def handle_no_permission(self: "CommunityUpdateView") -> HttpResponse:
+        messages.error(self.request,
+                       "You do not have permission to update this community.")
+        return redirect("community-detail", slug=self.get_object().slug)
+
+    def get_success_url(self: "CommunityUpdateView") -> str:
+        return reverse_lazy("community-detail",
+                            kwargs={"slug": self.object.slug})
 
 
 class PostReportView(LoginRequiredMixin, CreateView):
@@ -262,3 +352,4 @@ class PostReportedView(UserPassesTestMixin, LoginRequiredMixin, DetailView):
 
     def test_func(self: "PostListReportedView") -> bool:
         return self.request.user.is_staff
+

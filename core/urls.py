@@ -4,6 +4,7 @@ from .views import (
     CommunityCreateView,
     CommunityDetailView,
     CommunityListView,
+    CommunityUpdateView,
     PostCreateView,
     PostDetailView,
     PostListReportedView,
@@ -26,4 +27,5 @@ urlpatterns = [
     path("post/report/<int:pk>/", PostReportView.as_view(), name="post-report"),
     path("reported-posts/", PostListReportedView.as_view(), name="post-list-reported"),
     path("reported-post/<int:pk>/", PostReportedView.as_view(), name="reported-post"),
+    path("community/<slug:slug>/update/", CommunityUpdateView.as_view(), name="community-update"),
 ]

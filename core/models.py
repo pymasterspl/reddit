@@ -1,5 +1,6 @@
 import hashlib
 import re
+import typing
 from datetime import timedelta
 from typing import ClassVar
 
@@ -35,10 +36,22 @@ class GenericModel(models.Model):
 
 
 class Community(GenericModel):
+    PUBLIC: typing.ClassVar[str] = "10_PUBLIC"
+    RESTRICTED: typing.ClassVar[str] = "20_RESTRICTED"
+    PRIVATE: typing.ClassVar[str] = "30_PRIVATE"
+
+    PRIVACY_CHOICES: typing.ClassVar[list[tuple[str, str]]] = [
+        (PUBLIC, "Public - anyone can view and contribute"),
+        (RESTRICTED, "Restricted - anyone can view, but only approved users can contribute"),
+        (PRIVATE, "Private - only approved users can view and contribute"),
+    ]
+
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="authored_communities")
     members = models.ManyToManyField(User, through="CommunityMember", related_name="communities")
+    privacy = models.CharField(max_length=15, choices=PRIVACY_CHOICES, default=RESTRICTED)
+    is_18_plus = models.BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = "Communities"
@@ -63,6 +76,32 @@ class Community(GenericModel):
     def count_online_users(self: "Community") -> int:
         online_limit = timezone.now() - timedelta(minutes=settings.LAST_ACTIVITY_ONLINE_LIMIT_MINUTES)
         return self.members.filter(last_activity__gte=online_limit).count()
+
+    def add_moderator(self: "Community", user: User) -> None:
+        CommunityService.add_moderator(self, user)
+
+    def remove_moderator(self: "Community", user: User) -> None:
+        CommunityService.remove_moderator(self, user)
+
+    def is_admin_or_moderator(self: "Community", user: User) -> bool:
+        return (
+            CommunityMember.objects.filter(
+                community=self, user=user, role__in=[CommunityMember.ADMIN, CommunityMember.MODERATOR]
+            ).exists()
+            or self.author == user
+        )
+
+
+class CommunityService:
+    @staticmethod
+    def add_moderator(community: Community, user: User) -> None:
+        CommunityMember.objects.update_or_create(
+            community=community, user=user, defaults={"role": CommunityMember.MODERATOR}
+        )
+
+    @staticmethod
+    def remove_moderator(community: Community, user: User) -> None:
+        CommunityMember.objects.filter(community=community, user=user, role=CommunityMember.MODERATOR).delete()
 
 
 class Tag(models.Model):
