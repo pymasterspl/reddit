@@ -92,12 +92,13 @@ def community() -> Community:
 
 @pytest.fixture()
 def report_data() -> dict[str, str]:
-    def _create_report_data(report_type: str="20_EU_ILLEGAL_CONTENT") -> dict[str, str]:
+    def _create_report_data(report_type: str = "20_EU_ILLEGAL_CONTENT") -> dict[str, str]:
         fake = Faker()
         return {
             "report_type": report_type,
             "report_details": fake.text(),
         }
+
     return _create_report_data
 
 
@@ -222,8 +223,7 @@ def test_add_comment_unauthorized(client: Client, post: Post) -> None:
     assert reverse("login") in response.url
 
 
-def test_reported_list_post_by_admin(
-    client: Client, admin: User, post: Post, report_data: dict) -> None:
+def test_reported_list_post_by_admin(client: Client, admin: User, post: Post, report_data: dict) -> None:
     data = report_data()
     client.force_login(admin)
     client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
@@ -259,6 +259,7 @@ def test_reported_detail_post_by_user(client: Client, user: User, post: Post, re
     response = client.get(reverse("reported-post", kwargs={"pk": post.pk}))
     assert response.status_code == 403
     assert "<h1>403 Forbidden</h1>" in response.content.decode()
+
 
 def test_reported_detail_post_by_anonymous_user(client: Client, post_report: PostReport) -> None:
     response = client.get(reverse("post-report", kwargs={"pk": post_report.pk}))
