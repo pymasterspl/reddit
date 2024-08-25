@@ -111,15 +111,12 @@ class User(AbstractUser):
 
     def process_avatar(self: "User", avatar: any) -> ContentFile:
         image = Image.open(avatar)
+        if image.mode != "RGB":
+            image = image.convert("RGB")
         image = image.resize((32, 32), Image.LANCZOS)
         image_io = io.BytesIO()
         image.save(image_io, format="JPEG")
         return ContentFile(image_io.getvalue(), avatar.name)
-
-    def get_avatar_url(self: "User") -> str:
-        if self.avatar:
-            return self.avatar.url
-        return "/static/images/avatars/default_avatar.jpg"
 
     def update_last_activity(self: "User") -> None:
         User.objects.filter(pk=self.pk).update(last_activity=timezone.now())
@@ -146,6 +143,15 @@ class User(AbstractUser):
             result = f"{delta.days} days ago"
 
         return result
+
+    @property
+    def avatar_url(self: "User") -> str:
+        if self.avatar and hasattr(self.avatar, "url"):
+            try:
+                return self.avatar.url
+            except ValueError:
+                return settings.DEFAULT_AVATAR_URL
+        return settings.DEFAULT_AVATAR_URL
 
 
 class SocialLink(models.Model):

@@ -26,7 +26,7 @@ class UserProfileForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields: ClassVar[list[str]] = ["avatar"]
+        fields: ClassVar[list[str]] = ["avatar", "nickname"]
 
         widgets: ClassVar[dict[str, any]] = {
             "avatar": forms.FileInput(attrs={"class": "form-control"}),
