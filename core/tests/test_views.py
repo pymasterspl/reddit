@@ -25,16 +25,6 @@ def user(client: Client) -> User:
     return user
 
 
-@pytest.fixture()
-def community() -> Community:
-    return Community.objects.create(name="Test Community", is_active=True)
-
-
-@pytest.fixture()
-def restricted_community(user: User) -> Community:
-    return Community.objects.create(name="Restricted Community", is_active=True, author=user)
-
-
 def test_add_post_valid(client: Client, user: User, community: Community) -> None:
     data = {
         "community": community.pk,
@@ -221,8 +211,9 @@ def test_community_detail_view_not_found(client: Client, user: User) -> None:
     assert response.status_code == 404
 
 
-def test_update_community_view_without_permission(client: Client, community: Community, user: User) -> None:
+def test_update_community_view_without_permission(client: Client, non_authored_community: Community, user: User) -> None:
     client.force_login(user)
+    community = non_authored_community
     response = client.post(reverse("community-update", kwargs={"slug": community.slug}), {"name": "Updated Community"})
     assert response.status_code == 302
     assert response.url == reverse("community-detail", kwargs={"slug": community.slug})
