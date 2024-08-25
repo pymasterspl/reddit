@@ -99,8 +99,10 @@ class User(AbstractUser):
     username: None = None
     email = models.EmailField(unique=True)
     last_activity = models.DateTimeField(auto_now_add=True, db_index=True)
-    can_create_post = models.BooleanField(default=True)
-    warnings = models.IntegerField(default=0)
+    can_create_post = models.BooleanField(
+        default=True, help_text="Indicates whether the user can create posts. Defaults to True."
+    )
+    warnings = models.IntegerField(default=0, help_text="The number of warnings assigned to the user. Defaults to 0.")
     avatar = models.ImageField(upload_to="users_avatars/", null=True, blank=True, default=None)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: ClassVar[list[str]] = ["nickname"]

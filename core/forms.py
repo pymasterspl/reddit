@@ -53,8 +53,8 @@ class CommunityForm(forms.ModelForm):
         self.helper.form_method = "post"
         self.helper.add_input(Submit("submit", "Create Community"))
         self.fields["is_18_plus"].widget = forms.CheckboxInput()
-        self.fields[
-            "is_18_plus"].label = "Mature (18+) - only users over 18 can view and contribute"
+        self.fields["is_18_plus"].label = "Mature (18+) - only users over 18 can view and contribute"
+
 
 class PostReportForm(forms.ModelForm):
     report_type: forms.ChoiceField = forms.ChoiceField(
@@ -74,7 +74,6 @@ class AdminActionForm(forms.Form):
         choices=ACTION_CHOICES, widget=forms.Select(attrs={"class": "form-control"})
     )
     comment: forms.Textarea = forms.CharField(widget=forms.Textarea, required=False)
-
 
 
 class AddModeratorForm(forms.Form):

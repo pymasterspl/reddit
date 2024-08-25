@@ -1,15 +1,12 @@
 import io
 from pathlib import Path
-from typing import Any
 
 import pytest
-from _pytest.monkeypatch import MonkeyPatch
 from django.conf import Settings, settings
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.management import call_command
 from django.test import Client
 from django.urls import reverse, reverse_lazy
 from faker import Faker
@@ -35,12 +32,6 @@ def user(client: Client) -> User:
 
     client.login(email=user.email, password=user.password)
     return user
-
-
-@pytest.fixture(scope="session")
-def django_db_setup(django_db_blocker: MonkeyPatch) -> dict[str, Any]:
-    with django_db_blocker.unblock():
-        return call_command("loaddata", "fixtures/data.json")
 
 
 @pytest.fixture()
@@ -100,12 +91,14 @@ def community() -> Community:
 
 
 @pytest.fixture()
-def report_data() -> dict:
-    fake = Faker()
-    return {
-        "report_type": "20_EU_ILLEGAL_CONTENT",
-        "report_details": fake.text(),
-    }
+def report_data() -> dict[str, str]:
+    def _create_report_data(report_type: str="20_EU_ILLEGAL_CONTENT") -> dict[str, str]:
+        fake = Faker()
+        return {
+            "report_type": report_type,
+            "report_details": fake.text(),
+        }
+    return _create_report_data
 
 
 @pytest.fixture()
@@ -122,7 +115,6 @@ def admin_action_form_data() -> dict:
 
 
 @pytest.fixture()
-
 def default_avatar_url(settings: Settings) -> None:
     return settings.DEFAULT_AVATAR_URL
 
@@ -168,8 +160,9 @@ def test_add_post_unauthorized(client: Client, community: Community) -> None:
 
 
 def test_report_post(client: Client, user: User, post: Post, report_data: dict) -> None:
+    data = report_data()
     client.force_login(user)
-    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=report_data)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
     assert response.status_code == 302
     messages = list(get_messages(response.wsgi_request))
     assert len(messages) == 1
@@ -177,7 +170,8 @@ def test_report_post(client: Client, user: User, post: Post, report_data: dict) 
 
 
 def test_report_post_unauthorized(client: Client, post: Post, report_data: dict) -> None:
-    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=report_data)
+    data = report_data()
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
     assert response.status_code == 302
     assert str(reverse_lazy("login")) in response.url
 
@@ -228,11 +222,11 @@ def test_add_comment_unauthorized(client: Client, post: Post) -> None:
     assert reverse("login") in response.url
 
 
-def test_reported_list_post_by_admin(client: Client, admin: User,
-                                     django_db_setup: MonkeyPatch, post: Post,
-                                     report_data: dict) -> None:
+def test_reported_list_post_by_admin(
+    client: Client, admin: User, post: Post, report_data: dict) -> None:
+    data = report_data()
     client.force_login(admin)
-
+    client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
     response = client.get(reverse("post-list-reported"))
     assert response.status_code == 200
     reports_count = PostReport.objects.filter(verified=False).count()
@@ -240,17 +234,16 @@ def test_reported_list_post_by_admin(client: Client, admin: User,
 
 
 def test_reported_list_post_by_user(client: Client, user: User, post: Post, report_data: dict) -> None:
+    data = report_data()
     client.force_login(user)
-    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=report_data)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
     assert response.status_code == 302
     response = client.get(reverse("post-list-reported"))
     assert response.status_code == 302
     assert response.url == reverse("home")
 
     messages = list(get_messages(response.wsgi_request))
-    assert any(
-        "You do not have permission to view this page." in str(message) for
-        message in messages)
+    assert any("You do not have permission to view this page." in str(message) for message in messages)
 
 
 def test_reported_list_post_by_anonymous_user(client: Client) -> None:
@@ -260,11 +253,12 @@ def test_reported_list_post_by_anonymous_user(client: Client) -> None:
 
 
 def test_reported_detail_post_by_user(client: Client, user: User, post: Post, report_data: dict) -> None:
+    data = report_data()
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
     client.force_login(user)
     response = client.get(reverse("reported-post", kwargs={"pk": post.pk}))
-    assert response.status_code == 200
-    assert "You do not have permission to view this page." in response.content.decode()
-
+    assert response.status_code == 403
+    assert "<h1>403 Forbidden</h1>" in response.content.decode()
 
 def test_reported_detail_post_by_anonymous_user(client: Client, post_report: PostReport) -> None:
     response = client.get(reverse("post-report", kwargs={"pk": post_report.pk}))
@@ -467,3 +461,133 @@ def test_remove_moderator(client: Client, user: User, community: Community) -> N
     assert response.status_code == 302
 
     assert not CommunityMember.objects.filter(community=community, user=user, role=CommunityMember.MODERATOR).exists()
+
+
+def test_report_post_breaks_rules(client: Client, user: User, post: Post, report_data: dict) -> None:
+    data = report_data("10_BREAKS_RULES")
+    client.force_login(user)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
+    assert response.status_code == 302
+    messages = list(get_messages(response.wsgi_request))
+    assert len(messages) == 1
+    assert str(messages[0]) == "Your post has been reported."
+
+
+def test_report_post_harassment(client: Client, user: User, post: Post, report_data: dict) -> None:
+    data = report_data("30_HARASSMENT")
+    client.force_login(user)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
+    assert response.status_code == 302
+    messages = list(get_messages(response.wsgi_request))
+    assert len(messages) == 1
+    assert str(messages[0]) == "Your post has been reported."
+
+
+def test_report_post_threatening_violence(client: Client, user: User, post: Post, report_data: dict) -> None:
+    data = report_data("40_THREATENING_VIOLENCE")
+    client.force_login(user)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
+    assert response.status_code == 302
+    messages = list(get_messages(response.wsgi_request))
+    assert len(messages) == 1
+    assert str(messages[0]) == "Your post has been reported."
+
+
+def test_report_post_hate(client: Client, user: User, post: Post, report_data: dict) -> None:
+    data = report_data("50_HATE")
+    client.force_login(user)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
+    assert response.status_code == 302
+    messages = list(get_messages(response.wsgi_request))
+    assert len(messages) == 1
+    assert str(messages[0]) == "Your post has been reported."
+
+
+def test_report_post_minor_abuse_or_sexualization(client: Client, user: User, post: Post, report_data: dict) -> None:
+    data = report_data("60_MINOR_ABUSE_OR_SEXUALIZATION")
+    client.force_login(user)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
+    assert response.status_code == 302
+    messages = list(get_messages(response.wsgi_request))
+    assert len(messages) == 1
+    assert str(messages[0]) == "Your post has been reported."
+
+
+def test_report_post_sharing_personal_information(client: Client, user: User, post: Post, report_data: dict) -> None:
+    data = report_data("70_SHARING_PERSONAL_INFORMATION")
+    client.force_login(user)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
+    assert response.status_code == 302
+    messages = list(get_messages(response.wsgi_request))
+    assert len(messages) == 1
+    assert str(messages[0]) == "Your post has been reported."
+
+
+def test_report_post_non_consensual_intimate_media(client: Client, user: User, post: Post, report_data: dict) -> None:
+    data = report_data("80_NON_CONSENSUAL_INTIMATE_MEDIA")
+    client.force_login(user)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
+    assert response.status_code == 302
+    messages = list(get_messages(response.wsgi_request))
+    assert len(messages) == 1
+    assert str(messages[0]) == "Your post has been reported."
+
+
+def test_report_post_prohibited_transaction(client: Client, user: User, post: Post, report_data: dict) -> None:
+    data = report_data("90_PROHIBITED_TRANSACTION")
+    client.force_login(user)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
+    assert response.status_code == 302
+    messages = list(get_messages(response.wsgi_request))
+    assert len(messages) == 1
+    assert str(messages[0]) == "Your post has been reported."
+
+
+def test_report_post_impersonation(client: Client, user: User, post: Post, report_data: dict) -> None:
+    data = report_data("100_IMPERSONATION")
+    client.force_login(user)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
+    assert response.status_code == 302
+    messages = list(get_messages(response.wsgi_request))
+    assert len(messages) == 1
+    assert str(messages[0]) == "Your post has been reported."
+
+
+def test_report_post_copyright_violation(client: Client, user: User, post: Post, report_data: dict) -> None:
+    data = report_data("110_COPYRIGHT_VIOLATION")
+    client.force_login(user)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
+    assert response.status_code == 302
+    messages = list(get_messages(response.wsgi_request))
+    assert len(messages) == 1
+    assert str(messages[0]) == "Your post has been reported."
+
+
+def test_report_post_trademark_violation(client: Client, user: User, post: Post, report_data: dict) -> None:
+    data = report_data("120_TRADEMARK_VIOLATION")
+    client.force_login(user)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
+    assert response.status_code == 302
+    messages = list(get_messages(response.wsgi_request))
+    assert len(messages) == 1
+    assert str(messages[0]) == "Your post has been reported."
+
+
+def test_report_post_self_harm_or_suicide(client: Client, user: User, post: Post, report_data: dict) -> None:
+    data = report_data("130_SELF_HARM_OR_SUICIDE")
+    client.force_login(user)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
+    assert response.status_code == 302
+    messages = list(get_messages(response.wsgi_request))
+    assert len(messages) == 1
+    assert str(messages[0]) == "Your post has been reported."
+
+
+def test_report_post_spam(client: Client, user: User, post: Post, report_data: dict) -> None:
+    data = report_data("140_SPAM")
+    client.force_login(user)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
+    assert response.status_code == 302
+    messages = list(get_messages(response.wsgi_request))
+    assert len(messages) == 1
+    assert str(messages[0]) == "Your post has been reported."
