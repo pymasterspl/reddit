@@ -12,7 +12,7 @@ from users.models import Profile
 class Command(BaseCommand):
     help = "Updating karma score for every user"
 
-    def handle(self, *_args: str, **_options: str) -> None:
+    def handle(self: "Command", *_args: str, **_options: str) -> None:
         date_limit = timezone.now() - timedelta(days=365)
         karma_subquery = (
             Post.objects
