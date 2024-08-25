@@ -15,8 +15,7 @@ class Command(BaseCommand):
     def handle(self: "Command", *_args: str, **_options: str) -> None:
         date_limit = timezone.now() - timedelta(days=365)
         karma_subquery = (
-            Post.objects
-            .filter(author_id=OuterRef("user_id"), created_at__gte=date_limit)
+            Post.objects.filter(author_id=OuterRef("user_id"), created_at__gte=date_limit)
             .values("author_id")
             .annotate(karma_score=Sum(F("up_votes") - F("down_votes")))
             .values("karma_score")
