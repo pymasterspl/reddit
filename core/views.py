@@ -209,9 +209,9 @@ class CommunityDetailView(DetailView):
 
         action = request.POST.get("action")
         if action == "add_moderator":
-            return self.post_add_moderator(request, *args, **kwargs)
+            return self.post_add_moderator(request)
         if action == "remove_moderator":
-            return self.post_remove_moderator(request, *args, **kwargs)
+            return self.post_remove_moderator(request)
 
         messages.error(request, "Invalid action.")
         return self.get(request, *args, **kwargs)
