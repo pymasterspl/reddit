@@ -65,7 +65,7 @@ class UserSettings(models.Model):
 
 class Profile(models.Model):
     bio = models.TextField(default="")
-    is_nfsw_visible = models.BooleanField(default=False)
+    is_nsfw_visible = models.BooleanField(default=False)
     is_followable = models.BooleanField(default=True)
     is_content_visible = models.BooleanField(default=True)
     is_communities_visible = models.BooleanField(default=True)
