@@ -74,4 +74,4 @@ jobs:
 
       - name: Run pytest
         run: |
-          poetry run pytest -vv -n 4
+          poetry run pytest -vv -n auto
