@@ -8,10 +8,6 @@ from core.models import Community, Post
 from users.models import User
 
 
-class PostCommentsSerializer:
-    pass
-
-
 class PostSerializer(serializers.ModelSerializer):
     score = serializers.ReadOnlyField()
 
