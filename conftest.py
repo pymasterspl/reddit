@@ -103,7 +103,7 @@ def public_community_with_members(
 def create_posts(community: Community, count: int, start_idx: int = 1) -> list[Post]:
     return [
         Post.objects.create(
-            author=community.author, community=community, title=f"Test Post {i}", content="This is a test post {i}"
+            author=community.author, community=community, title=f"Test Post {i}", content=f"This is a test post {i}"
         )
         for i in range(start_idx, start_idx + count)
     ]
