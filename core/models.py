@@ -2,14 +2,14 @@ import hashlib
 import re
 import typing
 from datetime import timedelta
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import F
+from django.db.models import F, QuerySet
 from django.utils import timezone
 from django.utils.text import slugify
 
@@ -17,7 +17,7 @@ User = get_user_model()
 
 
 class ActiveOnlyManager(models.Manager):
-    def get_queryset(self: "ActiveOnlyManager") -> models.QuerySet:
+    def get_queryset(self: "ActiveOnlyManager") -> QuerySet:
         return super().get_queryset().filter(is_active=True)
 
 
@@ -36,18 +36,18 @@ class GenericModel(models.Model):
 
 
 class ActivePostManagers(ActiveOnlyManager):
-    def roots(self, **kwargs):
+    def roots(self: "ActivePostManagers", **kwargs: dict[str, Any]) -> QuerySet["Post"]:
         return self.get_queryset().filter(parent__isnull=True, **kwargs)
-    
-    def comments(self, **kwargs):
+
+    def comments(self: "ActivePostManagers", **kwargs: dict[str, Any]) -> QuerySet["Post"]:
         return self.get_queryset().filter(parent__isnull=False, **kwargs)
 
 
 class AllObjectsPostManager(models.Manager):
-    def roots(self, **kwargs):
+    def roots(self: "AllObjectsPostManager", **kwargs: dict[str, Any]) -> QuerySet["Post"]:
         return self.get_queryset().filter(parent__isnull=True, **kwargs)
-    
-    def comments(self, **kwargs):
+
+    def comments(self: "AllObjectsPostManager", **kwargs: dict[str, Any]) -> QuerySet["Post"]:
         return self.get_queryset().filter(parent__isnull=False, **kwargs)
 
 
@@ -161,6 +161,9 @@ class Post(GenericModel):
     )
     display_counter = models.IntegerField(default=0)
 
+    objects = ActivePostManagers()
+    all_objects = AllObjectsPostManager()
+
     def __str__(self: "Post") -> str:
         return f"@{self.author}: {self.title}"
 
@@ -206,7 +209,7 @@ class Post(GenericModel):
         vote.choice = choice
         vote.save()
 
-    def get_images(self: "Post") -> models.QuerySet:
+    def get_images(self: "Post") -> QuerySet:
         return Image.objects.filter(post=self)
 
     def update_display_counter(self: "Post") -> None:
@@ -223,22 +226,19 @@ class Post(GenericModel):
 
         return count_descendants(self)
 
-    def is_top_level(self: "Post"):
+    def is_top_level(self: "Post") -> bool:
         return self.parent is None
 
     def is_saved(self: "Post", user: User) -> bool:
         return SavedPost.objects.filter(user=user, post=self).exists()
 
-    def get_comments(self: "Post") -> models.QuerySet:
+    def get_comments(self: "Post") -> QuerySet:
         return self.children.all()
 
     def get_comment_form(self: "Post") -> any:
         from .forms import CommentForm
 
         return CommentForm(initial={"parent_id": self.pk})
-
-    objects = ActivePostManagers()
-    all_objects = AllObjectsPostManager()
 
 
 class PostVote(models.Model):
@@ -333,5 +333,5 @@ class SavedPost(models.Model):
         SavedPost.objects.filter(user=user, post=post).delete()
 
     @staticmethod
-    def get_saved_posts(user: User) -> models.QuerySet:
+    def get_saved_posts(user: User) -> QuerySet:
         return SavedPost.objects.filter(user=user)

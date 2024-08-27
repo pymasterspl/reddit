@@ -1,6 +1,6 @@
 from rest_framework.urls import path
-from .api_views import CommunitiesAPIList, CommunityDetailAPIView, CommunityPostsListAPIView, PostAPIListView
 
+from .api_views import CommunitiesAPIList, CommunityDetailAPIView, CommunityPostsListAPIView, PostAPIListView
 
 urlpatterns = [
     path("communities", CommunitiesAPIList.as_view(), name="api-communities-list"),

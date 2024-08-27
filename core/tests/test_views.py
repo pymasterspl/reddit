@@ -211,7 +211,9 @@ def test_community_detail_view_not_found(client: Client, user: User) -> None:
     assert response.status_code == 404
 
 
-def test_update_community_view_without_permission(client: Client, non_authored_community: Community, user: User) -> None:
+def test_update_community_view_without_permission(
+    client: Client, non_authored_community: Community, user: User
+) -> None:
     client.force_login(user)
     community = non_authored_community
     response = client.post(reverse("community-update", kwargs={"slug": community.slug}), {"name": "Updated Community"})

@@ -1,12 +1,11 @@
 import secrets
 import string
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 
 import pytest
 from django.contrib.auth import get_user_model
 
 from core.models import Community, CommunityMember, Post
-from users.models import UserManager
 
 User = get_user_model()
 
@@ -67,9 +66,11 @@ def restricted_community(user: User) -> Community:
     # community restricted by default
     return Community.objects.create(name="Restricted Community", is_active=True, author=user)
 
+
 @pytest.fixture()
 def private_community(user: User) -> Community:
     return Community.objects.create(name="Private Community", privacy=Community.PRIVATE, is_active=True, author=user)
+
 
 @pytest.fixture()
 def public_community(user: User) -> Community:
@@ -77,43 +78,50 @@ def public_community(user: User) -> Community:
 
 
 @pytest.fixture()
-def reusable_password():
-    def _generated_password():
+def reusable_password() -> Callable[[], str]:
+    def _generated_password() -> str:
         return generate_random_password()
+
     return _generated_password
 
 
 @pytest.fixture()
-def public_community_with_members(public_community, reusable_password):
-    def _public_community_with_members(size=5):
+def public_community_with_members(
+    public_community: Community, reusable_password: Callable[[], str]
+) -> Callable[[int], Community]:
+    def _public_community_with_members(size: int = 5) -> Community:
         for i in range(1, size + 1):
-            user = User.objects.create_user(email=f"user_{i}@users.com", nickname=f"User_{i}", password=reusable_password())
+            user = User.objects.create_user(
+                email=f"user_{i}@users.com", nickname=f"User_{i}", password=reusable_password()
+            )
             CommunityMember.objects.create(community=public_community, user=user, role=CommunityMember.MEMBER)
         return public_community
+
     return _public_community_with_members
 
 
-def create_posts(community, count, start_idx=1):
-    result = []
-    for i in range(start_idx, start_idx + count):
-        result.append(Post.objects.create(
-                author=community.author,
-                community=community,
-                title=f"Test Post {i}",
-                content="This is a test post {i}",
-            )
+def create_posts(community: Community, count: int, start_idx: int = 1) -> list[Post]:
+    return [
+        Post.objects.create(
+            author=community.author, community=community, title=f"Test Post {i}", content="This is a test post {i}"
         )
-    return result
+        for i in range(start_idx, start_idx + count)
+    ]
+
+
+CreateCommunitiesFixture = Callable[[int, int, str], list[Community]]
+
 
 @pytest.fixture()
-def create_communities(user):
-    def _create_communties(count, posts_per_community, privacy=Community.PUBLIC):
+def create_communities(user: User) -> CreateCommunitiesFixture:
+    def _create_communties(count: int, posts_per_community: int, privacy: str = Community.PUBLIC) -> list[Community]:
         result = []
         for i in range(1, count + 1):
             community = Community.objects.create(author=user, name=f"Test community {i}", privacy=privacy)
             result.append(community)
             create_posts(community, count=posts_per_community, start_idx=(i - 1) * posts_per_community + 1)
         return result
+
     return _create_communties
 
 
