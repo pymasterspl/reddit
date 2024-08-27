@@ -35,20 +35,18 @@ class GenericModel(models.Model):
         abstract = True
 
 
-class ActivePostManagers(ActiveOnlyManager):
-    def roots(self: "ActivePostManagers", **kwargs: dict[str, Any]) -> QuerySet["Post"]:
+class PostManagerMixin:
+    def roots(self, **kwargs):
         return self.get_queryset().filter(parent__isnull=True, **kwargs)
 
-    def comments(self: "ActivePostManagers", **kwargs: dict[str, Any]) -> QuerySet["Post"]:
+    def comments(self, **kwargs):
         return self.get_queryset().filter(parent__isnull=False, **kwargs)
 
+class ActivePostManagers(PostManagerMixin, ActiveOnlyManager):
+    pass
 
-class AllObjectsPostManager(models.Manager):
-    def roots(self: "AllObjectsPostManager", **kwargs: dict[str, Any]) -> QuerySet["Post"]:
-        return self.get_queryset().filter(parent__isnull=True, **kwargs)
-
-    def comments(self: "AllObjectsPostManager", **kwargs: dict[str, Any]) -> QuerySet["Post"]:
-        return self.get_queryset().filter(parent__isnull=False, **kwargs)
+class AllObjectsPostManager(PostManagerMixin, models.Manager):
+    pass
 
 
 class Community(GenericModel):
