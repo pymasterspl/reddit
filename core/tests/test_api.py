@@ -2,9 +2,8 @@ import pytest
 from django.test.client import Client
 from django.urls import reverse
 
-from conftest import CreateCommunitiesFixture, create_posts
+from conftest import CommunityWithMembersFixture, CreateCommunitiesFixture, create_posts
 from core.models import Community, Post
-from reddit import settings
 
 pytestmark = pytest.mark.django_db
 
@@ -17,9 +16,7 @@ def get_abs_url(url: str, page: int) -> str:
     return f"{PREFIX}{url}?page={page}"
 
 
-def test_pagination_size() -> None:
-    assert settings.REST_FRAMEWORK["PAGE_SIZE"] == PAGE_SIZE
-    assert settings.REST_FRAMEWORK["DEFAULT_PAGINATION_CLASS"] == "rest_framework.pagination.PageNumberPagination"
+visible_privacies = [Community.PUBLIC, Community.RESTRICTED]
 
 
 def three_pages_pagination(url: str, client: Client) -> None:
@@ -49,14 +46,18 @@ def three_pages_pagination(url: str, client: Client) -> None:
     assert page_3_response.data["count"] == 2 * PAGE_SIZE + 1
 
 
-def test_api_communities_list_three_pages(client: Client, create_communities: CreateCommunitiesFixture) -> None:
-    create_communities(count=PAGE_SIZE * 2 + 1, posts_per_community=0)
+@pytest.mark.parametrize("privacy", visible_privacies)
+def test_api_communities_list_three_pages(
+    client: Client, create_communities: CreateCommunitiesFixture, privacy: str
+) -> None:
+    create_communities(count=PAGE_SIZE * 2 + 1, posts_per_community=0, privacy=privacy)
     url = reverse("api-communities-list")
     three_pages_pagination(url, client)
 
 
-def test_api_posts_three_pages(client: Client, create_communities: CreateCommunitiesFixture) -> None:
-    create_communities(count=1, posts_per_community=2 * PAGE_SIZE + 1)
+@pytest.mark.parametrize("privacy", visible_privacies)
+def test_api_posts_three_pages(client: Client, create_communities: CreateCommunitiesFixture, privacy: str) -> None:
+    create_communities(count=1, posts_per_community=2 * PAGE_SIZE + 1, privacy=privacy)
     url = reverse("api-posts-list-view")
     three_pages_pagination(url, client)
 
@@ -68,14 +69,18 @@ def test_api_communities_list_private(client: Client, create_communities: Create
     assert response.data["results"] == []
 
 
-def test_api_community_posts_three_pages(client: Client, create_communities: CreateCommunitiesFixture) -> None:
-    tested_community = create_communities(count=1, posts_per_community=2 * PAGE_SIZE + 1)[0]
+@pytest.mark.parametrize("privacy", visible_privacies)
+def test_api_community_posts_three_pages(
+    client: Client, create_communities: CreateCommunitiesFixture, privacy: str
+) -> None:
+    tested_community = create_communities(count=1, posts_per_community=2 * PAGE_SIZE + 1, privacy=privacy)[0]
     url = reverse("api-communities-posts-list", kwargs={"slug": tested_community.slug})
     three_pages_pagination(url, client)
 
 
-def test_api_communities_list_ten(client: Client, create_communities: CreateCommunitiesFixture) -> None:
-    create_communities(count=10, posts_per_community=0)
+@pytest.mark.parametrize("privacy", visible_privacies)
+def test_api_communities_list_ten(client: Client, create_communities: CreateCommunitiesFixture, privacy: str) -> None:
+    create_communities(count=10, posts_per_community=0, privacy=privacy)
     response = client.get(reverse("api-communities-list"))
     assert Community.objects.count() == 10
     assert Post.objects.count() == 0
@@ -85,8 +90,9 @@ def test_api_communities_list_ten(client: Client, create_communities: CreateComm
     assert len(results) == 10
 
 
-def test_api_posts_list_ten(client: Client, create_communities: CreateCommunitiesFixture) -> None:
-    create_communities(count=2, posts_per_community=5)
+@pytest.mark.parametrize("privacy", visible_privacies)
+def test_api_posts_list_ten(client: Client, create_communities: CreateCommunitiesFixture, privacy: str) -> None:
+    create_communities(count=2, posts_per_community=5, privacy=privacy)
     response = client.get(reverse("api-posts-list-view"))
     assert response.status_code == 200
     results = response.data["results"]
@@ -107,10 +113,16 @@ def test_api_posts_list_empty(client: Client) -> None:
     assert response.data["results"] == []
 
 
-def test_api_community_list_one(client: Client, community: Community) -> None:
+def test_api_community_list_one_restricted(client: Client, restricted_community: Community) -> None:
     response = client.get(reverse("api-communities-list"))
     assert response.status_code == 200
-    assert community.id == response.data["results"][0]["id"]
+    assert restricted_community.id == response.data["results"][0]["id"]
+
+
+def test_api_community_list_one_public(client: Client, public_community: Community) -> None:
+    response = client.get(reverse("api-communities-list"))
+    assert response.status_code == 200
+    assert public_community.id == response.data["results"][0]["id"]
 
 
 def test_api_community_list_empty(client: Client) -> None:
@@ -119,8 +131,21 @@ def test_api_community_list_empty(client: Client) -> None:
     assert response.data["results"] == []
 
 
-def test_api_community_get_one(client: Client, public_community_with_members: Community) -> None:
+def test_api_community_get_one_public(
+    client: Client, public_community_with_members: CommunityWithMembersFixture
+) -> None:
     community = public_community_with_members(5)
+    response = client.get(reverse("api-community-detail", kwargs={"slug": community.slug}))
+    assert response.status_code == 200
+    assert response.data["id"] == community.id
+    assert len(response.data["members"]) == 5
+    assert "author" in response.data
+
+
+def test_api_community_get_one_restricted(
+    client: Client, restricted_community_with_members: CommunityWithMembersFixture
+) -> None:
+    community = restricted_community_with_members(5)
     response = client.get(reverse("api-community-detail", kwargs={"slug": community.slug}))
     assert response.status_code == 200
     assert response.data["id"] == community.id
@@ -136,7 +161,8 @@ def test_api_community_get_one_private(client: Client, private_community: Commun
     assert "author" not in response.data
 
 
-def test_api_community_posts_get_list(client: Client, community: Community) -> None:
+@pytest.mark.parametrize("privacy", visible_privacies)
+def test_api_community_posts_get_list(client: Client, community: Community, privacy: str) -> None:
     create_posts(community, count=3)
     other_community = Community.objects.create(name="Ruby Community")
     create_posts(other_community, count=4, start_idx=4)

@@ -85,19 +85,43 @@ def reusable_password() -> Callable[[], str]:
     return _generated_password
 
 
+UsersWithMembersFixture = Callable[[int, Community], None]
+CommunityWithMembersFixture = Callable[[int], Community]
+CreateCommunitiesFixture = Callable[[int, int, str], list[Community]]
+
+
 @pytest.fixture()
-def public_community_with_members(
-    public_community: Community, reusable_password: Callable[[], str]
-) -> Callable[[int], Community]:
-    def _public_community_with_members(size: int = 5) -> Community:
+def create_users_with_members(reusable_password: Callable[[], str]) -> UsersWithMembersFixture:
+    def _create_users_with_members(size: int, community: Community) -> None:
         for i in range(1, size + 1):
             user = User.objects.create_user(
                 email=f"user_{i}@users.com", nickname=f"User_{i}", password=reusable_password()
             )
-            CommunityMember.objects.create(community=public_community, user=user, role=CommunityMember.MEMBER)
+            CommunityMember.objects.create(community=community, user=user, role=CommunityMember.MEMBER)
+
+    return _create_users_with_members
+
+
+@pytest.fixture()
+def public_community_with_members(
+    public_community: Community, create_users_with_members: None
+) -> CommunityWithMembersFixture:
+    def _public_community_with_members(size: int) -> Community:
+        create_users_with_members(size, public_community)
         return public_community
 
     return _public_community_with_members
+
+
+@pytest.fixture()
+def restricted_community_with_members(
+    restricted_community: Community, create_users_with_members: None
+) -> CommunityWithMembersFixture:
+    def _restricted_community_with_members(size: int) -> Community:
+        create_users_with_members(size, restricted_community)
+        return restricted_community
+
+    return _restricted_community_with_members
 
 
 def create_posts(community: Community, count: int, start_idx: int = 1) -> list[Post]:
@@ -107,9 +131,6 @@ def create_posts(community: Community, count: int, start_idx: int = 1) -> list[P
         )
         for i in range(start_idx, start_idx + count)
     ]
-
-
-CreateCommunitiesFixture = Callable[[int, int, str], list[Community]]
 
 
 @pytest.fixture()
