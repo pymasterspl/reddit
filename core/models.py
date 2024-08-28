@@ -36,14 +36,16 @@ class GenericModel(models.Model):
 
 
 class PostManagerMixin:
-    def roots(self, **kwargs):
+    def roots(self: "PostManagerMixin", **kwargs: dict[str, Any]) -> QuerySet["Post"]:
         return self.get_queryset().filter(parent__isnull=True, **kwargs)
 
-    def comments(self, **kwargs):
+    def comments(self: "PostManagerMixin", **kwargs: dict[str, Any]) -> QuerySet["Post"]:
         return self.get_queryset().filter(parent__isnull=False, **kwargs)
+
 
 class ActivePostManagers(PostManagerMixin, ActiveOnlyManager):
     pass
+
 
 class AllObjectsPostManager(PostManagerMixin, models.Manager):
     pass
