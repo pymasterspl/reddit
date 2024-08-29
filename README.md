@@ -73,8 +73,10 @@ poetry shell
 Run tests in project directory with:
 
 ```bash
-pytest
+
+pytest -n auto -vv
 ```
+This command runs tests in parallel, thus much faster.
 
 Make sure all tests pass before creating PR. Automated tests are run on every PR and if tests fail, merge will not be possible.
 
