@@ -10,13 +10,16 @@ from .models import Community, Post, User
 
 
 class CommentForm(forms.Form):
+    MAX_COMMENT_LENGTH = 500
     content = forms.CharField(
         label="Add a comment",
         required=True,
+        max_length=MAX_COMMENT_LENGTH,
         widget=forms.Textarea(
             attrs={
                 "rows": 3,
                 "class": "form-control bg-dark text-light",
+                "maxlength": MAX_COMMENT_LENGTH,
             },
         ),
     )

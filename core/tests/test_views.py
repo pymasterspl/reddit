@@ -1,7 +1,13 @@
+import io
+from pathlib import Path
+
 import pytest
+from django.conf import Settings, settings
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
 from django.urls import reverse
+from PIL import Image
 
 from core.models import Community, CommunityMember, Post
 
@@ -23,6 +29,7 @@ def user(client: Client) -> User:
 
     client.login(email=user.email, password=user.password)
     return user
+
 
 
 def test_add_post_valid(client: Client, user: User, community: Community) -> None:
@@ -106,12 +113,12 @@ def test_add_comment_unauthorized(client: Client, post: Post) -> None:
     assert reverse("login") in response.url
 
 
-def test_add_nested_comment_valid(client: Client, another_user: User, post: Post, comment: Post) -> None:
+def test_add_nested_comment_valid(client: Client, user: User, post: Post, comment: Post) -> None:
     data = {
         "parent_id": comment.pk,
         "content": "This is a test nested comment content.",
     }
-    client.force_login(another_user)
+    client.force_login(user)
     assert post.children_count == 1
     assert post.get_comments().count() == 1
     assert comment.children_count == 0
@@ -126,7 +133,7 @@ def test_add_nested_comment_valid(client: Client, another_user: User, post: Post
     assert comment.get_comments().count() == 1
 
     new_comment = Post.objects.get(content=data["content"])
-    assert new_comment.author == another_user
+    assert new_comment.author == user
     assert new_comment.parent == comment
 
 
@@ -150,8 +157,8 @@ def test_add_nested_comment_unauthorized(client: Client, post: Post, comment: Po
     assert reverse("login") in response.url
 
 
-def test_add_deeply_nested_comment_valid(client: Client, another_user: User, post: Post) -> None:
-    client.force_login(another_user)
+def test_add_deeply_nested_comment_valid(client: Client, user: User, post: Post) -> None:
+    client.force_login(user)
     parent_comment = post
     for _ in range(10):
         response = client.post(
@@ -166,6 +173,81 @@ def test_add_deeply_nested_comment_valid(client: Client, another_user: User, pos
     assert post.children_count == 10
     assert parent_comment.children_count == 0
     assert parent_comment.parent.children_count == 1
+
+
+@pytest.fixture()
+def user_with_avatar(client: Client, create_avatar: SimpleUploadedFile) -> User:
+    password = generate_random_password()
+    user = User.objects.create_user(
+        email="test_user@example.com",
+        nickname="TestUser",
+        password=password,
+    )
+    user.avatar = create_avatar
+    user.save()
+    client.login(email=user.email, password=user.password)
+
+    return user
+
+
+@pytest.fixture()
+def create_avatar() -> SimpleUploadedFile:
+    avatar_dir = Path(settings.MEDIA_ROOT) / "users_avatars"
+    avatar_dir.mkdir(parents=True, exist_ok=True)
+    img = Image.new("RGB", (100, 100), color=(73, 109, 137))
+    img_io = io.BytesIO()
+    img.save(img_io, format="JPEG")
+    img_io.seek(0)
+    base_filename = "test_avatar"
+
+    avatar_path = Path(f"{avatar_dir}/{base_filename}.jpg")
+
+    with Path.open(avatar_path, "wb") as f:
+        f.write(img_io.read())
+
+    with Path.open(avatar_path, "rb") as f:
+        avatar = SimpleUploadedFile(name=avatar_path, content=f.read(), content_type="image/jpeg")
+
+    yield avatar
+
+    for file_path in avatar_dir.glob(f"{base_filename}*"):
+        if Path.exists(file_path):
+            Path.unlink(file_path)
+
+
+@pytest.fixture()
+def default_avatar_url(settings: Settings) -> None:
+    return settings.DEFAULT_AVATAR_URL
+
+
+@pytest.mark.django_db()
+def test_post_user_avatar_display(client: Client, non_authored_community: Community, user_with_avatar: User) -> None:
+    data = {
+        "community": non_authored_community.pk,
+        "title": "Test Post Title",
+        "content": "This is a test post content.",
+    }
+    client.force_login(user_with_avatar)
+    response = client.post(reverse("post-create"), data=data, follow=True)
+    post = response.context["post"]
+    assert post.author.avatar.url == user_with_avatar.avatar_url
+
+
+@pytest.mark.django_db()
+def test_post_user_without_avatar(client: Client, non_authored_community: Community, user: User, default_avatar_url: str) -> None:
+    data = {
+        "community": non_authored_community.pk,
+        "title": "Test Post Title",
+        "content": "This is a test post content.",
+    }
+    client.force_login(user)
+    response = client.post(reverse("post-create"), data=data, follow=True)
+    assert Post.objects.count() == 1
+    assert "form" in response.context
+    form = response.context["form"]
+    assert form.errors == {}
+    post = Post.objects.first()
+    assert post.author.avatar_url == default_avatar_url
 
 
 def test_restricted_community_access(client: Client, restricted_community: Community, user: User) -> None:
