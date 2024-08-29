@@ -31,7 +31,6 @@ def user(client: Client) -> User:
     return user
 
 
-
 def test_add_post_valid(client: Client, user: User, community: Community) -> None:
     data = {
         "community": community.pk,
@@ -176,18 +175,11 @@ def test_add_deeply_nested_comment_valid(client: Client, user: User, post: Post)
 
 
 @pytest.fixture()
-def user_with_avatar(client: Client, create_avatar: SimpleUploadedFile) -> User:
-    password = generate_random_password()
-    user = User.objects.create_user(
-        email="test_user@example.com",
-        nickname="TestUser",
-        password=password,
-    )
-    user.avatar = create_avatar
-    user.save()
-    client.login(email=user.email, password=user.password)
-
-    return user
+def user_with_avatar(client: Client, create_avatar: SimpleUploadedFile, other_user: User) -> User:
+    other_user.avatar = create_avatar
+    other_user.save()
+    client.login(email=other_user.email, password=other_user.password)
+    return other_user
 
 
 @pytest.fixture()
@@ -221,9 +213,9 @@ def default_avatar_url(settings: Settings) -> None:
 
 
 @pytest.mark.django_db()
-def test_post_user_avatar_display(client: Client, non_authored_community: Community, user_with_avatar: User) -> None:
+def test_post_user_avatar_display(client: Client, community: Community, user_with_avatar: User) -> None:
     data = {
-        "community": non_authored_community.pk,
+        "community": community.pk,
         "title": "Test Post Title",
         "content": "This is a test post content.",
     }
@@ -234,13 +226,15 @@ def test_post_user_avatar_display(client: Client, non_authored_community: Commun
 
 
 @pytest.mark.django_db()
-def test_post_user_without_avatar(client: Client, non_authored_community: Community, user: User, default_avatar_url: str) -> None:
+def test_post_user_without_avatar(
+    client: Client, community: Community, other_user: User, default_avatar_url: str
+) -> None:
     data = {
-        "community": non_authored_community.pk,
+        "community": community.pk,
         "title": "Test Post Title",
         "content": "This is a test post content.",
     }
-    client.force_login(user)
+    client.force_login(other_user)
     response = client.post(reverse("post-create"), data=data, follow=True)
     assert Post.objects.count() == 1
     assert "form" in response.context

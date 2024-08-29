@@ -17,6 +17,14 @@ def generate_random_password(length: int = 12) -> str:
 
 
 @pytest.fixture()
+def reusable_password() -> Callable[[], str]:
+    def _generated_password() -> str:
+        return generate_random_password()
+
+    return _generated_password
+
+
+@pytest.fixture()
 def generated_password() -> str:
     return generate_random_password()
 
@@ -27,20 +35,19 @@ def user_model() -> type[get_user_model()]:
 
 
 @pytest.fixture()
-def user(generated_password: str) -> User:
-    user = User.objects.create_user(email="test@example.com", nickname="test_user", password=generated_password)
-    user.plain_password = generated_password
+def user(reusable_password: Callable[[], str]) -> User:
+    password = reusable_password()
+    user = User.objects.create_user(email="test@example.com", nickname="test_user", password=password)
+    user.plain_password = password
     return user
 
 
 @pytest.fixture()
-def another_user(generated_password: str) -> User:
-    user = User.objects.create_user(
-        email="another_user@example.com",
-        nickname="another_user",
-        password=generated_password,
-    )
-    user.plain_password = generated_password
+def other_user(reusable_password: Callable[[], str]) -> User:
+    """Use when user different than community author is needed."""
+    password = reusable_password()
+    user = User.objects.create_user(email="other_user@example.com", nickname="other_user", password=password)
+    user.plain_password = password
     return user
 
 
@@ -78,14 +85,6 @@ def private_community(user: User) -> Community:
 @pytest.fixture()
 def public_community(user: User) -> Community:
     return Community.objects.create(name="Private Community", privacy=Community.PUBLIC, is_active=True, author=user)
-
-
-@pytest.fixture()
-def reusable_password() -> Callable[[], str]:
-    def _generated_password() -> str:
-        return generate_random_password()
-
-    return _generated_password
 
 
 UsersWithMembersFixture = Callable[[int, Community], None]
