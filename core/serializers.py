@@ -13,7 +13,23 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model: Model = Post
-        exclude: ClassVar[Sequence[str] | str] = ["version"]
+        fields: ClassVar[Sequence[str] | str] = (
+            # no Post.version field
+            "id",
+            "score",
+            "is_active",
+            "is_locked",
+            "created_at",
+            "updated_at",
+            "title",
+            "content",
+            "up_votes",
+            "down_votes",
+            "display_counter",
+            "author",
+            "community",
+            "parent",
+        )
 
 
 class CommunitySerializer(serializers.ModelSerializer):
@@ -21,7 +37,20 @@ class CommunitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model: Model = Community
-        fields: ClassVar[Sequence[str] | str] = "__all__"
+        fields: ClassVar[Sequence[str] | str] = (
+            "id",
+            "name",
+            "slug",
+            "members",
+            "count_online_users",
+            "author",
+            "is_active",
+            "is_locked",
+            "privacy",
+            "created_at",
+            "updated_at",
+            "is_18_plus",
+        )
 
     def get_count_online_users(self: "CommunitySerializer", obj: Community) -> int:
         return obj.count_online_users()
