@@ -98,7 +98,23 @@ def test_api_posts_list_ten(client: Client, create_communities: CreateCommunitie
     results = response.data["results"]
     assert isinstance(results, list)
     assert len(results) == 10
-
+    assert set(response.data["results"][0].keys()) == {
+        # no Post.version field
+        "id",
+        "score",
+        "is_active",
+        "is_locked",
+        "created_at",
+        "updated_at",
+        "title",
+        "content",
+        "up_votes",
+        "down_votes",
+        "display_counter",
+        "author",
+        "community",
+        "parent",
+    }
 
 def test_api_posts_list_private_community(client: Client, create_communities: CreateCommunitiesFixture) -> None:
     create_communities(count=5, posts_per_community=2, privacy=Community.PRIVATE)
@@ -117,12 +133,14 @@ def test_api_community_list_one_restricted(client: Client, restricted_community:
     response = client.get(reverse("api-communities-list"))
     assert response.status_code == 200
     assert restricted_community.id == response.data["results"][0]["id"]
+    assert set(response.data["results"][0].keys()) == {"id", "name", "slug"}
 
 
 def test_api_community_list_one_public(client: Client, public_community: Community) -> None:
     response = client.get(reverse("api-communities-list"))
     assert response.status_code == 200
     assert public_community.id == response.data["results"][0]["id"]
+    assert set(response.data["results"][0].keys()) == {"id", "name", "slug"}
 
 
 def test_api_community_list_empty(client: Client) -> None:
@@ -139,8 +157,20 @@ def test_api_community_get_one_public(
     assert response.status_code == 200
     assert response.data["id"] == community.id
     assert len(response.data["members"]) == 5
-    assert "author" in response.data
-
+    assert set(response.data.keys()) == {
+        "id",
+        "name",
+        "slug",
+        "members",
+        "count_online_users",
+        "author",
+        "is_active",
+        "is_locked",
+        "privacy",
+        "created_at",
+        "updated_at",
+        "is_18_plus",
+    }
 
 def test_api_community_get_one_restricted(
     client: Client, restricted_community_with_members: CommunityWithMembersFixture
@@ -150,15 +180,26 @@ def test_api_community_get_one_restricted(
     assert response.status_code == 200
     assert response.data["id"] == community.id
     assert len(response.data["members"]) == 5
-    assert "author" in response.data
-
+    assert set(response.data.keys()) == {
+        "id",
+        "name",
+        "slug",
+        "members",
+        "count_online_users",
+        "author",
+        "is_active",
+        "is_locked",
+        "privacy",
+        "created_at",
+        "updated_at",
+        "is_18_plus",
+    }
 
 def test_api_community_get_one_private(client: Client, private_community: Community) -> None:
     response = client.get(reverse("api-community-detail", kwargs={"slug": private_community.slug}))
     assert response.status_code == 200
     assert response.data["id"] == private_community.id
-    assert "members" not in response.data
-    assert "author" not in response.data
+    assert set(response.data.keys()) == {"id", "name", "slug"}
 
 
 @pytest.mark.parametrize("privacy", visible_privacies)
