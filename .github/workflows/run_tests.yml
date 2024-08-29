@@ -22,12 +22,12 @@ jobs:
           python-version: "3.11"
           architecture: "x64"
 
-      - name: Cache Poetry
-        id: cache-poetry
-        uses: actions/cache@v3
-        with:
-          path: ~/.poetry
-          key: ${{ matrix.os }}-poetry
+      # - name: Cache Poetry
+      #   id: cache-poetry
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: ~/.poetry
+      #     key: ${{ matrix.os }}-poetry
 
       # Only runs when key from caching step changes
       - name: Install Poetry
@@ -48,16 +48,16 @@ jobs:
         run: |
           poetry check --no-interaction
 
-      - name: Cache dependencies
-        id: cache-deps
-        uses: actions/cache@v3
-        with:
-          path: ${{github.workspace}}/.venv
-          key: ${{ matrix.os }}-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: ${{ matrix.os }}-
+      # - name: Cache dependencies
+      #   id: cache-deps
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: ${{github.workspace}}/.venv
+      #     key: ${{ matrix.os }}-${{ hashFiles('**/poetry.lock') }}
+      #     restore-keys: ${{ matrix.os }}-
 
       - name: Install deps
-        if: steps.cache-deps.cache-hit != 'true'
+        # if: steps.cache-deps.cache-hit != 'true'
         run: |
           poetry config virtualenvs.in-project true
           poetry install --no-interaction
