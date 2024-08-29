@@ -116,6 +116,7 @@ def test_api_posts_list_ten(client: Client, create_communities: CreateCommunitie
         "parent",
     }
 
+
 def test_api_posts_list_private_community(client: Client, create_communities: CreateCommunitiesFixture) -> None:
     create_communities(count=5, posts_per_community=2, privacy=Community.PRIVATE)
     response = client.get(reverse("api-posts-list-view"))
@@ -172,6 +173,7 @@ def test_api_community_get_one_public(
         "is_18_plus",
     }
 
+
 def test_api_community_get_one_restricted(
     client: Client, restricted_community_with_members: CommunityWithMembersFixture
 ) -> None:
@@ -194,6 +196,7 @@ def test_api_community_get_one_restricted(
         "updated_at",
         "is_18_plus",
     }
+
 
 def test_api_community_get_one_private(client: Client, private_community: Community) -> None:
     response = client.get(reverse("api-community-detail", kwargs={"slug": private_community.slug}))
