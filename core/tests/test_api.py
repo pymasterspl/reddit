@@ -19,7 +19,7 @@ def get_abs_url(url: str, page: int) -> str:
 visible_privacies = [Community.PUBLIC, Community.RESTRICTED]
 
 
-def three_pages_pagination(url: str, client: Client) -> None:
+def validate_three_pages_pagination(url: str, client: Client) -> None:
     page_1_response = client.get(url)
     page_2_response = client.get(page_1_response.data["next"])
     page_3_response = client.get(page_2_response.data["next"])
@@ -52,14 +52,14 @@ def test_api_communities_list_three_pages(
 ) -> None:
     create_communities(count=PAGE_SIZE * 2 + 1, posts_per_community=0, privacy=privacy)
     url = reverse("api-communities-list")
-    three_pages_pagination(url, client)
+    validate_three_pages_pagination(url, client)
 
 
 @pytest.mark.parametrize("privacy", visible_privacies)
 def test_api_posts_three_pages(client: Client, create_communities: CreateCommunitiesFixture, privacy: str) -> None:
     create_communities(count=1, posts_per_community=2 * PAGE_SIZE + 1, privacy=privacy)
     url = reverse("api-posts-list-view")
-    three_pages_pagination(url, client)
+    validate_three_pages_pagination(url, client)
 
 
 def test_api_communities_list_private(client: Client, create_communities: CreateCommunitiesFixture) -> None:
@@ -75,7 +75,7 @@ def test_api_community_posts_three_pages(
 ) -> None:
     tested_community = create_communities(count=1, posts_per_community=2 * PAGE_SIZE + 1, privacy=privacy)[0]
     url = reverse("api-communities-posts-list", kwargs={"slug": tested_community.slug})
-    three_pages_pagination(url, client)
+    validate_three_pages_pagination(url, client)
 
 
 @pytest.mark.parametrize("privacy", visible_privacies)
@@ -88,6 +88,18 @@ def test_api_communities_list_ten(client: Client, create_communities: CreateComm
     results = response.data["results"]
     assert isinstance(results, list)
     assert len(results) == 10
+    for community_data in results:
+        assert set(community_data.keys()) == {"id", "name", "slug"}
+
+
+@pytest.mark.parametrize("privacy", visible_privacies)
+def test_api_communities_list_mixed(client: Client, create_communities: CreateCommunitiesFixture, privacy: str) -> None:
+    create_communities(count=5, posts_per_community=2, privacy=Community.PRIVATE)  # These should be ignored
+    public_communities = create_communities(count=5, posts_per_community=2, privacy=privacy)
+    response = client.get(reverse("api-communities-list"))
+    assert response.status_code == 200
+    assert len(response.data["results"]) == 5
+    assert all(comm["id"] in [c.id for c in public_communities] for comm in response.data["results"])
 
 
 @pytest.mark.parametrize("privacy", visible_privacies)
