@@ -43,7 +43,7 @@ def user(reusable_password: Callable[[], str]) -> User:
 
 
 @pytest.fixture()
-def other_user(reusable_password: Callable[[], str]) -> User:
+def another_user(reusable_password: Callable[[], str]) -> User:
     """Use when user different than community author is needed."""
     password = reusable_password()
     user = User.objects.create_user(email="other_user@example.com", nickname="other_user", password=password)

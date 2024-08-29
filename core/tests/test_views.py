@@ -175,11 +175,11 @@ def test_add_deeply_nested_comment_valid(client: Client, user: User, post: Post)
 
 
 @pytest.fixture()
-def user_with_avatar(client: Client, create_avatar: SimpleUploadedFile, other_user: User) -> User:
-    other_user.avatar = create_avatar
-    other_user.save()
-    client.login(email=other_user.email, password=other_user.password)
-    return other_user
+def user_with_avatar(client: Client, create_avatar: SimpleUploadedFile, another_user: User) -> User:
+    another_user.avatar = create_avatar
+    another_user.save()
+    client.login(email=another_user.email, password=another_user.password)
+    return another_user
 
 
 @pytest.fixture()
@@ -227,14 +227,14 @@ def test_post_user_avatar_display(client: Client, community: Community, user_wit
 
 @pytest.mark.django_db()
 def test_post_user_without_avatar(
-    client: Client, community: Community, other_user: User, default_avatar_url: str
+    client: Client, community: Community, another_user: User, default_avatar_url: str
 ) -> None:
     data = {
         "community": community.pk,
         "title": "Test Post Title",
         "content": "This is a test post content.",
     }
-    client.force_login(other_user)
+    client.force_login(another_user)
     response = client.post(reverse("post-create"), data=data, follow=True)
     assert Post.objects.count() == 1
     assert "form" in response.context
