@@ -53,6 +53,7 @@ def admin_user(generated_password: str) -> User:
 
 @pytest.fixture()
 def community(user: User) -> Generator[Community, None, None]:
+    # community is restricted by default
     return Community.objects.create(author=user, name="Test Community")
 
 
@@ -63,8 +64,10 @@ def non_authored_community() -> Community:
 
 @pytest.fixture()
 def restricted_community(user: User) -> Community:
-    # community restricted by default
-    return Community.objects.create(name="Restricted Community", is_active=True, author=user)
+    # community is restricted by default
+    return Community.objects.create(
+        name="Restricted Community", privacy=Community.RESTRICTED, is_active=True, author=user
+    )
 
 
 @pytest.fixture()
