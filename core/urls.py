@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 
 from .views import (
     CommunityCreateView,
@@ -22,4 +22,5 @@ urlpatterns = [
     path("community/create/", CommunityCreateView.as_view(), name="community-create"),
     path("community/<slug:slug>/", CommunityDetailView.as_view(), name="community-detail"),
     path("community/<slug:slug>/update/", CommunityUpdateView.as_view(), name="community-update"),
+    path("api/", include("core.api_urls")),
 ]

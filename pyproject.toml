@@ -19,6 +19,7 @@ six = "^1.16.0"
 pytest = "^8.2.2"
 faker = "^25.9.1"
 pycountry = "^24.6.1"
+djangorestframework = "^3.15.2"
 freezegun = "^1.5.1"
 pytest-xdist = "^3.6.1"
 
