@@ -164,5 +164,6 @@ docker-compose.override.yml
 
 media/
 
+/media/*
 !/media/users_avatars/default.png
 
