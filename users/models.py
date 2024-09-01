@@ -65,10 +65,17 @@ class UserSettings(models.Model):
 
 class Profile(models.Model):
     bio = models.TextField(default="")
-    is_nfsw_visible = models.BooleanField(default=False)
+    is_nsfw = models.BooleanField(
+        default=False,
+        help_text=(
+            "Profile contains content which is NSFW "
+            "(may contain nudity, pornography, profanity, or inappropriate content for those under 18)"
+        ),
+    )
     is_followable = models.BooleanField(default=True)
     is_content_visible = models.BooleanField(default=True)
     is_communities_visible = models.BooleanField(default=True)
+    karma_score = models.IntegerField(default=0)
     gender = models.CharField(choices=GENDER_CHOICES, max_length=1)
     user = models.OneToOneField("User", on_delete=models.CASCADE, null=False)
 

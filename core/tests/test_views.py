@@ -31,61 +31,6 @@ def user(client: Client) -> User:
     return user
 
 
-@pytest.fixture()
-def user_with_avatar(client: Client, create_avatar: SimpleUploadedFile) -> User:
-    password = generate_random_password()
-    user = User.objects.create_user(
-        email="test_user@example.com",
-        nickname="TestUser",
-        password=password,
-    )
-    user.avatar = create_avatar
-    user.save()
-    client.login(email=user.email, password=user.password)
-
-    return user
-
-
-@pytest.fixture()
-def create_avatar() -> SimpleUploadedFile:
-    avatar_dir = Path(settings.MEDIA_ROOT) / "users_avatars"
-    avatar_dir.mkdir(parents=True, exist_ok=True)
-    img = Image.new("RGB", (100, 100), color=(73, 109, 137))
-    img_io = io.BytesIO()
-    img.save(img_io, format="JPEG")
-    img_io.seek(0)
-    base_filename = "test_avatar"
-
-    avatar_path = Path(f"{avatar_dir}/{base_filename}.jpg")
-
-    with Path.open(avatar_path, "wb") as f:
-        f.write(img_io.read())
-
-    with Path.open(avatar_path, "rb") as f:
-        avatar = SimpleUploadedFile(name=avatar_path, content=f.read(), content_type="image/jpeg")
-
-    yield avatar
-
-    for file_path in avatar_dir.glob(f"{base_filename}*"):
-        if Path.exists(file_path):
-            Path.unlink(file_path)
-
-
-@pytest.fixture()
-def community() -> Community:
-    return Community.objects.create(name="Test Community", is_active=True)
-
-
-@pytest.fixture()
-def default_avatar_url(settings: Settings) -> None:
-    return settings.DEFAULT_AVATAR_URL
-
-
-@pytest.fixture()
-def restricted_community(user: User) -> Community:
-    return Community.objects.create(name="Restricted Community", is_active=True, author=user)
-
-
 def test_add_post_valid(client: Client, user: User, community: Community) -> None:
     data = {
         "community": community.pk,
@@ -229,6 +174,44 @@ def test_add_deeply_nested_comment_valid(client: Client, user: User, post: Post)
     assert parent_comment.parent.children_count == 1
 
 
+@pytest.fixture()
+def user_with_avatar(client: Client, create_avatar: SimpleUploadedFile, another_user: User) -> User:
+    another_user.avatar = create_avatar
+    another_user.save()
+    client.login(email=another_user.email, password=another_user.password)
+    return another_user
+
+
+@pytest.fixture()
+def create_avatar() -> SimpleUploadedFile:
+    avatar_dir = Path(settings.MEDIA_ROOT) / "users_avatars"
+    avatar_dir.mkdir(parents=True, exist_ok=True)
+    img = Image.new("RGB", (100, 100), color=(73, 109, 137))
+    img_io = io.BytesIO()
+    img.save(img_io, format="JPEG")
+    img_io.seek(0)
+    base_filename = "test_avatar"
+
+    avatar_path = Path(f"{avatar_dir}/{base_filename}.jpg")
+
+    with Path.open(avatar_path, "wb") as f:
+        f.write(img_io.read())
+
+    with Path.open(avatar_path, "rb") as f:
+        avatar = SimpleUploadedFile(name=avatar_path, content=f.read(), content_type="image/jpeg")
+
+    yield avatar
+
+    for file_path in avatar_dir.glob(f"{base_filename}*"):
+        if Path.exists(file_path):
+            Path.unlink(file_path)
+
+
+@pytest.fixture()
+def default_avatar_url(settings: Settings) -> None:
+    return settings.DEFAULT_AVATAR_URL
+
+
 @pytest.mark.django_db()
 def test_post_user_avatar_display(client: Client, community: Community, user_with_avatar: User) -> None:
     data = {
@@ -243,13 +226,15 @@ def test_post_user_avatar_display(client: Client, community: Community, user_wit
 
 
 @pytest.mark.django_db()
-def test_post_user_without_avatar(client: Client, community: Community, user: User, default_avatar_url: str) -> None:
+def test_post_user_without_avatar(
+    client: Client, community: Community, another_user: User, default_avatar_url: str
+) -> None:
     data = {
         "community": community.pk,
         "title": "Test Post Title",
         "content": "This is a test post content.",
     }
-    client.force_login(user)
+    client.force_login(another_user)
     response = client.post(reverse("post-create"), data=data, follow=True)
     assert Post.objects.count() == 1
     assert "form" in response.context
@@ -302,8 +287,11 @@ def test_community_detail_view_not_found(client: Client, user: User) -> None:
     assert response.status_code == 404
 
 
-def test_update_community_view_without_permission(client: Client, community: Community, user: User) -> None:
+def test_update_community_view_without_permission(
+    client: Client, non_authored_community: Community, user: User
+) -> None:
     client.force_login(user)
+    community = non_authored_community
     response = client.post(reverse("community-update", kwargs={"slug": community.slug}), {"name": "Updated Community"})
     assert response.status_code == 302
     assert response.url == reverse("community-detail", kwargs={"slug": community.slug})
