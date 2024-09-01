@@ -5,11 +5,7 @@ from django.http import HttpRequest
 
 from core.models import PostReport
 from users.models import User
-
-BAN = "10_BAN"
-DELETE = "20_DELETE"
-WARN = "30_WARN"
-DISMISS_REPORT = "40_DISMISS_REPORT"
+from .models import BAN, DELETE, WARN, DISMISS_REPORT
 
 
 def handle_admin_action(action: str, report: PostReport, user: User, request: HttpRequest) -> None:
@@ -42,7 +38,8 @@ def ban_user(request: HttpRequest, report: PostReport, user: User) -> None:
 def delete_post(request: HttpRequest, report: PostReport, user: User) -> None:
     report.verified = True
     report.save()
-    report.post.delete()
+    report.post.is_active = False
+    report.post.save()
     send_mail(
         "Post Deleted",
         "Your post has been deleted due to violations of community guidelines.",
@@ -59,6 +56,7 @@ def warn_user(request: HttpRequest, report: PostReport, user: User) -> None:
     report.save()
     if user.warnings >= settings.LIMIT_WARNINGS:
         report.post.is_active = False
+        report.post.save()
         send_mail(
             "Post Deleted",
             "Your post has been deleted due to violations of community guidelines.",

@@ -45,7 +45,6 @@
         border: 2px solid transparent;
         transition: border-color 0.3s ease;
     }
-<<<<<<< HEAD
 
 .checkbox-container {
     display: flex;
@@ -55,7 +54,8 @@
 .checkbox-container .form-check {
     flex: 1 0 30%;
     margin-bottom: 10px;
-=======
+}
+
 .privacy-options .radio {
     margin-bottom: 10px;
 }
@@ -87,5 +87,4 @@
 .btn-update-community:hover {
     background-color: #2c3235;
     border-color: #2c3235;
->>>>>>> dev
 }

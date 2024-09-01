@@ -351,7 +351,7 @@ REPORT_CHOICES: list[tuple[str, str]] = [
 class PostReport(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     report_type = models.CharField(max_length=50, choices=REPORT_CHOICES)
-    report_details = models.TextField(blank=True)
+    report_details = models.TextField()
     report_person = models.ForeignKey(User, on_delete=models.CASCADE)
     verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

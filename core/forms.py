@@ -60,6 +60,10 @@ class PostReportForm(forms.ModelForm):
     report_type: forms.ChoiceField = forms.ChoiceField(
         choices=REPORT_CHOICES, widget=forms.Select(attrs={"class": "form-control"})
     )
+    report_details: forms.CharField = forms.CharField(
+        widget=forms.Textarea(attrs={"class": "form-control"}),
+        required=True,
+    )
 
     class Meta:
         model = PostReport
