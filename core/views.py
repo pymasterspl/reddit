@@ -251,8 +251,7 @@ class PostReportView(LoginRequiredMixin, CreateView):
         messages.success(self.request, "Your post has been reported.")
         return super().form_valid(form)
 
-    def form_invalid(self: "PostReportView",
-                     form: forms.ModelForm) -> HttpResponse:
+    def form_invalid(self: "PostReportView", form: forms.ModelForm) -> HttpResponse:
         response = self.render_to_response(self.get_context_data(form=form))
         response.status_code = 400
         return response

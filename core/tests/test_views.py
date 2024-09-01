@@ -5,7 +5,6 @@ import pytest
 from django.conf import Settings, settings
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
-from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
 from django.urls import reverse, reverse_lazy
@@ -176,18 +175,13 @@ def test_report_post_invalid_data(client: Client, user: User, post: Post) -> Non
     response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=invalid_data)
     assert response.status_code == 400
 
+
 def test_report_post_unauthorized(client: Client, post: Post, report_data: dict) -> None:
     data = report_data()
     response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
     assert response.status_code == 302
     assert str(reverse_lazy("login")) in response.url
 
-
-def test_report_post_invalid_data(client: Client, user: User, post: Post) -> None:
-    client.force_login(user)
-    invalid_data = {}
-    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=invalid_data)
-    assert response.status_code == 400
 
 def test_add_comment_valid(client: Client, user: User, post: Post) -> None:
     data = {
@@ -283,19 +277,12 @@ def test_reported_detail_post_by_admin(
     client: Client, admin: User, post: Post, post_report: PostReport, admin_action_form_data: dict
 ) -> None:
     client.force_login(admin)
-    for action in ['DELETE', 'BAN', 'WARN', 'OKEY']:
-        admin_action_form_data['action'] = action
-        response = client.post(reverse_lazy("reported-post", kwargs={"pk": post_report.pk}), data=admin_action_form_data)
+    for action in ["DELETE", "BAN", "WARN", "OKEY"]:
+        admin_action_form_data["action"] = action
+        response = client.post(
+            reverse_lazy("reported-post", kwargs={"pk": post_report.pk}), data=admin_action_form_data
+        )
         assert response.status_code == 200
-    # response = client.post(reverse_lazy("reported-post", kwargs={"pk": post_report.pk}), data=admin_action_form_data)
-    # assert response.status_code == 302
-    #
-    # with pytest.raises(Post.DoesNotExist):
-    #     Post.objects.get(pk=post.pk)
-    #
-    # assert len(mail.outbox) == 1
-    # assert mail.outbox[0].subject == "Post Deleted"
-    # assert mail.outbox[0].to == [post.author.email]
 
 
 def test_add_nested_comment_valid(client: Client, user: User, post: Post, comment: Post) -> None:
@@ -374,13 +361,15 @@ def test_post_user_avatar_display(client: Client, community: Community, user_wit
 
 
 @pytest.mark.django_db()
-def test_post_user_without_avatar(client: Client, community: Community, user: User, default_avatar_url: str) -> None:
+def test_post_user_without_avatar(
+    client: Client, community: Community, another_user: User, default_avatar_url: str
+) -> None:
     data = {
         "community": community.pk,
         "title": "Test Post Title",
         "content": "This is a test post content.",
     }
-    client.force_login(user)
+    client.force_login(another_user)
     response = client.post(reverse("post-create"), data=data, follow=True)
     assert Post.objects.count() == 1
     assert "form" in response.context
@@ -433,8 +422,11 @@ def test_community_detail_view_not_found(client: Client, user: User) -> None:
     assert response.status_code == 404
 
 
-def test_update_community_view_without_permission(client: Client, community: Community, user: User) -> None:
+def test_update_community_view_without_permission(
+    client: Client, non_authored_community: Community, user: User
+) -> None:
     client.force_login(user)
+    community = non_authored_community
     response = client.post(reverse("community-update", kwargs={"slug": community.slug}), {"name": "Updated Community"})
     assert response.status_code == 302
     assert response.url == reverse("community-detail", kwargs={"slug": community.slug})
@@ -498,5 +490,3 @@ def test_report_post_harassment(client: Client, user: User, post: Post, report_d
     messages = list(get_messages(response.wsgi_request))
     assert len(messages) == 1
     assert str(messages[0]) == "Your post has been reported."
-
-

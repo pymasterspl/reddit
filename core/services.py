@@ -5,7 +5,8 @@ from django.http import HttpRequest
 
 from core.models import PostReport
 from users.models import User
-from .models import BAN, DELETE, WARN, DISMISS_REPORT
+
+from .models import BAN, DELETE, DISMISS_REPORT, WARN
 
 
 def handle_admin_action(action: str, report: PostReport, user: User, request: HttpRequest) -> None:

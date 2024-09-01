@@ -261,3 +261,43 @@ def test_create_community(user: User) -> None:
     assert community.name == "Test Community"
     assert community.author == user
     assert community.slug == "test-community"
+
+
+@pytest.mark.django_db()
+def test_post_managers(comment: Post) -> None:
+    comment_id = comment.id
+    root_post_id = comment.parent.id
+
+    non_active_root = Post.objects.roots(id=root_post_id).first()
+    non_active_root.is_active = False
+    non_active_root.pk = None
+    non_active_root.id = None
+    non_active_root.save()
+
+    non_active_comment = Post.objects.comments(id=comment_id).first()
+    non_active_comment.is_active = False
+    non_active_comment.pk = None
+    non_active_comment.id = None
+    non_active_comment.save()
+
+    assert Post.objects.roots(id=root_post_id).exists()
+    assert not Post.objects.roots(id=comment_id).exists()
+    assert Post.objects.comments(id=comment_id).exists()
+    assert not Post.objects.comments(id=root_post_id).exists()
+
+    assert not Post.objects.comments(id=non_active_comment.id, is_active=False).exists()
+    assert Post.all_objects.comments(id=non_active_comment.id, is_active=False).exists()
+    assert not Post.objects.roots(id=non_active_root.id, is_active=False).exists()
+    assert Post.all_objects.roots(id=non_active_root.id, is_active=False).exists()
+
+
+@pytest.mark.django_db()
+def test_parent_children_post(post: Post) -> None:
+    p = Post.objects.create(parent=post, community=post.community, content="lorem")
+    assert Post.objects.filter(id=post.id).exists()
+    assert Post.objects.filter(id=p.id).exists()
+    assert p.parent == post
+    post.refresh_from_db()
+    p.refresh_from_db()
+    assert post.children.exists()
+    assert post.children.first() == p
