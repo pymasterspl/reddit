@@ -163,3 +163,7 @@ docker-compose.override.yml
 .idea/
 
 media/
+
+/media/*
+!/media/users_avatars/default.png
+
