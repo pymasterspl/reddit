@@ -71,9 +71,6 @@ class PostReportForm(forms.ModelForm):
     class Meta:
         model = PostReport
         fields: ClassVar[list[str]] = ["report_type", "report_details"]
-        widgets: ClassVar[dict[str, forms.Widget]] = {
-            "report_details": forms.Textarea(attrs={"class": "form-control"}),
-        }
 
 
 class AdminActionForm(forms.Form):

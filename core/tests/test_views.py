@@ -2,11 +2,15 @@ import io
 from pathlib import Path
 
 import pytest
+from django.core import mail
+from core.models import DELETE, BAN, WARN, DISMISS_REPORT
+
 from django.conf import Settings, settings
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
+from django.test.utils import override_settings
 from django.urls import reverse, reverse_lazy
 from faker import Faker
 from PIL import Image
@@ -173,7 +177,9 @@ def test_report_post_invalid_data(client: Client, user: User, post: Post) -> Non
     client.force_login(user)
     invalid_data = {}
     response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=invalid_data)
-    assert response.status_code == 400
+    assert "form" in response.context, "Form is not present in the response context"
+    form = response.context["form"]
+    assert len(form.errors) > 0, "There should be at least one form error"
 
 
 def test_report_post_unauthorized(client: Client, post: Post, report_data: dict) -> None:
@@ -277,12 +283,37 @@ def test_reported_detail_post_by_admin(
     client: Client, admin: User, post: Post, post_report: PostReport, admin_action_form_data: dict
 ) -> None:
     client.force_login(admin)
-    for action in ["DELETE", "BAN", "WARN", "OKEY"]:
+
+    for action in [DELETE, BAN, WARN, DISMISS_REPORT]:
         admin_action_form_data["action"] = action
+        mail.outbox = []
+
         response = client.post(
             reverse_lazy("reported-post", kwargs={"pk": post_report.pk}), data=admin_action_form_data
         )
         assert response.status_code == 200
+        if action in [DELETE, BAN, WARN]:
+            assert len(
+                mail.outbox) == 1, f"Expected 1 email for action '{action}', but got {len(mail.outbox)}"
+            email = mail.outbox[0]
+            if action == BAN:
+                assert email.subject == "Account Banned"
+                assert email.to == [post_report.user.email]
+            elif action ==DELETE:
+                post.refresh_from_db()
+                assert not post.is_active, "Post should be marked as inactive"
+                if post.is_active:
+                    assert len(
+                        mail.outbox) == 1, "Expected 1 email, but found none"
+                    email = mail.outbox[0]
+                    assert email.subject == "Post Deleted"
+                    assert email.to == [post_report.user.email]
+            elif action == WARN:
+                assert email.subject in ["Warning Issued", "Post Deleted"]
+                assert email.to == [post_report.user.email]
+        else:
+            assert len(
+                mail.outbox) == 0, f"Expected no email for action '{action}', but got {len(mail.outbox)}"
 
 
 def test_add_nested_comment_valid(client: Client, user: User, post: Post, comment: Post) -> None:

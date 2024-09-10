@@ -10,6 +10,8 @@ from .models import BAN, DELETE, DISMISS_REPORT, WARN
 
 
 def handle_admin_action(action: str, report: PostReport, user: User, request: HttpRequest) -> None:
+    report.refresh_from_db()
+    report.post.refresh_from_db()
     if action == BAN:
         ban_user(request, report, user)
     elif action == DELETE:
@@ -37,18 +39,23 @@ def ban_user(request: HttpRequest, report: PostReport, user: User) -> None:
 
 
 def delete_post(request: HttpRequest, report: PostReport, user: User) -> None:
-    report.verified = True
-    report.save()
-    report.post.is_active = False
-    report.post.save()
-    send_mail(
-        "Post Deleted",
-        "Your post has been deleted due to violations of community guidelines.",
-        settings.EMAIL_HOST_USER,
-        [user.email],
-        fail_silently=False,
-    )
-    messages.success(request, "Post has been deleted successfully.")
+    report.post.refresh_from_db()
+    if report.post.is_active:
+        report.verified = True
+        report.save()
+        report.post.is_active = False
+        report.post.save()
+        send_mail(
+            "Post Deleted",
+            "Your post has been deleted due to violations of community guidelines.",
+            settings.EMAIL_HOST_USER,
+            [user.email],
+            fail_silently=False,
+        )
+        messages.success(request, "Post has been deleted successfully.")
+    else:
+        messages.warning(request, "The post was already modified, no further action was taken.")
+
 
 
 def warn_user(request: HttpRequest, report: PostReport, user: User) -> None:
