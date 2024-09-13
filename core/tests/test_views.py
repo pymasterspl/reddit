@@ -350,4 +350,6 @@ def test_add_non_existing_moderator(client: Client, community: Community, user: 
 
     response = client.post(url, {"action": "add_moderator", **form_data})
     assert response.status_code == 200
-    assert "Invalid user or nickname." in response.context["messages"]._loaded_messages[0].message
+
+    messages = list(response.context["messages"])
+    assert any("Invalid user or nickname." in message.message for message in messages)
