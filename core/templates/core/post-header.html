@@ -22,8 +22,11 @@
                 <div>
                     <a href="#"
                        class="link-light link-offset-2 link-underline-opacity-0 link-opacity-75-hover link-underline-opacity-25-hover">
-                        {{ post.author.nickname }}
+                        {{ post.author.nickname }}                        
                     </a>
+                    <span class="{% if post.author.profile.karma_score < 0 %}text-danger{% else %}text-success{% endif %} fw-bold ms-3">
+                        {{ post.author.profile.karma_score }}
+                    </span>
                 </div>
             </div>
         </div>
