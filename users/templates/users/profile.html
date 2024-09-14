@@ -10,6 +10,12 @@
             <div class="col-md-8">
                 <p><strong>Nickname:</strong> {{ user.nickname }} </p>
                 <p><strong>Email:</strong> {{ user.email }} </p>
+                <p>
+                    <strong>Karma:</strong>
+                    <span class="{% if user.profile.karma_score < 0 %}text-danger{% else %}text-success{% endif %} fw-bold">
+                      {{ user.profile.karma_score }}
+                    </span>
+                </p>
                 <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
             </div>
         </div>
