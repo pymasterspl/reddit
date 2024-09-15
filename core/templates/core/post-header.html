@@ -24,8 +24,15 @@
                        class="link-light link-offset-2 link-underline-opacity-0 link-opacity-75-hover link-underline-opacity-25-hover">
                         {{ post.author.nickname }}                        
                     </a>
-                    <span class="{% if post.author.profile.karma_score < 0 %}text-danger{% else %}text-success{% endif %} fw-bold ms-3">
-                        {{ post.author.profile.karma_score }}
+                    <span class="fw-bold ms-3">
+                        pk: <span class="{% if post.author.profile.post_karma < 0 %}text-danger{% else %}text-success{% endif %}">
+                            {{ post.author.profile.post_karma }}
+                        </span>
+                    </span>
+                    <span class="fw-bold ms-3">
+                        ck: <span class="{% if post.author.profile.comment_karma < 0 %}text-danger{% else %}text-success{% endif %}">
+                            {{ post.author.profile.comment_karma }}
+                        </span>
                     </span>
                 </div>
             </div>
