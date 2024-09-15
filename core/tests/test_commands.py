@@ -25,7 +25,8 @@ FIXED_DATETIME = "2023-01-01 12:00:00"
 )
 @freeze_time(FIXED_DATETIME)
 def test_calculate_karma_score_post_and_comment(
-    user: User, community: Community, up_votes: int, down_votes: int, expected_post_karma: int, expected_comment_karma: int
+    user: User, community: Community, up_votes: int, down_votes: int, 
+    expected_post_karma: int, expected_comment_karma: int
 ) -> None:
 
     post = Post.objects.create(

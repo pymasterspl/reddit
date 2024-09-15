@@ -15,11 +15,11 @@ class Command(BaseCommand):
     def handle(self: "Command", *_args: str, **_options: str) -> None:
         date_limit = timezone.now() - timedelta(days=365)
 
-        def karma_subquery(parent_isnull: bool):
+        def karma_subquery(parent_isnull: bool) -> Subquery:
             return (
                 Post.objects.filter(
-                    author_id=OuterRef("user_id"), 
-                    created_at__gte=date_limit, 
+                    author_id=OuterRef("user_id"),
+                    created_at__gte=date_limit,
                     parent__isnull=parent_isnull
                 )
                 .values("author_id")
@@ -31,3 +31,4 @@ class Command(BaseCommand):
             post_karma=Coalesce(Subquery(karma_subquery(parent_isnull=True)), 0),
             comment_karma=Coalesce(Subquery(karma_subquery(parent_isnull=False)), 0),
         )
+        
