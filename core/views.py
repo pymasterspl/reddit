@@ -203,7 +203,7 @@ class CommunityDetailView(DetailView):
         if add_moderator_form.is_valid():
             user = add_moderator_form.cleaned_data["nickname"]
             self.object.add_moderator(user)
-            messages.success(request, f"{user.nickname} was added successfully as a moderator.")
+            messages.success(request, f"{user.nickname} is now a moderator of this community.")
         else:
             messages.error(request, "Invalid user or nickname.")
             return self.get(request, *args, **kwargs)
