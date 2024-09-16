@@ -8,7 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db import models
 from django.db.models import QuerySet
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
@@ -17,6 +17,10 @@ from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
 from .forms import AddModeratorForm, CommentForm, CommunityForm, PostForm, RemoveModeratorForm
 from .models import Community, CommunityMember, Post, PostVote, SavedPost
+
+
+def custom_permission_denied_view(request: HttpRequest) -> HttpResponse:
+    return render(request, "core/403.html", status=403)
 
 
 class PostListView(ListView):
@@ -123,6 +127,16 @@ class CommunityListView(ListView):
     context_object_name = "communities"
     paginate_by = 10
 
+    def get_context_data(self: "CommunityListView", **kwargs: any) -> dict[str, any]:
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        communities = context["communities"]
+
+        for community in communities:
+            community.has_access = community.privacy != "30_PRIVATE" or community.members.filter(id=user.id).exists()
+
+        return context
+
 
 class CommunityCreateView(LoginRequiredMixin, CreateView):
     model = Community
@@ -192,7 +206,9 @@ class CommunityDetailView(DetailView):
         remove_moderator_form = RemoveModeratorForm(request.POST)
         if remove_moderator_form.is_valid():
             user = remove_moderator_form.cleaned_data["nickname"]
-            if not CommunityMember.objects.filter(community=self.object, user=user, role=CommunityMember.MODERATOR).exists():
+            if not CommunityMember.objects.filter(
+                community=self.object, user=user, role=CommunityMember.MODERATOR
+            ).exists():
                 messages.error(request, "User is not a moderator of this community.")
                 return self.get(request, *args, **kwargs)
             self.object.remove_moderator(user)
