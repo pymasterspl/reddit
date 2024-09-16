@@ -181,6 +181,7 @@ class CommunityDetailView(DetailView):
         if add_moderator_form.is_valid():
             user = add_moderator_form.cleaned_data["nickname"]
             self.object.add_moderator(user)
+            messages.success(request, f"{user} was added successfully as a moderator.")
         else:
             messages.error(request, "Invalid user or nickname.")
             return self.get(request, *args, **kwargs)
@@ -195,6 +196,7 @@ class CommunityDetailView(DetailView):
                 messages.error(request, "User is not a moderator of this community.")
                 return self.get(request, *args, **kwargs)
             self.object.remove_moderator(user)
+            messages.success(request, f"{user} was successfully removed from moderators.")
         else:
             messages.error(request, "Invalid user or nickname.")
             return self.get(request, *args, **kwargs)
@@ -229,6 +231,11 @@ class CommunityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def handle_no_permission(self: "CommunityUpdateView") -> HttpResponse:
         messages.error(self.request, "You do not have permission to update this community.")
         return redirect("community-detail", slug=self.get_object().slug)
+
+    def form_valid(self: "CommunityUpdateView", form: forms.ModelForm) -> HttpResponseRedirect:
+        response = super().form_valid(form)
+        messages.success(self.request, "Community updated successfully.")
+        return response
 
     def get_success_url(self: "CommunityUpdateView") -> str:
         return reverse_lazy("community-detail", kwargs={"slug": self.object.slug})
