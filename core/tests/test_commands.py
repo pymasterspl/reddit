@@ -23,13 +23,10 @@ FIXED_DATETIME = "2023-01-01 12:00:00"
         (5, 1, {"comment_karma": 4}),  # for comment
     ],
 )
-
 @freeze_time(FIXED_DATETIME)
 def test_calculate_karma_score_post_and_comment(
-    user: User, community: Community, up_votes: int, down_votes: int,
-    expected_karma: dict
+    user: User, community: Community, up_votes: int, down_votes: int, expected_karma: dict
 ) -> None:
-
     post = Post.objects.create(
         author=user,
         up_votes=up_votes,
@@ -38,7 +35,6 @@ def test_calculate_karma_score_post_and_comment(
         parent=None,
         created_at=timezone.now() - timedelta(days=100),
     )
-
 
     Post.objects.create(
         author=user,
@@ -49,28 +45,24 @@ def test_calculate_karma_score_post_and_comment(
         created_at=timezone.now() - timedelta(days=50),
     )
 
-
     call_command("update_karma_scores")
 
     profile = Profile.objects.filter(user_id=user.id).get()
 
-
     if "post_karma" in expected_karma:
         assert profile.post_karma == expected_karma["post_karma"], (
-            f"Expected post_karma: {expected_karma['post_karma']}, "
-            f"but got {profile.post_karma}"
-    )
+            f"Expected post_karma: {expected_karma['post_karma']}, " f"but got {profile.post_karma}"
+        )
 
     if "comment_karma" in expected_karma:
         assert profile.comment_karma == expected_karma["comment_karma"], (
-            f"Expected comment_karma: {expected_karma['comment_karma']}, "
-            f"but got {profile.comment_karma}"
-    )
+            f"Expected comment_karma: {expected_karma['comment_karma']}, " f"but got {profile.comment_karma}"
+        )
+
 
 @pytest.mark.django_db()
 @freeze_time(FIXED_DATETIME)
 def test_calculate_karma_score_two_posts_within_year(user: User, community: Community) -> None:
-
     Post.objects.create(author=user, up_votes=10, down_votes=2, community=community, parent=None)
     Post.objects.create(author=user, up_votes=5, down_votes=0, community=community, parent=None)
 

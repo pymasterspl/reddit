@@ -18,9 +18,7 @@ class Command(BaseCommand):
         def karma_subquery(*, parent_isnull: bool) -> Subquery:
             return (
                 Post.objects.filter(
-                    author_id=OuterRef("user_id"),
-                    created_at__gte=date_limit,
-                    parent__isnull=parent_isnull
+                    author_id=OuterRef("user_id"), created_at__gte=date_limit, parent__isnull=parent_isnull
                 )
                 .values("author_id")
                 .annotate(karma_score=Sum(F("up_votes") - F("down_votes")))
