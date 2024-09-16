@@ -12,7 +12,6 @@ from PIL import Image
 from core.models import Community, CommunityMember, Post
 
 from .test_utils import generate_random_password
-from ..forms import RemoveModeratorForm
 
 pytestmark = pytest.mark.django_db
 
