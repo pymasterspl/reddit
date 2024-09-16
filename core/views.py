@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db import models
-from django.db.models import QuerySet, OuterRef, Exists
+from django.db.models import Exists, OuterRef, QuerySet
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -19,7 +19,7 @@ from .forms import AddModeratorForm, CommentForm, CommunityForm, PostForm, Remov
 from .models import Community, CommunityMember, Post, PostVote, SavedPost
 
 
-def custom_permission_denied_view(request: HttpRequest) -> HttpResponse:
+def custom_permission_denied_view(request: HttpRequest, exception: Exception | None = None) -> HttpResponse:  # noqa: ARG001
     return render(request, "core/403.html", status=403)
 
 
@@ -127,23 +127,16 @@ class CommunityListView(ListView):
     context_object_name = "communities"
     paginate_by = 10
 
-    def get_queryset(self):
+    def get_queryset(self: "CommunityListView") -> models.QuerySet:
         user = self.request.user
         return (
             super()
             .get_queryset()
-            .prefetch_related('members')
-            .annotate(
-                has_access=Exists(
-                    CommunityMember.objects.filter(
-                        community=OuterRef('pk'),
-                        user=user
-                    )
-                )
-            )
+            .prefetch_related("members")
+            .annotate(has_access=Exists(CommunityMember.objects.filter(community=OuterRef("pk"), user=user)))
         )
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self: "CommunityListView", **kwargs: any) -> dict[str, any]:
         context = super().get_context_data(**kwargs)
         communities = context["communities"]
 
@@ -210,7 +203,7 @@ class CommunityDetailView(DetailView):
         if add_moderator_form.is_valid():
             user = add_moderator_form.cleaned_data["nickname"]
             self.object.add_moderator(user)
-            messages.success(request, f"{user} was added successfully as a moderator.")
+            messages.success(request, f"{user.nickname} was added successfully as a moderator.")
         else:
             messages.error(request, "Invalid user or nickname.")
             return self.get(request, *args, **kwargs)
@@ -227,7 +220,7 @@ class CommunityDetailView(DetailView):
                 messages.error(request, "User is not a moderator of this community.")
                 return self.get(request, *args, **kwargs)
             self.object.remove_moderator(user)
-            messages.success(request, f"{user} was successfully removed from moderators.")
+            messages.success(request, f"{user.nickname} was successfully removed from moderators.")
         else:
             messages.error(request, "Invalid user or nickname.")
             return self.get(request, *args, **kwargs)
