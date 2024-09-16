@@ -1,20 +1,13 @@
+{% extends 'base.html' %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Access denied</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-</head>
-<body>
-    <div class="container mt-5">
-        <div class="card bg-dark shadow-sm text-light">
-            <div class="card-body">
-                <p class="card-text">You don't have access to this content.</p>
-                <a href="{% url 'community-list' %}" class="btn btn-primary">Back to Community List</a>
-            </div>
+{% block content %}
+<div class="container mt-5">
+    <div class="card bg-dark shadow-sm text-light">
+        <div class="card-body">
+            <p class="card-text">You don't have access to this content.</p>
+            <a href="{% url 'community-list' %}" class="btn btn-primary">Back to Community List</a>
         </div>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}
