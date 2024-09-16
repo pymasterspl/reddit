@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db import models
-from django.db.models import QuerySet
+from django.db.models import QuerySet, OuterRef, Exists
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -127,13 +127,28 @@ class CommunityListView(ListView):
     context_object_name = "communities"
     paginate_by = 10
 
-    def get_context_data(self: "CommunityListView", **kwargs: any) -> dict[str, any]:
-        context = super().get_context_data(**kwargs)
+    def get_queryset(self):
         user = self.request.user
+        return (
+            super()
+            .get_queryset()
+            .prefetch_related('members')
+            .annotate(
+                has_access=Exists(
+                    CommunityMember.objects.filter(
+                        community=OuterRef('pk'),
+                        user=user
+                    )
+                )
+            )
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         communities = context["communities"]
 
         for community in communities:
-            community.has_access = community.privacy != "30_PRIVATE" or community.members.filter(id=user.id).exists()
+            community.has_access = community.privacy != "30_PRIVATE" or community.has_access
 
         return context
 
