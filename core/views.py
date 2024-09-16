@@ -191,6 +191,9 @@ class CommunityDetailView(DetailView):
         remove_moderator_form = RemoveModeratorForm(request.POST)
         if remove_moderator_form.is_valid():
             user = remove_moderator_form.cleaned_data["nickname"]
+            if not CommunityMember.objects.filter(community=self.object, user=user, role=CommunityMember.MODERATOR).exists():
+                messages.error(request, "User is not a moderator of this community.")
+                return self.get(request, *args, **kwargs)
             self.object.remove_moderator(user)
         else:
             messages.error(request, "Invalid user or nickname.")
