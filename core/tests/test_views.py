@@ -335,3 +335,21 @@ def test_remove_moderator(client: Client, user: User, community: Community) -> N
     assert response.status_code == 302
 
     assert not CommunityMember.objects.filter(community=community, user=user, role=CommunityMember.MODERATOR).exists()
+
+
+def test_add_non_existing_moderator(client: Client, community: Community, user: User) -> None:
+    admin_password = generate_random_password()
+
+    admin = User.objects.create_user(email="admin@example.com", password=admin_password, nickname="adminnick")
+
+    client.force_login(admin)
+    CommunityMember.objects.create(community=community, user=admin, role=CommunityMember.ADMIN)
+
+    url = reverse("community-detail", kwargs={"slug": community.slug})
+    form_data = {"nickname": "nonexistentuser"}
+
+    response = client.post(url, {"action": "add_moderator", **form_data})
+    assert response.status_code == 200
+
+    messages = list(response.context["messages"])
+    assert any("Invalid user or nickname." in message.message for message in messages)
