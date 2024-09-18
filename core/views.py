@@ -19,10 +19,6 @@ from .forms import AddModeratorForm, CommentForm, CommunityForm, PostForm, Remov
 from .models import Community, CommunityMember, Post, PostVote, SavedPost
 
 
-def custom_permission_denied_view(request: HttpRequest, exception: Exception | None = None) -> HttpResponse:  # noqa: ARG001
-    return render(request, "core/403.html", status=403)
-
-
 class PostListView(ListView):
     template_name = "core/post-list.html"
     context_object_name = "posts"
