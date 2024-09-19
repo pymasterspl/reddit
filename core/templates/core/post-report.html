@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h1 class="mb-4">Add a post report</h1>
+        <div class="card bg-dark shadow-sm mb-3 text-light">
+
+            <div class="col">
+                <div class="d-flex flex-column">
+                    <div>
+                        <a href="{% url 'post-detail' post.id %}"
+                           class="link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-25-hover">
+                            r/{{ post.community }}
+                        </a>
+                        • <small class="text-secondary">{{ post.created_at|timesince }} ago</small>
+                    </div>
+                    <div>
+                        {{ post.author.nickname }}
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <h3 class="h3">{{ post.title }}</h3>
+                {{ post.content }}
+            </div>
+        </div>
+        {% if form.errors %}
+        <div class="alert alert-danger" role="alert">
+            <ul class="mb-0">
+                {%  for field in form %}
+                    {% for error in field.errors %}
+                        <li><strong>{{  field.label }}</strong>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {%  endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        <form method="POST" action=".">
+            {% csrf_token %}
+            <div class="mb-3">
+                <div class="checkbox-container">
+                    {{ form.report_type|as_crispy_field }}
+                </div>
+            </div>
+            <div class="mb-3">
+                {{ form.report_details|as_crispy_field }}
+            </div>
+            <button type="submit" class="btn btn-primary mb-2">Submit a report</button>
+        </form>
+    </div>
+
+{% endblock %}
