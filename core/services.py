@@ -24,10 +24,11 @@ def handle_admin_action(action: str, report: PostReport, user: User, request: Ht
 
 def ban_user(request: HttpRequest, report: PostReport, user: User) -> None:
     report.verified = True
-    report.save()
+    report.post.is_active = False
+    report.post.save()
     user.create_post = False
+    user.is_active = False
     user.save()
-    report.post.delete()
     send_mail(
         "Account Banned",
         "Your account has been banned for violating community rules, now you cannot access posts.",
@@ -55,7 +56,6 @@ def delete_post(request: HttpRequest, report: PostReport, user: User) -> None:
         messages.success(request, "Post has been deleted successfully.")
     else:
         messages.warning(request, "The post was already modified, no further action was taken.")
-
 
 
 def warn_user(request: HttpRequest, report: PostReport, user: User) -> None:
