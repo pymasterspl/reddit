@@ -75,7 +75,8 @@ class Profile(models.Model):
     is_followable = models.BooleanField(default=True)
     is_content_visible = models.BooleanField(default=True)
     is_communities_visible = models.BooleanField(default=True)
-    karma_score = models.IntegerField(default=0)
+    comment_karma = models.IntegerField(default=0)
+    post_karma = models.IntegerField(default=0)
     gender = models.CharField(choices=GENDER_CHOICES, max_length=1)
     user = models.OneToOneField("User", on_delete=models.CASCADE, null=False)
 

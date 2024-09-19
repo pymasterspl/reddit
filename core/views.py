@@ -188,18 +188,26 @@ class CommunityDetailView(DetailView):
         ).select_related("user")
         return context
 
-    def post_add_moderator(self: "CommunityDetailView", request: "HttpRequest") -> any:
+    def post_add_moderator(self: "CommunityDetailView", request: "HttpRequest", *args: any, **kwargs: any) -> any:
         add_moderator_form = AddModeratorForm(request.POST)
         if add_moderator_form.is_valid():
             user = add_moderator_form.cleaned_data["nickname"]
             self.object.add_moderator(user)
+        else:
+            messages.error(request, "Invalid user or nickname.")
+            return self.get(request, *args, **kwargs)
+
         return redirect("community-detail", slug=self.object.slug)
 
-    def post_remove_moderator(self: "CommunityDetailView", request: "HttpRequest") -> any:
+    def post_remove_moderator(self: "CommunityDetailView", request: "HttpRequest", *args: any, **kwargs: any) -> any:
         remove_moderator_form = RemoveModeratorForm(request.POST)
         if remove_moderator_form.is_valid():
             user = remove_moderator_form.cleaned_data["nickname"]
             self.object.remove_moderator(user)
+        else:
+            messages.error(request, "Invalid user or nickname.")
+            return self.get(request, *args, **kwargs)
+
         return redirect("community-detail", slug=self.object.slug)
 
     def post(self: "CommunityDetailView", request: "HttpRequest", *args: any, **kwargs: any) -> any:

@@ -536,3 +536,21 @@ def test_report_post_harassment(client: Client, user: User, post: Post, report_d
     messages = list(get_messages(response.wsgi_request))
     assert len(messages) == 1
     assert str(messages[0]) == "Your post has been reported."
+
+
+def test_add_non_existing_moderator(client: Client, community: Community, user: User) -> None:
+    admin_password = generate_random_password()
+
+    admin = User.objects.create_user(email="admin@example.com", password=admin_password, nickname="adminnick")
+
+    client.force_login(admin)
+    CommunityMember.objects.create(community=community, user=admin, role=CommunityMember.ADMIN)
+
+    url = reverse("community-detail", kwargs={"slug": community.slug})
+    form_data = {"nickname": "nonexistentuser"}
+
+    response = client.post(url, {"action": "add_moderator", **form_data})
+    assert response.status_code == 200
+
+    messages = list(response.context["messages"])
+    assert any("Invalid user or nickname." in message.message for message in messages)
