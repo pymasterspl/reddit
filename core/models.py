@@ -177,7 +177,7 @@ class Post(GenericModel):
         self.update_tags()
 
     def generate_version(self: "Post") -> str:
-        data = f"{self.title}{self.content}"
+        data = f"{self.title}{self.content}{self.is_active}"
         return hashlib.sha256(data.encode()).hexdigest()
 
     @property

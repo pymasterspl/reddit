@@ -280,25 +280,36 @@ def test_reported_detail_post_by_anonymous_user(client: Client, post_report: Pos
 
 
 def test_reported_detail_post_by_admin(
-    client: Client, admin: User, post: Post, post_report: PostReport, admin_action_form_data: dict
+    client: Client, admin: User, user: User, admin_action_form_data: dict, community: Community
 ) -> None:
     client.force_login(admin)
-
-    for action in [DELETE, BAN, WARN, DISMISS_REPORT]:
+    fake = Faker()
+    for action in [DELETE, WARN, BAN, DISMISS_REPORT]:
+        post = Post.objects.create(
+            author=user,
+            community=community,
+            title="Test Post",
+            content="This is a test post",
+        )
+        post_report = PostReport.objects.create(
+            post=post, report_type="THREATENING_VIOLENCE",
+            report_details=fake.text(max_nb_chars=100), report_person=user
+        )
         admin_action_form_data["action"] = action
         mail.outbox = []
 
         response = client.post(
-            reverse_lazy("reported-post", kwargs={"pk": post_report.pk}), data=admin_action_form_data
+            reverse_lazy("reported-post", kwargs={"pk": post_report.pk}), data=admin_action_form_data, follow_redirects=True
         )
-        assert response.status_code == 200
+
+        assert response.status_code == 302
         if action in [DELETE, BAN, WARN]:
             assert len(
                 mail.outbox) == 1, f"Expected 1 email for action '{action}', but got {len(mail.outbox)}"
             email = mail.outbox[0]
             if action == BAN:
                 assert email.subject == "Account Banned"
-                assert email.to == [post_report.user.email]
+                assert email.to == [post_report.post.author.email]
             elif action ==DELETE:
                 post.refresh_from_db()
                 assert not post.is_active, "Post should be marked as inactive"
@@ -307,10 +318,10 @@ def test_reported_detail_post_by_admin(
                         mail.outbox) == 1, "Expected 1 email, but found none"
                     email = mail.outbox[0]
                     assert email.subject == "Post Deleted"
-                    assert email.to == [post_report.user.email]
+                    assert email.to == [post_report.post.author.email]
             elif action == WARN:
                 assert email.subject in ["Warning Issued", "Post Deleted"]
-                assert email.to == [post_report.user.email]
+                assert email.to == [post_report.post.author.email]
         else:
             assert len(
                 mail.outbox) == 0, f"Expected no email for action '{action}', but got {len(mail.outbox)}"
