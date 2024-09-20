@@ -158,6 +158,7 @@ EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="default@email.com")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="password")
 
+LIMIT_WARNINGS = 5
 LOGIN_URL = reverse_lazy("login")
 
 REST_FRAMEWORK = {"DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination", "PAGE_SIZE": 10}

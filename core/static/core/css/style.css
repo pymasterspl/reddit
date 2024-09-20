@@ -45,6 +45,17 @@
         border: 2px solid transparent;
         transition: border-color 0.3s ease;
     }
+
+.checkbox-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.checkbox-container .form-check {
+    flex: 1 0 30%;
+    margin-bottom: 10px;
+}
+
 .privacy-options .radio {
     margin-bottom: 10px;
 }
