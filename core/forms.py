@@ -6,7 +6,7 @@ from crispy_forms.layout import Submit
 from django import forms
 from django.core.exceptions import ValidationError
 
-from .models import Community, Post, User
+from .models import Community, Post, User, PostAward
 
 
 class CommentForm(forms.Form):
@@ -43,6 +43,33 @@ class PostForm(forms.ModelForm):
         self.fields["community"].queryset = Community.objects.filter(is_active=True)
         self.fields["title"].required = True
         self.fields["content"].required = True
+
+class IconRadioSelect(forms.RadioSelect):
+    template_name = 'core/icon_radio_select.html'
+
+class PostAwardForm(forms.ModelForm):
+    class Meta:
+        model = PostAward
+        fields = ['choice', 'anonymous', 'comment']
+        widgets = {
+            'choice': IconRadioSelect(attrs={'class': 'form-check-input', 'required': True}),
+            'anonymous': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Optional comment'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['choice'].choices = [choice for choice in self.fields['choice'].choices if choice[0] != '']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        anonymous = cleaned_data.get('anonymous')
+        comment = cleaned_data.get('comment')
+
+        if anonymous and comment:
+            self.add_error('comment', 'You cannot add a comment to an anonymous award.')
+
+        return cleaned_data
 
 
 class CommunityForm(forms.ModelForm):

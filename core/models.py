@@ -267,6 +267,40 @@ class PostVote(models.Model):
         down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
         Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
 
+class PostAward(models.Model):
+
+    REWARD_POINTS = {
+    1: 15,  # Level 1 gives 15 points
+    2: 25,  # Level 2 gives 25 points
+    3: 50,  # Level 3 gives 50 points
+    }
+
+    REWARD_CHOICES = []
+
+    for level, points in REWARD_POINTS.items():
+        for i in range(1, 6):  # 5 icons for each level
+            reward_code = f"{level}{i}_REWARD"
+            reward_name = f"Level {level} - Reward {i} ({points} points)"
+            REWARD_CHOICES.append((reward_code, reward_name))
+    print(REWARD_CHOICES)
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="post_awards")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="post_awards")
+    choice = models.CharField(max_length=20, choices=REWARD_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    anonymous = models.BooleanField(default=False)
+    comment = models.CharField(max_length=100, blank=True, null=True)
+    
+
+    def __str__(self: "PostVote") -> str:
+        return f"@{self.user}: {self.choice} for post: {self.post}"
+
+    def save(self: "PostVote", *args: int, **kwargs: int) -> None:
+        super().save(*args, **kwargs)
+        # post_votes = PostVote.objects.filter(post=self.post)
+        # up_votes = post_votes.filter(choice=PostVote.UPVOTE).count()
+        # down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
+        # Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
 
 class Image(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="images")
