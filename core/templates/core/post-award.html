@@ -5,8 +5,11 @@
 <div class="container mt-5">
     <form method="post">
         {% csrf_token %}
+
+        <div class="text-center">Choose an award: <br><br>
         {{ form.as_p }}
         <button type="submit" class="btn btn-primary">Give Award</button>
+        </div>    
     </form>
 </div>
 {% endblock content %}

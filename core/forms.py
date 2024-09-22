@@ -52,9 +52,13 @@ class PostAwardForm(forms.ModelForm):
         model = PostAward
         fields = ['choice', 'anonymous', 'comment']
         widgets = {
-            'choice': IconRadioSelect(attrs={'class': 'form-check-input', 'required': True}),
+            'choice': IconRadioSelect(attrs={'class': 'form-check-input'}),
             'anonymous': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Optional comment'}),
+        }
+
+        labels = {
+            'choice': ''
         }
 
     def __init__(self, *args, **kwargs):

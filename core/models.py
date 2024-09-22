@@ -280,9 +280,8 @@ class PostAward(models.Model):
     for level, points in REWARD_POINTS.items():
         for i in range(1, 6):  # 5 icons for each level
             reward_code = f"{level}{i}_REWARD"
-            reward_name = f"Level {level} - Reward {i} ({points} points)"
-            REWARD_CHOICES.append((reward_code, reward_name))
-    print(REWARD_CHOICES)
+            reward_points = f"{points} points"
+            REWARD_CHOICES.append((reward_code, reward_points))
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="post_awards")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="post_awards")
