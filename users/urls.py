@@ -1,5 +1,5 @@
 from django.contrib.auth import views as auth_views
-from django.urls import path
+from django.urls import include, path
 from django.views.generic import TemplateView
 
 from .views import (
@@ -45,4 +45,5 @@ urlpatterns = [
     ),
     path("settings/profile/", ProfileSettingsView.as_view(), name="profile_settings"),
     path("settings/account/", AccountSettingsView.as_view(), name="account_settings"),
+    path("api/", include("users.api_urls"))
 ]
