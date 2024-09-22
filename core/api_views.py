@@ -8,7 +8,7 @@ from core.serializers import CommunitySerializer, MinimalCommunitySerializer, Po
 
 
 class CommunitiesAPIList(ListAPIView):
-    queryset = Community.objects.exclude(privacy=Community.PRIVATE)
+    queryset = Community.objects.exclude(privacy=Community.PRIVATE).order_by("name")
     serializer_class = MinimalCommunitySerializer
 
 
@@ -24,7 +24,7 @@ class CommunityDetailAPIView(RetrieveAPIView):
 
 
 class PostAPIListView(ListAPIView):
-    queryset = Post.objects.exclude(community__privacy=Community.PRIVATE)
+    queryset = Post.objects.exclude(community__privacy=Community.PRIVATE).order_by("up_votes")
     serializer_class = PostSerializer
 
 
@@ -38,4 +38,4 @@ class CommunityPostsListAPIView(ListAPIView):
         if community.privacy == Community.PRIVATE:
             msg = "Private community is not accessible."
             raise PermissionDenied(msg)
-        return Post.objects.filter(community=community)
+        return Post.objects.filter(community=community).order_by("up_votes")
