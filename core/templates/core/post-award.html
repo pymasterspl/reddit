@@ -3,6 +3,10 @@
 
 {% block content %}
 <div class="container mt-5">
+    <div class="text-center">
+        <h2 style="font-size: 24px;">{{ post.title }}</h2>
+        <p>{{ post.content }}</p>
+    </div>
     <form method="post">
         {% csrf_token %}
 
