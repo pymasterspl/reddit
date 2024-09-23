@@ -155,6 +155,7 @@ class Post(GenericModel):
     )
     up_votes = models.IntegerField(default=0)
     down_votes = models.IntegerField(default=0)
+    gold = models.IntegerField(default=0)
     version = models.CharField(
         max_length=32,
         help_text="Hash of the title + content to prevent overwriting already saved post",
@@ -283,9 +284,10 @@ class PostAward(models.Model):
             reward_points = f"{points} points"
             REWARD_CHOICES.append((reward_code, reward_points))
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="post_awards")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="awards")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="post_awards")
     choice = models.CharField(max_length=20, choices=REWARD_CHOICES)
+    gold = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     anonymous = models.BooleanField(default=False)
     comment = models.CharField(max_length=100, blank=True, null=True)
@@ -295,11 +297,21 @@ class PostAward(models.Model):
         return f"@{self.user}: {self.choice} for post: {self.post}"
 
     def save(self: "PostVote", *args: int, **kwargs: int) -> None:
+        if self.choice.startswith("1"):
+            self.gold = 15
+        elif self.choice.startswith("2"):
+            self.gold = 25
+        elif self.choice.startswith("3"):
+            self.gold = 50
+
+        profile = self.user.profile
+        profile.gold_awards += self.gold
+        profile.save()
+
+        self.post.gold += self.gold
+        self.post.save()
+
         super().save(*args, **kwargs)
-        # post_votes = PostVote.objects.filter(post=self.post)
-        # up_votes = post_votes.filter(choice=PostVote.UPVOTE).count()
-        # down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
-        # Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
 
 class Image(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="images")

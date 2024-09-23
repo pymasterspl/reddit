@@ -20,6 +20,9 @@
                       {{ user.profile.comment_karma }}
                     </span>
                 </p>
+                    {%for award in {{user.awards.all}} %}
+                        {{award}}
+                    {%endfor%}
                 <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
             </div>
         </div>

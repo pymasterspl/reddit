@@ -1,3 +1,5 @@
+{% load static %}
+
 <div class="card-footer">
     <!-- TODO: Fix buttons for award and share upon specific feature merged -->
     <div class="btn-toolbar" role="toolbar" aria-label="Post toolbar">
@@ -42,5 +44,11 @@
                 {{ post.display_counter }}
             </a>
         </div>
+        {% for award in post.post_awards.all %}
+            <div>
+                <img src="{% static 'core/icons/' %}{{ award.choice }}.png" alt="{{ option.label }}" width="30" height="30">
+            </div>        
+        {% endfor %}
+        {{post.gold}}
     </div>
 </div>
