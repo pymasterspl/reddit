@@ -258,7 +258,7 @@ class PostVote(models.Model):
     class Meta:
         unique_together: ClassVar[list[str]] = ["post", "user"]
 
-    def __str__(self: "PostVote") -> str:
+    def __str__(self: "PostAward") -> str:
         return f"@{self.user}: {self.choice} for post: {self.post}"
 
     def save(self: "PostVote", *args: int, **kwargs: int) -> None:
@@ -306,10 +306,10 @@ class PostAward(models.Model):
 
         profile = self.user.profile
         profile.gold_awards += self.gold
-        profile.save()
+        profile.save(update_fields=["gold_awards"])
 
-        self.post.gold += self.gold
-        self.post.save()
+        #User.objects.filter(pk=self.user.pk).update(profile__gold_awards=F('profile__gold_awards') + self.gold)
+        Post.objects.filter(pk=self.post.pk).update(gold=F('gold') + self.gold)
 
         super().save(*args, **kwargs)
 
