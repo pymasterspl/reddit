@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h1 class="mb-4">Reported Posts</h1>
+        <div class="list-group">
+            {% for report in reports %}
+                <div class="list-group-item list-group-item-action mt-3">
+                    <a href="{% url 'reported-post' report.id %}"><h5 class="mb-1">{{ report.post.title }}</h5></a>
+                    <p class="mb-1">{{ report.report_details }}</p>
+                    <small>Reported by: {{ report.report_person.nickname }}</small>
+                    <small class="text-muted">{{ report.created_at }}</small>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+
+{% endblock %}

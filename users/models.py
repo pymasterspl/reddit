@@ -75,7 +75,8 @@ class Profile(models.Model):
     is_followable = models.BooleanField(default=True)
     is_content_visible = models.BooleanField(default=True)
     is_communities_visible = models.BooleanField(default=True)
-    karma_score = models.IntegerField(default=0)
+    comment_karma = models.IntegerField(default=0)
+    post_karma = models.IntegerField(default=0)
     gender = models.CharField(choices=GENDER_CHOICES, max_length=1)
     user = models.OneToOneField("User", on_delete=models.CASCADE, null=False)
 
@@ -104,11 +105,15 @@ class User(AbstractUser):
 
     objects = UserManager()
     username: None = None
+    email = models.EmailField(unique=True)
+    last_activity = models.DateTimeField(auto_now_add=True, db_index=True)
+    can_create_post = models.BooleanField(
+        default=True, help_text="Indicates whether the user can create posts. Defaults to True."
+    )
+    warnings = models.IntegerField(default=0, help_text="The number of warnings assigned to the user. Defaults to 0.")
     avatar = models.ImageField(upload_to="users_avatars/", null=True, blank=True, default=None)
-    email: str = models.EmailField(unique=True)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: ClassVar[list[str]] = ["nickname"]
-    last_activity = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def save(self: "User", *args: any, **kwargs: dict) -> None:
         if self.avatar:

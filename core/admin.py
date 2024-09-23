@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db import models
 from django.http import HttpRequest
 
-from .models import Community, Image, Post, PostVote, Tag
+from .models import AdminAction, Community, Image, Post, PostReport, PostVote, Tag
 
 
 @admin.register(Community)
@@ -38,3 +38,17 @@ class TagAdmin(admin.ModelAdmin):
 @admin.register(Image)
 class ImageAdmin(admin.ModelAdmin):
     list_display = ("post", "image", "created_at", "updated_at")
+
+
+class BaseReportAdmin(admin.ModelAdmin):
+    list_display = ("created_at", "updated_at")
+
+
+@admin.register(PostReport)
+class PostReportAdmin(BaseReportAdmin):
+    list_display = (*BaseReportAdmin.list_display, "post", "report_type", "report_details", "report_person")
+
+
+@admin.register(AdminAction)
+class AdminActionAdmin(admin.ModelAdmin):
+    list_display = (*BaseReportAdmin.list_display, "post_report", "action", "comment", "performed_by")

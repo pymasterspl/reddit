@@ -5,11 +5,21 @@
         <h2>User Profile</h2>
         <div class="row">
             <div class="col-md-4">
-                <img src="{{ user.get_avatar_url }}" class="img-thumbnail" alt="User Avatar">
+                <img src="{{ user.avatar_url  }}" class="img-thumbnail" alt="User Avatar">
             </div>
             <div class="col-md-8">
                 <p><strong>Nickname:</strong> {{ user.nickname }} </p>
                 <p><strong>Email:</strong> {{ user.email }} </p>
+                <p>
+                    <strong>Post karma:</strong>
+                    <span class="{% if user.profile.post_karma < 0 %}text-danger{% else %}text-success{% endif %} fw-bold">
+                      {{ user.profile.post_karma }}
+                    </span>
+                    <strong>Comment karma:</strong>
+                    <span class="{% if user.profile.comment_karma < 0 %}text-danger{% else %}text-success{% endif %} fw-bold">
+                      {{ user.profile.comment_karma }}
+                    </span>
+                </p>
                 <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
             </div>
         </div>
