@@ -173,3 +173,8 @@ LOGIN_URL = reverse_lazy("login")
 
 REST_FRAMEWORK = {"DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination", "PAGE_SIZE": 10}
 DEFAULT_AVATAR_URL = "/media/users_avatars/default.png"
+
+
+REST_AUTH = {
+    "USER_DETAILS_SERIALIZER": "users.serializers.UserSerializer",
+}
