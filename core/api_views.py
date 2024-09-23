@@ -24,7 +24,7 @@ class CommunityDetailAPIView(RetrieveAPIView):
 
 
 class PostAPIListView(ListAPIView):
-    queryset = Post.objects.exclude(community__privacy=Community.PRIVATE).order_by("-updated_at")
+    queryset = Post.objects.exclude(community__privacy=Community.PRIVATE).order_by("-id")
     serializer_class = PostSerializer
 
 
@@ -38,4 +38,4 @@ class CommunityPostsListAPIView(ListAPIView):
         if community.privacy == Community.PRIVATE:
             msg = "Private community is not accessible."
             raise PermissionDenied(msg)
-        return Post.objects.filter(community=community).order_by("-updated_at")
+        return Post.objects.filter(community=community).order_by("-id")
