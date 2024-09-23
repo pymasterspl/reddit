@@ -20,8 +20,8 @@
                       {{ user.profile.comment_karma }}
                     </span>
                 </p>
-                    {%for award in {{user.awards.all}} %}
-                        {{award}}
+                    {%for award in awards %}
+                        <img src="{% static 'core/icons/' %}{{ award.choice }}.png" alt="{{ option.label }}" width="30" height="30">
                     {%endfor%}
                 <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
             </div>

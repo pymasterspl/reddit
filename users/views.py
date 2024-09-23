@@ -29,7 +29,12 @@ class UserProfileView(LoginRequiredMixin, DetailView):
 
     def get_object(self: "UserProfileView") -> User:
         return self.request.user
-
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['awards'] = self.request.user.awards.all() 
+        
+        return context
 
 class UserEditView(LoginRequiredMixin, UpdateView):
     model = User
