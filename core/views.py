@@ -115,9 +115,14 @@ class PostAwardCreateView(LoginRequiredMixin, CreateView):
         return context
 
     def form_valid(self, form):
-        form.instance.user = self.request.user  # set current user
-        form.instance.post = get_object_or_404(Post, pk=self.kwargs['pk'])  # getting post with pk from url
-        return super().form_valid(form)
+        form.instance.user = self.request.user  # Set current user
+        form.instance.post = get_object_or_404(Post, pk=self.kwargs['pk'])  # Get post with pk from URL
+        
+        try:
+            return super().form_valid(form)
+        except ValueError as e:
+            form.add_error(None, str(e))
+            return self.form_invalid(form)
 
     def get_success_url(self):
         return reverse('post-detail', kwargs={'pk': self.kwargs['pk']})

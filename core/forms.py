@@ -65,16 +65,6 @@ class PostAwardForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['choice'].choices = [choice for choice in self.fields['choice'].choices if choice[0] != '']
 
-    def clean(self):
-        cleaned_data = super().clean()
-        anonymous = cleaned_data.get('anonymous')
-        comment = cleaned_data.get('comment')
-
-        if anonymous and comment:
-            self.add_error('comment', 'You cannot add a comment to an anonymous award.')
-
-        return cleaned_data
-
 
 class CommunityForm(forms.ModelForm):
     class Meta:

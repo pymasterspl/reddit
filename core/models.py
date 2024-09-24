@@ -292,11 +292,20 @@ class PostAward(models.Model):
     anonymous = models.BooleanField(default=False)
     comment = models.CharField(max_length=100, blank=True, null=True)
     
+    
+    class Meta:
+        unique_together: ClassVar[list[str]] = ["post", "user"]
 
     def __str__(self: "PostVote") -> str:
         return f"@{self.user}: {self.choice} for post: {self.post}"
 
+    def check_duplicate_award(self) -> bool:
+        return PostAward.objects.filter(user=self.user, post=self.post).exists()
+
     def save(self: "PostVote", *args: int, **kwargs: int) -> None:
+        if self.check_duplicate_award():
+            raise ValueError("This user has already given an award to this post.")
+        
         if self.choice.startswith("1"):
             self.gold = 15
         elif self.choice.startswith("2"):
@@ -306,10 +315,9 @@ class PostAward(models.Model):
 
         profile = self.user.profile
         profile.gold_awards += self.gold
-        profile.save(update_fields=["gold_awards"])
+        profile.save(update_fields=["gold_awards"])     #adding gold to profile
 
-        #User.objects.filter(pk=self.user.pk).update(profile__gold_awards=F('profile__gold_awards') + self.gold)
-        Post.objects.filter(pk=self.post.pk).update(gold=F('gold') + self.gold)
+        Post.objects.filter(pk=self.post.pk).update(gold=F('gold') + self.gold)     #adding gold to post
 
         super().save(*args, **kwargs)
 
