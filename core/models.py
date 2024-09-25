@@ -186,6 +186,13 @@ class Post(GenericModel):
 
     def get_content_type(self: "Post") -> ContentType:
         return ContentType.objects.get_for_model(self)
+    
+    def get_post_awards(self):
+        post_awards = self.post_awards.all()
+        for award in post_awards:
+            if award.anonymous:
+                award.user.nickname = "Anonymous"
+        return post_awards
 
     def update_tags(self: "Post") -> None:
         current_tags = set(re.findall(r"#(\w+)", self.content))
@@ -298,6 +305,7 @@ class PostAward(models.Model):
 
     def __str__(self: "PostVote") -> str:
         return f"@{self.user}: {self.choice} for post: {self.post}"
+
 
     def check_duplicate_award(self) -> bool:
         return PostAward.objects.filter(user=self.user, post=self.post).exists()

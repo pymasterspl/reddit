@@ -44,9 +44,9 @@
                 {{ post.display_counter }}
             </a>
         </div>
-        {% for award in post.post_awards.all %}
+        {% for award in post.get_post_awards %}
             <div>
-                <img src="{% static 'core/icons/' %}{{ award.choice }}.png" alt="{{ option.label }}" width="30" height="30">
+                <img src="{% static 'core/icons/' %}{{ award.choice }}.png" title="{{ award.user.nickname }}" width="30" height="30">
             </div>        
         {% endfor %}
         {{post.gold}}
