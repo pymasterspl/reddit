@@ -2,6 +2,7 @@ import io
 from datetime import timedelta
 from typing import ClassVar
 
+from django.db.models.fields.files import ImageFieldFile
 from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
@@ -91,6 +92,10 @@ class Profile(models.Model):
     def email(self: "Profile") -> str:
         return self.user.email
 
+    @property
+    def avatar(self: "Profile") -> ImageFieldFile|None:
+        return self.user.avatar
+    
 
 class User(AbstractUser):
     nickname_validator = UnicodeUsernameValidator()
