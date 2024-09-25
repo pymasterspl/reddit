@@ -1,0 +1,43 @@
+[
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "username": "admin",
+      "is_staff": true,
+      "is_superuser": true,
+      "password": "pbkdf2_sha256$150000$eGhTL4A2$5XyAa...hashed_password..."
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+      "username": "user",
+      "is_staff": false,
+      "is_superuser": false,
+      "password": "pbkdf2_sha256$150000$eGhTL4A2$5XyAa...hashed_password..."
+    }
+  },
+  {
+    "model": "core.post",
+    "pk": 1,
+    "fields": {
+      "title": "Test Post",
+      "content": "This is a test post",
+      "author": 1,
+      "is_active": true
+    }
+  },
+  {
+    "model": "core.postreport",
+    "pk": 1,
+    "fields": {
+      "post": 1,
+      "report_type": "Spam",
+      "report_details": "This is a spam post",
+      "report_person": 2,
+      "verified": true
+    }
+  }
+]
