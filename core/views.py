@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db import models
-from django.db.models import QuerySet
+from django.db.models import Exists, OuterRef, QuerySet
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
@@ -135,6 +135,24 @@ class CommunityListView(ListView):
     context_object_name = "communities"
     paginate_by = 10
 
+    def get_queryset(self: "CommunityListView") -> models.QuerySet:
+        user = self.request.user
+        return (
+            super()
+            .get_queryset()
+            .prefetch_related("members")
+            .annotate(has_access=Exists(CommunityMember.objects.filter(community=OuterRef("pk"), user=user)))
+        )
+
+    def get_context_data(self: "CommunityListView", **kwargs: any) -> dict[str, any]:
+        context = super().get_context_data(**kwargs)
+        communities = context["communities"]
+
+        for community in communities:
+            community.has_access = community.privacy != "30_PRIVATE" or community.has_access
+
+        return context
+
 
 class CommunityCreateView(LoginRequiredMixin, CreateView):
     model = Community
@@ -193,6 +211,7 @@ class CommunityDetailView(DetailView):
         if add_moderator_form.is_valid():
             user = add_moderator_form.cleaned_data["nickname"]
             self.object.add_moderator(user)
+            messages.success(request, f"{user.nickname} is now a moderator of this community.")
         else:
             messages.error(request, "Invalid user or nickname.")
             return self.get(request, *args, **kwargs)
@@ -203,7 +222,13 @@ class CommunityDetailView(DetailView):
         remove_moderator_form = RemoveModeratorForm(request.POST)
         if remove_moderator_form.is_valid():
             user = remove_moderator_form.cleaned_data["nickname"]
+            if not CommunityMember.objects.filter(
+                community=self.object, user=user, role=CommunityMember.MODERATOR
+            ).exists():
+                messages.error(request, "User is not a moderator of this community.")
+                return self.get(request, *args, **kwargs)
             self.object.remove_moderator(user)
+            messages.success(request, f"{user.nickname} was successfully removed from moderators.")
         else:
             messages.error(request, "Invalid user or nickname.")
             return self.get(request, *args, **kwargs)
@@ -238,6 +263,11 @@ class CommunityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def handle_no_permission(self: "CommunityUpdateView") -> HttpResponse:
         messages.error(self.request, "You do not have permission to update this community.")
         return redirect("community-detail", slug=self.get_object().slug)
+
+    def form_valid(self: "CommunityUpdateView", form: forms.ModelForm) -> HttpResponseRedirect:
+        response = super().form_valid(form)
+        messages.success(self.request, "Community updated successfully.")
+        return response
 
     def get_success_url(self: "CommunityUpdateView") -> str:
         return reverse_lazy("community-detail", kwargs={"slug": self.object.slug})

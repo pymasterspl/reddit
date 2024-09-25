@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card bg-dark shadow-sm text-light">
+        <div class="card-body">
+            <p class="card-text">You don't have access to this community.</p>
+            <a href="{% url 'community-list' %}" class="btn btn-primary">Back to Community List</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -268,7 +268,7 @@ def test_reported_detail_post_by_user(client: Client, user: User, post: Post, re
     client.force_login(user)
     response = client.get(reverse("reported-post", kwargs={"pk": post.pk}))
     assert response.status_code == 403
-    assert "<h1>403 Forbidden</h1>" in response.content.decode()
+    assert "You don't have access to this community." in response.content.decode()
 
 
 def test_reported_detail_post_by_anonymous_user(client: Client, post_report: PostReport) -> None:
@@ -554,3 +554,21 @@ def test_add_non_existing_moderator(client: Client, community: Community, user: 
 
     messages = list(response.context["messages"])
     assert any("Invalid user or nickname." in message.message for message in messages)
+
+
+def test_remove_non_existing_moderator(client: Client, community: Community, user: User) -> None:
+    admin_password = generate_random_password()
+
+    admin = User.objects.create_user(email="admin@example.com", password=admin_password, nickname="adminnick")
+
+    client.force_login(admin)
+    CommunityMember.objects.create(community=community, user=admin, role=CommunityMember.ADMIN)
+
+    url = reverse("community-detail", kwargs={"slug": community.slug})
+    form_data = {"nickname": user.nickname}
+
+    response = client.post(url, {"action": "remove_moderator", **form_data})
+    assert response.status_code == 200
+
+    messages = list(response.context["messages"])
+    assert any("User is not a moderator of this community." in message.message for message in messages)
