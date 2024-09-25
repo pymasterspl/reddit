@@ -1,7 +1,7 @@
 import secrets
 import string
 from collections.abc import Callable, Generator
-from rest_framework.test import APIClient
+from rest_framework.test import APIClient, APIRequestFactory
 import pytest
 from django.contrib.auth import get_user_model
 
@@ -13,6 +13,11 @@ User = get_user_model()
 @pytest.fixture
 def api_client():
     return APIClient()
+
+
+@pytest.fixture
+def api_request_factory():
+    return APIRequestFactory()
 
 
 def generate_random_password(length: int = 12) -> str:
