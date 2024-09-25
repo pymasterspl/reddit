@@ -83,9 +83,11 @@ class Profile(models.Model):
     def __str__(self: "Profile") -> str:
         return f"Profile: {self.user.nickname}"
 
+    @property
     def nickname(self: "Profile") -> str:
         return self.user.nickname
 
+    @property
     def email(self: "Profile") -> str:
         return self.user.email
 
