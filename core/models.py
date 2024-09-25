@@ -186,7 +186,7 @@ class Post(GenericModel):
 
     def get_content_type(self: "Post") -> ContentType:
         return ContentType.objects.get_for_model(self)
-    
+
     def get_post_awards(self):
         post_awards = self.post_awards.all()
         for award in post_awards:
@@ -275,12 +275,12 @@ class PostVote(models.Model):
         down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
         Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
 
-class PostAward(models.Model):
 
+class PostAward(models.Model):
     REWARD_POINTS = {
-    1: 15,  # Level 1 gives 15 points
-    2: 25,  # Level 2 gives 25 points
-    3: 50,  # Level 3 gives 50 points
+        1: 15,  # Level 1 gives 15 points
+        2: 25,  # Level 2 gives 25 points
+        3: 50,  # Level 3 gives 50 points
     }
 
     REWARD_CHOICES = []
@@ -290,7 +290,7 @@ class PostAward(models.Model):
             reward_code = f"{level}{i}_REWARD"
             reward_points = f"{points} points"
             REWARD_CHOICES.append((reward_code, reward_points))
-    
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="awards")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="post_awards")
     choice = models.CharField(max_length=20, choices=REWARD_CHOICES)
@@ -298,14 +298,12 @@ class PostAward(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     anonymous = models.BooleanField(default=False)
     comment = models.CharField(max_length=100, blank=True, null=True)
-    
-    
+
     class Meta:
         unique_together: ClassVar[list[str]] = ["post", "user"]
 
     def __str__(self: "PostVote") -> str:
         return f"@{self.user}: {self.choice} for post: {self.post}"
-
 
     def check_duplicate_award(self) -> bool:
         return PostAward.objects.filter(user=self.user, post=self.post).exists()
@@ -313,7 +311,7 @@ class PostAward(models.Model):
     def save(self: "PostVote", *args: int, **kwargs: int) -> None:
         if self.check_duplicate_award():
             raise ValueError("This user has already given an award to this post.")
-        
+
         if self.choice.startswith("1"):
             self.gold = 15
         elif self.choice.startswith("2"):
@@ -323,11 +321,12 @@ class PostAward(models.Model):
 
         profile = self.user.profile
         profile.gold_awards += self.gold
-        profile.save(update_fields=["gold_awards"])     #adding gold to profile
+        profile.save(update_fields=["gold_awards"])  # adding gold to profile
 
-        Post.objects.filter(pk=self.post.pk).update(gold=F('gold') + self.gold)     #adding gold to post
+        Post.objects.filter(pk=self.post.pk).update(gold=F("gold") + self.gold)  # adding gold to post
 
         super().save(*args, **kwargs)
+
 
 class Image(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="images")

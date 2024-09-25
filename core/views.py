@@ -101,23 +101,23 @@ class PostVoteView(LoginRequiredMixin, View):
         if next_url:
             return redirect(next_url)
         return redirect("post-detail", pk=post.id)
-    
-    
+
+
 class PostAwardCreateView(LoginRequiredMixin, CreateView):
     model = PostAward
     form_class = PostAwardForm
-    template_name = 'core/post-award.html'
+    template_name = "core/post-award.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        post = get_object_or_404(Post, pk=self.kwargs['pk'])
-        context['post'] = post
+        post = get_object_or_404(Post, pk=self.kwargs["pk"])
+        context["post"] = post
         return context
 
     def form_valid(self, form):
         form.instance.user = self.request.user  # Set current user
-        form.instance.post = get_object_or_404(Post, pk=self.kwargs['pk'])  # Get post with pk from URL
-        
+        form.instance.post = get_object_or_404(Post, pk=self.kwargs["pk"])  # Get post with pk from URL
+
         try:
             return super().form_valid(form)
         except ValueError as e:
@@ -125,8 +125,8 @@ class PostAwardCreateView(LoginRequiredMixin, CreateView):
             return self.form_invalid(form)
 
     def get_success_url(self):
-        return reverse('post-detail', kwargs={'pk': self.kwargs['pk']})
-    
+        return reverse("post-detail", kwargs={"pk": self.kwargs["pk"]})
+
 
 class PostSaveView(LoginRequiredMixin, View):
     def post(self: "PostSaveView", request: HttpRequest, pk: int, action_type: str) -> HttpResponse:

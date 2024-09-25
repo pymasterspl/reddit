@@ -44,26 +44,26 @@ class PostForm(forms.ModelForm):
         self.fields["title"].required = True
         self.fields["content"].required = True
 
+
 class IconRadioSelect(forms.RadioSelect):
-    template_name = 'core/icon_radio_select.html'
+    template_name = "core/icon_radio_select.html"
+
 
 class PostAwardForm(forms.ModelForm):
     class Meta:
         model = PostAward
-        fields = ['choice', 'anonymous', 'comment']
+        fields = ["choice", "anonymous", "comment"]
         widgets = {
-            'choice': IconRadioSelect(attrs={'class': 'form-check-input'}),
-            'anonymous': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Optional comment'}),
+            "choice": IconRadioSelect(attrs={"class": "form-check-input"}),
+            "anonymous": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "comment": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Optional comment"}),
         }
 
-        labels = {
-            'choice': ''
-        }
+        labels = {"choice": ""}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['choice'].choices = [choice for choice in self.fields['choice'].choices if choice[0] != '']
+        self.fields["choice"].choices = [choice for choice in self.fields["choice"].choices if choice[0] != ""]
 
 
 class CommunityForm(forms.ModelForm):
