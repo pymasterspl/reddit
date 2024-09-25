@@ -268,7 +268,7 @@ def test_reported_detail_post_by_user(client: Client, user: User, post: Post, re
     client.force_login(user)
     response = client.get(reverse("reported-post", kwargs={"pk": post.pk}))
     assert response.status_code == 403
-    assert "<h1>403 Forbidden</h1>" in response.content.decode()
+    assert "You don't have access to this community." in response.content.decode()
 
 
 def test_reported_detail_post_by_anonymous_user(client: Client, post_report: PostReport) -> None:
