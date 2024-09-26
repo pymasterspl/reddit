@@ -187,7 +187,7 @@ class Post(GenericModel):
     def get_content_type(self: "Post") -> ContentType:
         return ContentType.objects.get_for_model(self)
 
-    def get_post_awards(self):
+    def get_post_awards(self: "Post") -> QuerySet:
         post_awards = self.post_awards.all()
         for award in post_awards:
             if award.anonymous:
@@ -277,13 +277,13 @@ class PostVote(models.Model):
 
 
 class PostAward(models.Model):
-    REWARD_POINTS = {
+    REWARD_POINTS: ClassVar[dict[int, int]] = {
         1: 15,  # Level 1 gives 15 points
         2: 25,  # Level 2 gives 25 points
         3: 50,  # Level 3 gives 50 points
     }
 
-    REWARD_CHOICES = []
+    REWARD_CHOICES: ClassVar[list[tuple[str, str]]] = []
 
     for level, points in REWARD_POINTS.items():
         for i in range(1, 6):  # 5 icons for each level
@@ -297,7 +297,7 @@ class PostAward(models.Model):
     gold = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     anonymous = models.BooleanField(default=False)
-    comment = models.CharField(max_length=100, blank=True, null=True)
+    comment = models.CharField(max_length=100, blank=True)
 
     class Meta:
         unique_together: ClassVar[list[str]] = ["post", "user"]
@@ -305,12 +305,11 @@ class PostAward(models.Model):
     def __str__(self: "PostVote") -> str:
         return f"@{self.user}: {self.choice} for post: {self.post}"
 
-    def check_duplicate_award(self) -> bool:
-        return PostAward.objects.filter(user=self.user, post=self.post).exists()
-
     def save(self: "PostVote", *args: int, **kwargs: int) -> None:
+        error_message = "Already given award"
+
         if self.check_duplicate_award():
-            raise ValueError("This user has already given an award to this post.")
+            raise ValueError(error_message)
 
         if self.choice.startswith("1"):
             self.gold = 15
@@ -326,6 +325,9 @@ class PostAward(models.Model):
         Post.objects.filter(pk=self.post.pk).update(gold=F("gold") + self.gold)  # adding gold to post
 
         super().save(*args, **kwargs)
+
+    def check_duplicate_award(self: "PostAward") -> bool:
+        return PostAward.objects.filter(user=self.user, post=self.post).exists()
 
 
 class Image(models.Model):

@@ -15,8 +15,8 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
-from .forms import AddModeratorForm, CommentForm, CommunityForm, PostForm, RemoveModeratorForm, PostAwardForm
-from .models import Community, CommunityMember, Post, PostVote, SavedPost, PostAward
+from .forms import AddModeratorForm, CommentForm, CommunityForm, PostAwardForm, PostForm, RemoveModeratorForm
+from .models import Community, CommunityMember, Post, PostAward, PostVote, SavedPost
 
 
 class PostListView(ListView):
@@ -108,13 +108,13 @@ class PostAwardCreateView(LoginRequiredMixin, CreateView):
     form_class = PostAwardForm
     template_name = "core/post-award.html"
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self: "PostAwardCreateView", **kwargs: any) -> dict[str, any]:
         context = super().get_context_data(**kwargs)
         post = get_object_or_404(Post, pk=self.kwargs["pk"])
         context["post"] = post
         return context
 
-    def form_valid(self, form):
+    def form_valid(self: "PostAwardCreateView", form: PostAwardForm) -> HttpResponseRedirect:
         form.instance.user = self.request.user  # Set current user
         form.instance.post = get_object_or_404(Post, pk=self.kwargs["pk"])  # Get post with pk from URL
 
@@ -124,7 +124,7 @@ class PostAwardCreateView(LoginRequiredMixin, CreateView):
             form.add_error(None, str(e))
             return self.form_invalid(form)
 
-    def get_success_url(self):
+    def get_success_url(self: "PostAwardCreateView") -> str:
         return reverse("post-detail", kwargs={"pk": self.kwargs["pk"]})
 
 

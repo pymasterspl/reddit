@@ -1,4 +1,3 @@
-import typing
 from typing import ClassVar
 
 from crispy_forms.helper import FormHelper
@@ -6,7 +5,7 @@ from crispy_forms.layout import Submit
 from django import forms
 from django.core.exceptions import ValidationError
 
-from .models import Community, Post, User, PostAward
+from .models import Community, Post, PostAward, User
 
 
 class CommentForm(forms.Form):
@@ -52,16 +51,16 @@ class IconRadioSelect(forms.RadioSelect):
 class PostAwardForm(forms.ModelForm):
     class Meta:
         model = PostAward
-        fields = ["choice", "anonymous", "comment"]
-        widgets = {
+        fields: ClassVar[list[str]] = ["choice", "anonymous", "comment"]
+        widgets: ClassVar[dict[str, forms.Widget]] = {
             "choice": IconRadioSelect(attrs={"class": "form-check-input"}),
             "anonymous": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "comment": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Optional comment"}),
         }
 
-        labels = {"choice": ""}
+        labels: ClassVar[dict[str, str]] = {"choice": ""}
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self: "PostAwardForm", *args: list, **kwargs: dict) -> None:
         super().__init__(*args, **kwargs)
         self.fields["choice"].choices = [choice for choice in self.fields["choice"].choices if choice[0] != ""]
 
@@ -69,7 +68,7 @@ class PostAwardForm(forms.ModelForm):
 class CommunityForm(forms.ModelForm):
     class Meta:
         model = Community
-        fields: typing.ClassVar = ["name", "privacy", "is_18_plus"]
+        fields: ClassVar[list[str]] = ["name", "privacy", "is_18_plus"]
 
     def __init__(self: "CommunityForm", *args: list, **kwargs: dict) -> None:
         super().__init__(*args, **kwargs)

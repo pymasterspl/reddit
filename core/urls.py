@@ -5,12 +5,12 @@ from .views import (
     CommunityDetailView,
     CommunityListView,
     CommunityUpdateView,
+    PostAwardCreateView,
     PostCreateView,
     PostDetailView,
     PostListView,
     PostSaveView,
     PostVoteView,
-    PostAwardCreateView,
 )
 
 urlpatterns = [

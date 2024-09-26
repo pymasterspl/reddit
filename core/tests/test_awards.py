@@ -1,15 +1,22 @@
+# Standard library imports
 import pytest
+
+# Django and third-party imports
 from django.contrib.auth import get_user_model
-from django.db import IntegrityError
-from core.models import Post, User, PostAward, Community
+from faker import Faker
+
+# Local application imports
+from core.models import Community, Post, PostAward
 
 User = get_user_model()
+fake = Faker()
 
 
 @pytest.mark.django_db()
-def test_post_award_level_1():
+def test_post_award_level_1() -> None:
     community = Community.objects.create(name="Test community")
-    user = User.objects.create_user(email="testuser@example.com", nickname="testuser", password="password")
+    password = fake.password()
+    user = User.objects.create_user(email="testuser@example.com", nickname="testuser", password=password)
     user.username = "testuser"
     user.community = community
     user.save()
@@ -24,9 +31,10 @@ def test_post_award_level_1():
 
 
 @pytest.mark.django_db()
-def test_post_award_level_2():
+def test_post_award_level_2() -> None:
     community = Community.objects.create(name="Test community")
-    user = User.objects.create_user(email="testuser@example.com", nickname="testuser", password="password")
+    password = fake.password()
+    user = User.objects.create_user(email="testuser@example.com", nickname="testuser", password=password)
     user.username = "testuser"
     user.community = community
     user.save()
@@ -41,9 +49,10 @@ def test_post_award_level_2():
 
 
 @pytest.mark.django_db()
-def test_post_award_level_3():
+def test_post_award_level_3() -> None:
     community = Community.objects.create(name="Test community")
-    user = User.objects.create_user(email="testuser@example.com", nickname="testuser", password="password")
+    password = fake.password()
+    user = User.objects.create_user(email="testuser@example.com", nickname="testuser", password=password)
     user.username = "testuser"
     user.community = community
     user.save()
@@ -58,9 +67,10 @@ def test_post_award_level_3():
 
 
 @pytest.mark.django_db()
-def test_post_award_all_choices():
+def test_post_award_all_choices() -> None:
     community = Community.objects.create(name="Test community")
-    user = User.objects.create_user(email="testuser@example.com", nickname="testuser", password="password")
+    password = fake.password()
+    user = User.objects.create_user(email="testuser@example.com", nickname="testuser", password=password)
     user.username = "testuser"
     user.community = community
     user.save()
@@ -83,17 +93,18 @@ def test_post_award_all_choices():
 
 
 @pytest.mark.django_db()
-def test_post_award_multiple_users():
+def test_post_award_multiple_users() -> None:
     community = Community.objects.create(name="Test community")
-    user1 = User.objects.create_user(email="testuser1@example.com", nickname="testuser1", password="password")
+    password = fake.password()
+    user1 = User.objects.create_user(email="testuser1@example.com", nickname="testuser1", password=password)
     user1.username = "testuser1"
     user1.community = community
     user1.save()
-    user2 = User.objects.create_user(email="testuser2@example.com", nickname="testuser2", password="password")
+    user2 = User.objects.create_user(email="testuser2@example.com", nickname="testuser2", password=password)
     user2.username = "testuser2"
     user2.community = community
     user2.save()
-    user3 = User.objects.create_user(email="testuser3@example.com", nickname="testuser3", password="password")
+    user3 = User.objects.create_user(email="testuser3@example.com", nickname="testuser3", password=password)
     user3.username = "testuser3"
     user3.community = community
     user3.save()
@@ -115,11 +126,12 @@ def test_post_award_multiple_users():
 
 
 @pytest.mark.django_db()
-def test_post_award_anonymous():
+def test_post_award_anonymous() -> None:
     community = Community.objects.create(name="Test community")
+    password = fake.password()
     post = Post.objects.create(title="Test post", content="Test content", community=community)
-    user = User.objects.create_user(email="test@example.com", password="testpassword", nickname="testuser")
-    post_award = PostAward.objects.create(post=post, user=user, anonymous=True)
+    user = User.objects.create_user(email="test@example.com", password=password, nickname="testuser")
+    PostAward.objects.create(post=post, user=user, anonymous=True)
     awards = post.get_post_awards()
     assert len(awards) == 1
     assert awards[0].user.nickname == "Anonymous"
