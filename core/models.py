@@ -189,10 +189,13 @@ class Post(GenericModel):
 
     def get_post_awards(self: "Post") -> QuerySet:
         post_awards = self.post_awards.all()
-        for award in post_awards:
-            if award.anonymous:
-                award.user.nickname = "Anonymous"
-        return post_awards
+        return post_awards.annotate(
+            anonymous_nickname=models.Case(
+                models.When(anonymous=True, then=models.Value("Anonymousss")),
+                default=models.F("user__nickname"),
+                output_field=models.CharField(),
+            )
+        )
 
     def update_tags(self: "Post") -> None:
         current_tags = set(re.findall(r"#(\w+)", self.content))
@@ -275,6 +278,9 @@ class PostVote(models.Model):
         down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
         Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
 
+class DuplicateAwardError(Exception):
+    """Custom exception for duplicate awards."""
+    pass
 
 class PostAward(models.Model):
     REWARD_POINTS: ClassVar[dict[int, int]] = {
@@ -297,19 +303,18 @@ class PostAward(models.Model):
     gold = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     anonymous = models.BooleanField(default=False)
-    comment = models.CharField(max_length=100, blank=True)
+    comment = models.CharField(max_length=100, blank=True, default="")
 
     class Meta:
         unique_together: ClassVar[list[str]] = ["post", "user"]
 
-    def __str__(self: "PostVote") -> str:
+    def __str__(self: "PostAward") -> str:
         return f"@{self.user}: {self.choice} for post: {self.post}"
 
     def save(self: "PostVote", *args: int, **kwargs: int) -> None:
-        error_message = "Already given award"
 
         if self.check_duplicate_award():
-            raise ValueError(error_message)
+            raise DuplicateAwardError("Already given award")
 
         if self.choice.startswith("1"):
             self.gold = 15
