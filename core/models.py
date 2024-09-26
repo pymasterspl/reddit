@@ -191,7 +191,7 @@ class Post(GenericModel):
         post_awards = self.post_awards.all()
         return post_awards.annotate(
             anonymous_nickname=models.Case(
-                models.When(anonymous=True, then=models.Value("Anonymousss")),
+                models.When(anonymous=True, then=models.Value("Anonymous")),
                 default=models.F("user__nickname"),
                 output_field=models.CharField(),
             )
