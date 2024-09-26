@@ -110,9 +110,12 @@ def test_post_award_multiple_users() -> None:
     user3.save()
     post = Post.objects.create(author=user1, title="Test post", community=community)
 
-    award1 = PostAward.objects.create(post=post, user=user1, choice=PostAward.REWARD_CHOICES[1][0])
     award2 = PostAward.objects.create(post=post, user=user2, choice=PostAward.REWARD_CHOICES[6][0])
+    award1 = PostAward.objects.create(post=post, user=user1, choice=PostAward.REWARD_CHOICES[1][0])
+    
     award3 = PostAward.objects.create(post=post, user=user3, choice=PostAward.REWARD_CHOICES[11][0])
+
+    post = Post.objects.get(author=user1, title="Test post", community=community)
 
     assert post.post_awards.count() == 3
     assert user1.awards.count() == 1
@@ -120,9 +123,10 @@ def test_post_award_multiple_users() -> None:
     assert user3.awards.count() == 1
     assert award1.gold == 15
     assert award2.gold == 25
-    assert award3.gold == 50
-    post = Post.objects.get(author=user1, title="Test post", community=community)
+    assert award3.gold == 50    
     assert post.gold == 15 + 25 + 50
+    print(user1.profile.gold_awards)
+    assert user1.profile.gold_awards == 15 + 25 + 50
 
 
 @pytest.mark.django_db()
@@ -134,4 +138,4 @@ def test_post_award_anonymous() -> None:
     PostAward.objects.create(post=post, user=user, anonymous=True)
     awards = post.get_post_awards()
     assert len(awards) == 1
-    assert awards[0].user.nickname == "Anonymous"
+    assert awards[0].anonymous_nickname == "Anonymous"
