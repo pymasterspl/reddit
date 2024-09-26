@@ -1,11 +1,18 @@
 import secrets
+import io
 import string
 from collections.abc import Callable, Generator
 from rest_framework.test import APIClient, APIRequestFactory
 import pytest
 from django.contrib.auth import get_user_model
-
+from django.conf import settings
 from core.models import Community, CommunityMember, Post
+from users.models import Profile, SocialLink, UserSettings
+from users.choices import FEMALE
+from django.core.files.uploadedfile import SimpleUploadedFile
+from PIL import Image
+from pathlib import Path
+
 
 User = get_user_model()
 
@@ -66,6 +73,77 @@ def admin_user(generated_password: str) -> User:
     admin_user = User.objects.create_superuser(email="admin@example.com", nickname="admin", password=generated_password)
     admin_user.plain_password = generated_password
     return admin_user
+
+
+@pytest.fixture()
+def social_links_factory():
+    # return _social
+    def _social_links_factory(profile, count):
+        for i in range(count):
+            SocialLink.objects.create(
+                name=f"social-{i}",
+                url = "http://social-{i}.org",
+                profile=profile),
+    return _social_links_factory
+
+
+@pytest.fixture()
+def profile(social_links_factory) -> Profile:
+    def _profile(user):
+        user.profile.bio = "Lorem Ipsum"
+        user.profile.gender=FEMALE
+        user.profile.is_nsfw=False
+        user.profile.is_followable=True
+        user.profile.is_content_visible=True
+        user.profile.is_communities_visible=True
+        social_links_factory(user.profile, 3)
+        user.profile.save()
+        return user.profile
+    return _profile
+
+
+@pytest.fixture()
+def usersettings():
+    def _usersettings(user):
+        user.usersettings.content_lang = "en"
+        user.usersettings.is_beta = False
+        user.usersettings.is_over_18 = False
+        user.usersettings.save()
+        return user.usersettings
+    return _usersettings
+
+
+@pytest.fixture()
+def user_with_everything(user_with_avatar, usersettings, profile):
+    usersettings(user_with_avatar)
+    profile(user_with_avatar)
+    return user_with_avatar
+
+
+@pytest.fixture()
+def create_avatar() -> SimpleUploadedFile:
+    avatar_dir = Path(settings.MEDIA_ROOT) / "users_avatars"
+    avatar_dir.mkdir(parents=True, exist_ok=True)
+    img = Image.new("RGB", (100, 100), color=(73, 109, 137))
+    img_io = io.BytesIO()
+    img.save(img_io, format="JPEG")
+    img_io.seek(0)
+    base_filename = "test_avatar"
+
+    avatar_path = Path(f"{avatar_dir}/{base_filename}.jpg")
+
+    with Path.open(avatar_path, "wb") as f:
+        f.write(img_io.read())
+
+    with Path.open(avatar_path, "rb") as f:
+        avatar = SimpleUploadedFile(name=avatar_path, content=f.read(), content_type="image/jpeg")
+
+    yield avatar
+
+    for file_path in avatar_dir.glob(f"{base_filename}*"):
+        if Path.exists(file_path):
+            Path.unlink(file_path)
+
 
 
 @pytest.fixture()

@@ -8,7 +8,6 @@ from django.db.utils import IntegrityError
 from django.test import Client
 from django.urls import reverse_lazy
 from PIL import Image
-
 from users.models import Profile, SocialLink, UserSettings
 
 User = get_user_model()
@@ -207,3 +206,10 @@ def test_cascade_profile_sociallink_deletion(user: "User") -> None:
     assert not User.objects.filter(id=user_id).exists()
     assert not Profile.objects.filter(id=profile_id).exists()
     assert not SocialLink.objects.filter(id=sociallink_id).exists()
+
+
+@pytest.mark.django_db()
+def test_user_with_everything_fixture(user_with_everything):
+    assert user_with_everything.avatar
+    assert user_with_everything.profile
+    assert user_with_everything.usersettings

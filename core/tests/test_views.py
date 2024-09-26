@@ -1,6 +1,3 @@
-import io
-from pathlib import Path
-
 import pytest
 from django.conf import Settings, settings
 from django.contrib.auth import get_user_model
@@ -10,7 +7,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
 from django.urls import reverse, reverse_lazy
 from faker import Faker
-from PIL import Image
+
 
 from core.models import BAN, DELETE, DISMISS_REPORT, WARN, Community, CommunityMember, Post, PostReport
 
@@ -59,31 +56,6 @@ def user_with_avatar(client: Client, create_avatar: SimpleUploadedFile) -> User:
     client.login(email=user.email, password=user.password)
 
     return user
-
-
-@pytest.fixture()
-def create_avatar() -> SimpleUploadedFile:
-    avatar_dir = Path(settings.MEDIA_ROOT) / "users_avatars"
-    avatar_dir.mkdir(parents=True, exist_ok=True)
-    img = Image.new("RGB", (100, 100), color=(73, 109, 137))
-    img_io = io.BytesIO()
-    img.save(img_io, format="JPEG")
-    img_io.seek(0)
-    base_filename = "test_avatar"
-
-    avatar_path = Path(f"{avatar_dir}/{base_filename}.jpg")
-
-    with Path.open(avatar_path, "wb") as f:
-        f.write(img_io.read())
-
-    with Path.open(avatar_path, "rb") as f:
-        avatar = SimpleUploadedFile(name=avatar_path, content=f.read(), content_type="image/jpeg")
-
-    yield avatar
-
-    for file_path in avatar_dir.glob(f"{base_filename}*"):
-        if Path.exists(file_path):
-            Path.unlink(file_path)
 
 
 @pytest.fixture()
