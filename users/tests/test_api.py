@@ -58,8 +58,28 @@ def test_user_detail(api_client, user):
     assert "last_activity" in response.data
 
 
+def test_user_detail_check_if_protected(api_client):
+    response = api_client.get(reverse("rest_user_details"), format="json")
+    assert response.status_code == 401
+
+def test_user_detail_fake_token_check_if_protected(api_request_factory):
+    fake_token_str = "Token 2f4b1c3e6d7a8b9c0e1d2a3b4c5e6f7g8h9i0j1k2"
+    headers = {"HTTP_AUTHORIZATION": fake_token_str}
+    request = api_request_factory.get(reverse("rest_user_details"), format="json", **headers)
+    response = dj_rest_auth.views.UserDetailsView.as_view()(request)
+    assert response.status_code == 401
 
 
+def test_my_profile_check_if_protected(api_client, user):
+    response = api_client.get(reverse("my_profile"), format="json")
+    assert response.status_code == 401
+
+
+def test_profile_check_if_protected(api_client, user):
+    response = api_client.get(reverse("profile", kwargs={"pk": user.profile.pk}), format="json")
+    assert response.status_code == 401
+
+    
 def assert_profile_fields(data, profile):
     assert data["id"] == profile.id
     assert data["nickname"] == profile.user.nickname
