@@ -76,6 +76,13 @@ def admin_user(generated_password: str) -> User:
 
 
 @pytest.fixture()
+def user_with_avatar(user, create_avatar: SimpleUploadedFile) -> User:
+    user.avatar = create_avatar
+    user.save()
+    return user
+
+
+@pytest.fixture()
 def social_links_factory():
     # return _social
     def _social_links_factory(profile, count):

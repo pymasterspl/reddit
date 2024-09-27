@@ -44,21 +44,6 @@ def admin(client: Client) -> User:
 
 
 @pytest.fixture()
-def user_with_avatar(client: Client, create_avatar: SimpleUploadedFile) -> User:
-    password = generate_random_password()
-    user = User.objects.create_user(
-        email="test_user@example.com",
-        nickname="TestUser",
-        password=password,
-    )
-    user.avatar = create_avatar
-    user.save()
-    client.login(email=user.email, password=user.password)
-
-    return user
-
-
-@pytest.fixture()
 def community() -> Community:
     return Community.objects.create(name="Test Community", is_active=True)
 
