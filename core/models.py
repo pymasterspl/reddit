@@ -44,7 +44,14 @@ class PostManagerMixin:
 
 
 class ActivePostManagers(PostManagerMixin, ActiveOnlyManager):
-    pass
+    def get_post_awards_with_annotations(self):
+        return self.get_queryset().annotate(
+            anonymous_nickname=models.Case(
+                models.When(post_awards__anonymous=True, then=models.Value("Anonymous")),
+                default=models.F("post_awards__user__nickname"),
+                output_field=models.CharField(),
+            )
+        )
 
 
 class AllObjectsPostManager(PostManagerMixin, models.Manager):
@@ -188,14 +195,7 @@ class Post(GenericModel):
         return ContentType.objects.get_for_model(self)
 
     def get_post_awards(self: "Post") -> QuerySet:
-        post_awards = self.post_awards.all()
-        return post_awards.annotate(
-            anonymous_nickname=models.Case(
-                models.When(anonymous=True, then=models.Value("Anonymous")),
-                default=models.F("user__nickname"),
-                output_field=models.CharField(),
-            )
-        )
+        return self.objects.get_post_awards_with_annotations().filter(id=self.id)
 
     def update_tags(self: "Post") -> None:
         current_tags = set(re.findall(r"#(\w+)", self.content))
