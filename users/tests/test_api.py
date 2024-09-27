@@ -102,6 +102,6 @@ def test_my_profile(api_client, user_with_everything):
 
 def test_profile(api_client, another_user, user_with_everything):
     api_client.force_authenticate(another_user)
-    response = api_client.get(reverse("profile", kwargs={"pk": user_with_everything.pk}))
+    response = api_client.get(reverse("profile", kwargs={"pk": user_with_everything.profile.pk}))
     assert response.status_code == 200
     assert_profile_fields(response.data, user_with_everything.profile)
