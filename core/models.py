@@ -278,9 +278,10 @@ class PostVote(models.Model):
         down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
         Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
 
+
 class DuplicateAwardError(Exception):
     """Custom exception for duplicate awards."""
-    pass
+
 
 class PostAward(models.Model):
     REWARD_POINTS: ClassVar[dict[int, int]] = {
@@ -312,9 +313,9 @@ class PostAward(models.Model):
         return f"@{self.user}: {self.choice} for post: {self.post}"
 
     def save(self: "PostVote", *args: int, **kwargs: int) -> None:
-
         if self.check_duplicate_award():
-            raise DuplicateAwardError("Already given award")
+            message = "Already given award"
+            raise DuplicateAwardError(message)
 
         if self.choice.startswith("1"):
             self.gold = 15
@@ -323,7 +324,7 @@ class PostAward(models.Model):
         elif self.choice.startswith("3"):
             self.gold = 50
 
-        profile = self.user.profile
+        profile = self.post.author.profile
         profile.gold_awards += self.gold
         profile.save(update_fields=["gold_awards"])  # adding gold to profile
 

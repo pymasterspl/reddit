@@ -112,7 +112,7 @@ def test_post_award_multiple_users() -> None:
 
     award2 = PostAward.objects.create(post=post, user=user2, choice=PostAward.REWARD_CHOICES[6][0])
     award1 = PostAward.objects.create(post=post, user=user1, choice=PostAward.REWARD_CHOICES[1][0])
-    
+
     award3 = PostAward.objects.create(post=post, user=user3, choice=PostAward.REWARD_CHOICES[11][0])
 
     post = Post.objects.get(author=user1, title="Test post", community=community)
@@ -123,9 +123,8 @@ def test_post_award_multiple_users() -> None:
     assert user3.awards.count() == 1
     assert award1.gold == 15
     assert award2.gold == 25
-    assert award3.gold == 50    
+    assert award3.gold == 50
     assert post.gold == 15 + 25 + 50
-    print(user1.profile.gold_awards)
     assert user1.profile.gold_awards == 15 + 25 + 50
 
 
@@ -133,9 +132,10 @@ def test_post_award_multiple_users() -> None:
 def test_post_award_anonymous() -> None:
     community = Community.objects.create(name="Test community")
     password = fake.password()
-    post = Post.objects.create(title="Test post", content="Test content", community=community)
-    user = User.objects.create_user(email="test@example.com", password=password, nickname="testuser")
-    PostAward.objects.create(post=post, user=user, anonymous=True)
+    user1 = User.objects.create_user(email="test@example.com", password=password, nickname="testuser1")
+    user2 = User.objects.create_user(email="test2@example.com", password=password, nickname="testuser2")
+    post = Post.objects.create(author=user1, title="Test post", content="Test content", community=community)
+    PostAward.objects.create(post=post, user=user2, anonymous=True)
     awards = post.get_post_awards()
     assert len(awards) == 1
     assert awards[0].anonymous_nickname == "Anonymous"
