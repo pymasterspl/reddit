@@ -192,7 +192,7 @@ class Post(GenericModel):
         return self.up_votes - self.down_votes
 
     def get_content_type(self: "Post") -> ContentType:
-        return ContentType.objects.get_for_model(self)
+        return self.objects.get_for_model(self)
 
     def get_post_awards(self: "Post") -> QuerySet:
         return self.objects.get_post_awards_with_annotations().filter(id=self.id)
@@ -268,7 +268,7 @@ class PostVote(models.Model):
     class Meta:
         unique_together: ClassVar[list[str]] = ["post", "user"]
 
-    def __str__(self: "PostAward") -> str:
+    def __str__(self: "PostVote") -> str:
         return f"@{self.user}: {self.choice} for post: {self.post}"
 
     def save(self: "PostVote", *args: int, **kwargs: int) -> None:
@@ -277,10 +277,6 @@ class PostVote(models.Model):
         up_votes = post_votes.filter(choice=PostVote.UPVOTE).count()
         down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
         Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
-
-
-class DuplicateAwardError(Exception):
-    """Custom exception for duplicate awards."""
 
 
 class PostAward(models.Model):
@@ -315,7 +311,7 @@ class PostAward(models.Model):
     def save(self: "PostVote", *args: int, **kwargs: int) -> None:
         if self.check_duplicate_award():
             message = "Already given award"
-            raise DuplicateAwardError(message)
+            raise ValueError(message)
 
         if self.choice.startswith("1"):
             self.gold = 15
