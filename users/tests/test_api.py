@@ -8,6 +8,9 @@ from django.contrib.sessions.middleware import SessionMiddleware
 
 pytestmark = pytest.mark.django_db
 
+
+PREFIX = "http://testserver"
+
 def test_login_and_logout(api_client, user, api_request_factory):
     """
     Test:
@@ -53,3 +56,32 @@ def test_user_detail(api_client, user):
     assert "is_online" in response.data
     assert "last_activity_ago" in response.data
     assert "last_activity" in response.data
+
+
+
+
+def assert_profile_fields(data, profile):
+    assert data["id"] == profile.id
+    assert data["nickname"] == profile.user.nickname
+    assert data["gender"] == profile.gender
+    assert data["bio"] == profile.bio
+    assert data["avatar"] == PREFIX + profile.user.avatar.url
+    assert data["post_karma"] == profile.post_karma
+    assert data["comment_karma"] == profile.comment_karma
+    assert data["is_nsfw"] == profile.is_nsfw
+    assert data["is_followable"] == profile.is_followable
+    assert data["is_content_visible"] == profile.is_content_visible
+    assert data["is_communities_visible"] == profile.is_communities_visible
+
+def test_my_profile(api_client, user_with_everything):
+    api_client.force_authenticate(user_with_everything)
+    response = api_client.get(reverse("my_profile"))
+    assert response.status_code == 200
+    assert_profile_fields(response.data, user_with_everything.profile)
+
+
+def test_profile(api_client, another_user, user_with_everything):
+    api_client.force_authenticate(another_user)
+    response = api_client.get(reverse("profile", kwargs={"pk": user_with_everything.pk}))
+    assert response.status_code == 200
+    assert_profile_fields(response.data, user_with_everything.profile)
