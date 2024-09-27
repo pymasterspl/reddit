@@ -28,6 +28,8 @@ def test_post_award_level_1() -> None:
     assert post.post_awards.count() == 1
     assert user.awards.count() == 1
     assert award.gold == 15
+    assert post.gold == 15
+    assert user.profile.gold_awards == 1
 
 
 @pytest.mark.django_db()
@@ -139,3 +141,5 @@ def test_post_award_anonymous() -> None:
     awards = post.get_post_awards()
     assert len(awards) == 1
     assert awards[0].anonymous_nickname == "Anonymous"
+    assert awards[0].user is None
+    assert awards[0].nickname is None
