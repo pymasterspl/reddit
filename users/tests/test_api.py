@@ -3,7 +3,6 @@ import pytest
 import dj_rest_auth.views
 from rest_framework.test import force_authenticate
 from django.contrib.sessions.middleware import SessionMiddleware
-
 from users.models import User
 
 
@@ -22,6 +21,18 @@ def user_data(create_avatar):
         "avatar": create_avatar,
     }
 
+
+@pytest.fixture()
+def create_usersettings_data():
+    def _usersettings_data(user):
+        return {
+            "is_beta": True,
+            "is_over_18": False,
+            "content_lang": "en",
+            "user": user.id,
+            "location": "UA",
+        }
+    return _usersettings_data
 
 def test_login_and_logout(api_client, user, api_request_factory):
     """
@@ -158,3 +169,44 @@ def test_profile(api_client, another_user, user_with_everything):
     response = api_client.get(reverse("profile", kwargs={"pk": user_with_everything.profile.pk}))
     assert response.status_code == 200
     assert_profile_fields(response.data, user_with_everything.profile)
+
+
+def test_my_usersettings(api_client, user, usersettings):
+    api_client.force_authenticate(user)
+    settings_obj = usersettings(user)
+    response = api_client.get(reverse("my_user_settings"), format="json")
+    assert response.status_code == 200
+    assert settings_obj.user.id == response.data["user"]
+    assert settings_obj.is_beta == response.data["is_beta"]
+    assert settings_obj.is_over_18 == response.data["is_over_18"]
+    assert settings_obj.content_lang == response.data["content_lang"]
+    assert settings_obj.location == response.data["location"]
+
+
+def test_my_usersettings_put(api_client, user, create_usersettings_data):
+    api_client.force_authenticate(user)
+    settings_data = create_usersettings_data(user)
+    response = api_client.put(reverse("my_user_settings"), settings_data, format="json")
+    print("x", response.data)
+    assert response.status_code == 200
+    assert settings_data["user"] == user.id
+    assert settings_data["content_lang"] == user.usersettings.content_lang
+    assert settings_data["is_over_18"] == user.usersettings.is_over_18
+    assert settings_data["location"] == user.usersettings.location
+    assert settings_data["is_beta"] == user.usersettings.is_beta
+
+
+@pytest.mark.parametrize("changed_field", ["content_lang", "is_over_18", "location", "is_beta"])
+def test_my_usersettings_patch(changed_field, api_client, user, create_usersettings_data):
+    api_client.force_authenticate(user)
+    settings_data = create_usersettings_data(user)
+    data = {changed_field: settings_data[changed_field]}
+    response = api_client.patch(reverse("my_user_settings"), data, format="json")
+    assert response.status_code == 200
+    assert getattr(user.usersettings, changed_field)== settings_data[changed_field]
+
+
+def test_my_usersettings_if_protected(api_client, user, usersettings):
+    usersettings(user)
+    response = api_client.get(reverse("my_user_settings"))
+    assert response.status_code == 401
