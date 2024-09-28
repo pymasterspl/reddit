@@ -25,13 +25,14 @@ def test_post_award_level_1() -> None:
     user.community = community
     user.save()
     post = Post.objects.create(author=user2, title="Test post", community=community)
-    award = PostAward.objects.create(post=post, user=user, choice=PostAward.REWARD_CHOICES[0][0])
+    award = PostAward.objects.create(post=post, giver=user, choice=PostAward.REWARD_CHOICES[0][0])
     user2.profile.refresh_from_db()
+    post.refresh_from_db()
 
     assert award.post == post
-    assert award.user == user
+    assert award.giver == user
     assert post.post_awards.count() == 1
-    assert user2.awards.count() == 1
+    assert user.awards_given.count() == 1
     assert award.gold == 15
     assert post.gold == 15
     assert user2.profile.gold_awards == 15
@@ -46,12 +47,12 @@ def test_post_award_level_2() -> None:
     user.community = community
     user.save()
     post = Post.objects.create(author=user, title="Test post", community=community)
-    award = PostAward.objects.create(post=post, user=user, choice=PostAward.REWARD_CHOICES[5][0])
+    award = PostAward.objects.create(post=post, giver=user, choice=PostAward.REWARD_CHOICES[5][0])
 
     assert award.post == post
-    assert award.user == user
+    assert award.giver == user
     assert post.post_awards.count() == 1
-    assert user.awards.count() == 1
+    assert user.awards_given.count() == 1
     assert award.gold == 25
 
 
@@ -64,12 +65,12 @@ def test_post_award_level_3() -> None:
     user.community = community
     user.save()
     post = Post.objects.create(author=user, title="Test post", community=community)
-    award = PostAward.objects.create(post=post, user=user, choice=PostAward.REWARD_CHOICES[10][0])
+    award = PostAward.objects.create(post=post, giver=user, choice=PostAward.REWARD_CHOICES[10][0])
 
     assert award.post == post
-    assert award.user == user
+    assert award.giver == user
     assert post.post_awards.count() == 1
-    assert user.awards.count() == 1
+    assert user.awards_given.count() == 1
     assert award.gold == 50
 
 
@@ -84,12 +85,12 @@ def test_post_award_all_choices(choice, expected_gold):
     password = fake.password()
     user = User.objects.create_user(email="testuser@example.com", nickname="testuser", password=password)
     post = Post.objects.create(author=user, title="Test post", community=community)
-    award = PostAward.objects.create(post=post, user=user, choice=choice)
+    award = PostAward.objects.create(post=post, giver=user, choice=choice)
     assert award.post == post
-    assert award.user == user
+    assert award.giver == user
     assert award.gold == expected_gold
     assert post.post_awards.count() == 1
-    assert user.awards.count() == 1
+    assert user.awards_given.count() == 1
 
 
 
@@ -111,17 +112,16 @@ def test_post_award_multiple_users() -> None:
     user3.save()
     post = Post.objects.create(author=user1, title="Test post", community=community)
 
-    award2 = PostAward.objects.create(post=post, user=user2, choice=PostAward.REWARD_CHOICES[6][0])
-    award1 = PostAward.objects.create(post=post, user=user1, choice=PostAward.REWARD_CHOICES[1][0])
-
-    award3 = PostAward.objects.create(post=post, user=user3, choice=PostAward.REWARD_CHOICES[11][0])
+    award1 = PostAward.objects.create(post=post, giver=user1, choice=PostAward.REWARD_CHOICES[1][0])
+    award2 = PostAward.objects.create(post=post, giver=user2, choice=PostAward.REWARD_CHOICES[6][0]) 
+    award3 = PostAward.objects.create(post=post, giver=user3, choice=PostAward.REWARD_CHOICES[11][0])
 
     post = Post.objects.get(author=user1, title="Test post", community=community)
 
     assert post.post_awards.count() == 3
-    assert user1.awards.count() == 1
-    assert user2.awards.count() == 1
-    assert user3.awards.count() == 1
+    assert user1.awards_given.count() == 1
+    assert user2.awards_given.count() == 1
+    assert user3.awards_given.count() == 1
     assert award1.gold == 15
     assert award2.gold == 25
     assert award3.gold == 50
@@ -136,23 +136,22 @@ def test_post_award_anonymous() -> None:
     user1 = User.objects.create_user(email="test@example.com", password=password, nickname="testuser1")
     user2 = User.objects.create_user(email="test2@example.com", password=password, nickname="testuser2")
     post = Post.objects.create(author=user1, title="Test post", content="Test content", community=community)
-    PostAward.objects.create(post=post, user=user2, anonymous=True)
-    PostAward.objects.create(post=post, user=user1, anonymous=False)
+    PostAward.objects.create(post=post, giver=user2, anonymous=True)
+    PostAward.objects.create(post=post, giver=user1, anonymous=False)
     awards = post.get_post_awards()
+    print(awards)
     assert len(awards) == 2
-    assert awards[0].anonymous_nickname == "Anonymous"
-    assert awards[0].user is None
-    assert awards[0].nickname is None
-    assert awards[1].nickname == "testuser1"
+    assert awards[0]['giver_anonim'] == "Anonymous"
+    assert awards[1]['giver_anonim'] == "testuser1"
 
-
+@pytest.mark.django_db()
 def test_post_award_duplicate_prevention() -> None:
     community = Community.objects.create(name="Test community")
     password = fake.password()
     user = User.objects.create_user(email="test@example.com", password=password, nickname="testuser")
     post = Post.objects.create(author=user, title="Test post", content="Test content", community=community)
 
-    PostAward.objects.create(post=post, user=user, choice=PostAward.REWARD_CHOICES[0][0])
+    PostAward.objects.create(post=post, giver=user, choice=PostAward.REWARD_CHOICES[0][0])
 
     with pytest.raises(ValueError):
-        PostAward.objects.create(post=post, user=user, choice=PostAward.REWARD_CHOICES[0][0])
+        PostAward.objects.create(post=post, giver=user, choice=PostAward.REWARD_CHOICES[0][0])

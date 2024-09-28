@@ -46,7 +46,7 @@
         </div>
         {% for award in post.get_post_awards %}
             <div>
-                <img src="{% static 'core/icons/' %}{{ award.choice }}.png" title="{{ award.anonymous_nickname }}" width="30" height="30">
+                <img src="{% static 'core/icons/' %}{{ award.choice }}.png" title="{{ award.giver_anonim }}" width="30" height="30">
             </div>        
         {% endfor %}
         {{post.gold}}
