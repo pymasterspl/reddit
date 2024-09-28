@@ -1,15 +1,27 @@
-from unittest.mock import patch
 from django.urls import reverse
 import pytest
 import dj_rest_auth.views
 from rest_framework.test import force_authenticate
 from django.contrib.sessions.middleware import SessionMiddleware
 
+from users.models import User
+
 
 pytestmark = pytest.mark.django_db
 
 
 PREFIX = "http://testserver"
+
+
+
+@pytest.fixture()
+def user_data(create_avatar):
+    return {
+        "nickname": "userin",
+        "email": "userin@user.pl",
+        "avatar": create_avatar,
+    }
+
 
 def test_login_and_logout(api_client, user, api_request_factory):
     """
@@ -41,6 +53,7 @@ def test_login_and_logout(api_client, user, api_request_factory):
     response_protected = dj_rest_auth.views.UserDetailsView.as_view()(request)
     assert response_protected.status_code == 401
 
+# TODO 404 for these, zły token
 
 def test_user_detail(api_client, user):
     assert user.profile
@@ -57,6 +70,46 @@ def test_user_detail(api_client, user):
     assert "last_activity_ago" in response.data
     assert "last_activity" in response.data
 
+
+def test_user_detail_put(api_client, user, profile, user_data):
+    api_client.force_authenticate(user)
+    profile(user)
+    response = api_client.put(reverse("rest_user_details"), user_data, format="multipart")
+    avatar_name = user_data["avatar"].name.split(".")[0]
+    assert response.status_code == 200
+    assert user.nickname == user_data["nickname"]
+    assert user.email == user_data["email"]
+    assert avatar_name in user.avatar.name
+
+
+@pytest.mark.parametrize("missing_field", ["nickname", "email"])
+def test_user_detail_put_missing_field(api_client, user_data, missing_field, user, profile):
+    api_client.force_authenticate(user)
+    profile(user)
+    del user_data[missing_field]
+    response = api_client.put(reverse("rest_user_details"), user_data, format="multipart")
+    assert response.status_code == 400
+
+
+@pytest.mark.parametrize("changed_field", ["nickname", "email"])
+def test_user_detail_patch_field(api_client, changed_field, user, user_data):
+    api_client.force_authenticate(user)
+    data = {changed_field: user_data[changed_field]}
+    response = api_client.patch(reverse("rest_user_details"), data, "json")
+    assert response.status_code == 200
+    assert getattr(user, changed_field)== user_data[changed_field]
+
+
+def test_user_detail_patch_avatar(api_client, user, user_data):
+    api_client.force_authenticate(user)
+    avatar_in_data = user_data["avatar"]
+    avatar_in_data.name = "some_name.jpg"
+    data = {"avatar": avatar_in_data}
+    response = api_client.patch(reverse("rest_user_details"), data, format="multipart")
+    assert response.status_code == 200
+    assert user.avatar
+    assert "some_name" in user.avatar.name
+    
 
 def test_user_detail_check_if_protected(api_client):
     response = api_client.get(reverse("rest_user_details"), format="json")
