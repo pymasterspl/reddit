@@ -1,11 +1,12 @@
 from django.urls import include, path
-from .api_views import MyProfileAPIView, ProfileAPIView
+from .api_views import MyProfileAPIView, ProfileAPIView, MyUserSettingsAPIView
 
 
 urlpatterns = [
     path("", include("dj_rest_auth.urls")),
     path("my-profile/", MyProfileAPIView.as_view(), name="my_profile"),
-    path("profile/<int:pk>/", ProfileAPIView.as_view(), name="profile"), 
+    path("profile/<int:pk>/", ProfileAPIView.as_view(), name="profile"),
+    path("my-settings/", MyUserSettingsAPIView.as_view(), name="my_user_settings"),
 ]
 
 """
