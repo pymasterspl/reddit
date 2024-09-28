@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import F, QuerySet, Case, When, Value
+from django.db.models import Case, F, QuerySet, Value, When
 from django.utils import timezone
 from django.utils.text import slugify
 
@@ -45,16 +45,24 @@ class PostManagerMixin:
 
 class ActivePostManagers(PostManagerMixin, ActiveOnlyManager):
     pass
-    
+
+
 class PostAwardManager(models.Manager):
-    def get_post_awards_anonimous(self):
-        return self.get_queryset().values(
-            'id', 'post_id', 'choice', 'anonymous',
-        ).annotate(
-            giver_anonim=Case(
-                When(anonymous=True, giver__isnull=False, then=Value('Anonymous')),
-                default=F('giver__nickname'),
-                output_field=models.CharField(max_length=255)
+    def get_post_awards_anonimous(self: "PostAwardManager") -> QuerySet:
+        return (
+            self.get_queryset()
+            .values(
+                "id",
+                "post_id",
+                "choice",
+                "anonymous",
+            )
+            .annotate(
+                giver_anonim=Case(
+                    When(anonymous=True, giver__isnull=False, then=Value("Anonymous")),
+                    default=F("giver__nickname"),
+                    output_field=models.CharField(max_length=255),
+                )
             )
         )
 
@@ -285,9 +293,6 @@ class PostVote(models.Model):
 
 
 class PostAward(models.Model):
-
-    objects = PostAwardManager()
-
     REWARD_POINTS: ClassVar[dict[int, int]] = {
         1: 15,  # Level 1 gives 15 points
         2: 25,  # Level 2 gives 25 points
@@ -310,6 +315,8 @@ class PostAward(models.Model):
     anonymous = models.BooleanField(default=False)
     comment = models.CharField(max_length=100, blank=True, default="")
 
+    objects = PostAwardManager()
+
     class Meta:
         unique_together: ClassVar[list[str]] = ["post", "giver"]
 
@@ -318,7 +325,8 @@ class PostAward(models.Model):
 
     def save(self: "PostAward", *args: int, **kwargs: int) -> None:
         if self.check_duplicate_award():
-            raise ValueError("Already given award")
+            msg = "Already given award"
+            raise ValueError(msg)
 
         if self.choice.startswith("1"):
             self.gold = 15
@@ -329,10 +337,10 @@ class PostAward(models.Model):
 
         super().save(*args, **kwargs)
 
-        self.post.author.profile.gold_awards = F('gold_awards') + self.gold
-        self.post.author.profile.save(update_fields=['gold_awards'])
+        self.post.author.profile.gold_awards = F("gold_awards") + self.gold
+        self.post.author.profile.save(update_fields=["gold_awards"])
 
-        Post.objects.filter(pk=self.post.pk).update(gold=F('gold') + self.gold)
+        Post.objects.filter(pk=self.post.pk).update(gold=F("gold") + self.gold)
 
     def check_duplicate_award(self: "PostAward") -> bool:
         return PostAward.objects.filter(giver=self.giver, post=self.post).exists()

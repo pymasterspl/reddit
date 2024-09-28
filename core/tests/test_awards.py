@@ -74,13 +74,16 @@ def test_post_award_level_3() -> None:
     assert award.gold == 50
 
 
-@pytest.mark.django_db
-@pytest.mark.parametrize("choice, expected_gold", [
-    (PostAward.REWARD_CHOICES[0][0], 15), 
-    (PostAward.REWARD_CHOICES[5][0], 25), 
-    (PostAward.REWARD_CHOICES[10][0], 50),
-])
-def test_post_award_all_choices(choice, expected_gold):
+@pytest.mark.django_db()
+@pytest.mark.parametrize(
+    ("choice", "expected_gold"),
+    [
+        (PostAward.REWARD_CHOICES[0][0], 15),
+        (PostAward.REWARD_CHOICES[5][0], 25),
+        (PostAward.REWARD_CHOICES[10][0], 50),
+    ],
+)
+def test_post_award_all_choices(choice: str, expected_gold: int) -> None:
     community = Community.objects.create(name="Test community")
     password = fake.password()
     user = User.objects.create_user(email="testuser@example.com", nickname="testuser", password=password)
@@ -91,7 +94,6 @@ def test_post_award_all_choices(choice, expected_gold):
     assert award.gold == expected_gold
     assert post.post_awards.count() == 1
     assert user.awards_given.count() == 1
-
 
 
 @pytest.mark.django_db()
@@ -113,7 +115,7 @@ def test_post_award_multiple_users() -> None:
     post = Post.objects.create(author=user1, title="Test post", community=community)
 
     award1 = PostAward.objects.create(post=post, giver=user1, choice=PostAward.REWARD_CHOICES[1][0])
-    award2 = PostAward.objects.create(post=post, giver=user2, choice=PostAward.REWARD_CHOICES[6][0]) 
+    award2 = PostAward.objects.create(post=post, giver=user2, choice=PostAward.REWARD_CHOICES[6][0])
     award3 = PostAward.objects.create(post=post, giver=user3, choice=PostAward.REWARD_CHOICES[11][0])
 
     post = Post.objects.get(author=user1, title="Test post", community=community)
@@ -140,10 +142,10 @@ def test_post_award_anonymous() -> None:
     PostAward.objects.create(post=post, giver=user2, anonymous=True)
     PostAward.objects.create(post=post, giver=user1, anonymous=False)
     awards = post.get_post_awards()
-    print(awards)
     assert len(awards) == 2
-    assert awards[0]['giver_anonim'] == "Anonymous"
-    assert awards[1]['giver_anonim'] == "testuser1"
+    assert awards[0]["giver_anonim"] == "Anonymous"
+    assert awards[1]["giver_anonim"] == "testuser1"
+
 
 @pytest.mark.django_db()
 def test_post_award_duplicate_prevention() -> None:
@@ -154,5 +156,5 @@ def test_post_award_duplicate_prevention() -> None:
 
     PostAward.objects.create(post=post, giver=user, choice=PostAward.REWARD_CHOICES[0][0])
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Already given award"):
         PostAward.objects.create(post=post, giver=user, choice=PostAward.REWARD_CHOICES[0][0])
