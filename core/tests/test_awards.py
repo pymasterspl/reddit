@@ -17,19 +17,24 @@ def test_post_award_level_1() -> None:
     community = Community.objects.create(name="Test community")
     password = fake.password()
     user = User.objects.create_user(email="testuser@example.com", nickname="testuser", password=password)
+    user2 = User.objects.create_user(email="testuser2@example.com", nickname="testuser2", password=password)
     user.username = "testuser"
     user.community = community
     user.save()
-    post = Post.objects.create(author=user, title="Test post", community=community)
+    user.username = "testuser2"
+    user.community = community
+    user.save()
+    post = Post.objects.create(author=user2, title="Test post", community=community)
     award = PostAward.objects.create(post=post, user=user, choice=PostAward.REWARD_CHOICES[0][0])
+    user2.profile.refresh_from_db()
 
     assert award.post == post
     assert award.user == user
     assert post.post_awards.count() == 1
-    assert user.awards.count() == 1
+    assert user2.awards.count() == 1
     assert award.gold == 15
     assert post.gold == 15
-    assert user.profile.gold_awards == 1
+    assert user2.profile.gold_awards == 15
 
 
 @pytest.mark.django_db()
@@ -68,30 +73,24 @@ def test_post_award_level_3() -> None:
     assert award.gold == 50
 
 
-@pytest.mark.django_db()
-def test_post_award_all_choices() -> None:
+@pytest.mark.django_db
+@pytest.mark.parametrize("choice, expected_gold", [
+    (PostAward.REWARD_CHOICES[0][0], 15), 
+    (PostAward.REWARD_CHOICES[5][0], 25), 
+    (PostAward.REWARD_CHOICES[10][0], 50),
+])
+def test_post_award_all_choices(choice, expected_gold):
     community = Community.objects.create(name="Test community")
     password = fake.password()
     user = User.objects.create_user(email="testuser@example.com", nickname="testuser", password=password)
-    user.username = "testuser"
-    user.community = community
-    user.save()
     post = Post.objects.create(author=user, title="Test post", community=community)
-    choices = [PostAward.REWARD_CHOICES[0][0], PostAward.REWARD_CHOICES[5][0], PostAward.REWARD_CHOICES[10][0]]
-    for choice in choices:
-        award = PostAward.objects.create(post=post, user=user, choice=choice)
-        assert award.post == post
-        assert award.user == user
-        assert post.post_awards.count() == 1
-        assert user.awards.count() == 1
-        if choice == PostAward.REWARD_CHOICES[0][0]:
-            assert award.gold == 15
-        elif choice == PostAward.REWARD_CHOICES[5][0]:
-            assert award.gold == 25
-        elif choice == PostAward.REWARD_CHOICES[10][0]:
-            assert award.gold == 50
-        # usuń nagrodę, aby móc utworzyć następną
-        award.delete()
+    award = PostAward.objects.create(post=post, user=user, choice=choice)
+    assert award.post == post
+    assert award.user == user
+    assert award.gold == expected_gold
+    assert post.post_awards.count() == 1
+    assert user.awards.count() == 1
+
 
 
 @pytest.mark.django_db()
@@ -138,8 +137,22 @@ def test_post_award_anonymous() -> None:
     user2 = User.objects.create_user(email="test2@example.com", password=password, nickname="testuser2")
     post = Post.objects.create(author=user1, title="Test post", content="Test content", community=community)
     PostAward.objects.create(post=post, user=user2, anonymous=True)
+    PostAward.objects.create(post=post, user=user1, anonymous=False)
     awards = post.get_post_awards()
-    assert len(awards) == 1
+    assert len(awards) == 2
     assert awards[0].anonymous_nickname == "Anonymous"
     assert awards[0].user is None
     assert awards[0].nickname is None
+    assert awards[1].nickname == "testuser1"
+
+
+def test_post_award_duplicate_prevention() -> None:
+    community = Community.objects.create(name="Test community")
+    password = fake.password()
+    user = User.objects.create_user(email="test@example.com", password=password, nickname="testuser")
+    post = Post.objects.create(author=user, title="Test post", content="Test content", community=community)
+
+    PostAward.objects.create(post=post, user=user, choice=PostAward.REWARD_CHOICES[0][0])
+
+    with pytest.raises(ValueError):
+        PostAward.objects.create(post=post, user=user, choice=PostAward.REWARD_CHOICES[0][0])

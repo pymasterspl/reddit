@@ -120,7 +120,7 @@ class PostAwardCreateView(LoginRequiredMixin, CreateView):
 
         try:
             return super().form_valid(form)
-        except ValueError as e:
+        except DuplicateAwardError as e:
             form.add_error(None, str(e))
             return self.form_invalid(form)
 

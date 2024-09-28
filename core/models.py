@@ -192,7 +192,7 @@ class Post(GenericModel):
         return self.up_votes - self.down_votes
 
     def get_content_type(self: "Post") -> ContentType:
-        return self.objects.get_for_model(self)
+        return ContentType.objects.get_for_model(self)
 
     def get_post_awards(self: "Post") -> QuerySet:
         return self.objects.get_post_awards_with_annotations().filter(id=self.id)
@@ -308,10 +308,9 @@ class PostAward(models.Model):
     def __str__(self: "PostAward") -> str:
         return f"@{self.user}: {self.choice} for post: {self.post}"
 
-    def save(self: "PostVote", *args: int, **kwargs: int) -> None:
+    def save(self: "PostAward", *args: int, **kwargs: int) -> None:
         if self.check_duplicate_award():
-            message = "Already given award"
-            raise ValueError(message)
+            raise ValueError("Already given award")
 
         if self.choice.startswith("1"):
             self.gold = 15
@@ -320,13 +319,12 @@ class PostAward(models.Model):
         elif self.choice.startswith("3"):
             self.gold = 50
 
-        profile = self.post.author.profile
-        profile.gold_awards += self.gold
-        profile.save(update_fields=["gold_awards"])  # adding gold to profile
-
-        Post.objects.filter(pk=self.post.pk).update(gold=F("gold") + self.gold)  # adding gold to post
-
         super().save(*args, **kwargs)
+
+        self.user.profile.gold_awards = F('gold_awards') + self.gold
+        self.user.profile.save(update_fields=['gold_awards'])
+
+        Post.objects.filter(pk=self.post.pk).update(gold=F('gold') + self.gold)
 
     def check_duplicate_award(self: "PostAward") -> bool:
         return PostAward.objects.filter(user=self.user, post=self.post).exists()
