@@ -117,6 +117,7 @@ def test_post_award_multiple_users() -> None:
     award3 = PostAward.objects.create(post=post, giver=user3, choice=PostAward.REWARD_CHOICES[11][0])
 
     post = Post.objects.get(author=user1, title="Test post", community=community)
+    user1 = User.objects.get(email="testuser1@example.com", nickname="testuser1")
 
     assert post.post_awards.count() == 3
     assert user1.awards_given.count() == 1
