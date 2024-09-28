@@ -53,3 +53,4 @@ class UserSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserSettings
         fields = ["user", "location", "content_lang", "is_beta", "is_over_18"]
+        read_only_fields = ["user"]
