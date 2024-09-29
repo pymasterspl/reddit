@@ -115,7 +115,7 @@ class PostAwardCreateView(LoginRequiredMixin, CreateView):
         return context
 
     def form_valid(self: "PostAwardCreateView", form: PostAwardForm) -> HttpResponseRedirect:
-        form.instance.user = self.request.user  # Set current user
+        form.instance.giver = self.request.user  # Set current user
         form.instance.post = get_object_or_404(Post, pk=self.kwargs["pk"])  # Get post with pk from URL
 
         try:
