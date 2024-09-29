@@ -293,23 +293,24 @@ class PostVote(models.Model):
 
 
 class PostAward(models.Model):
-    REWARD_POINTS: ClassVar[dict[int, int]] = {
-        1: 15,  # Level 1 gives 15 points
-        2: 25,  # Level 2 gives 25 points
-        3: 50,  # Level 3 gives 50 points
-    }
 
-    REWARD_CHOICES: ClassVar[list[tuple[str, str]]] = []
-
-    for level, points in REWARD_POINTS.items():
-        for i in range(1, 6):  # 5 icons for each level
-            reward_code = f"{level}{i}_REWARD"
-            reward_points = f"{points} points"
-            REWARD_CHOICES.append((reward_code, reward_points))
+    def get_reward_choices():
+        REWARD_POINTS = {
+            1: 15,  # Level 1 gives 15 points
+            2: 25,  # Level 2 gives 25 points
+            3: 50,  # Level 3 gives 50 points
+        }
+        REWARD_CHOICES = []
+        for level, points in REWARD_POINTS.items():
+            for i in range(1, 6):  # 5 icons for each level
+                reward_code = f"{level}{i}_REWARD"
+                reward_points = f"{points} points"
+                REWARD_CHOICES.append((reward_code, reward_points))
+        return REWARD_CHOICES
 
     giver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="awards_given")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="post_awards")
-    choice = models.CharField(max_length=20, choices=REWARD_CHOICES)
+    choice = models.CharField(max_length=20, choices=get_reward_choices())
     gold = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     anonymous = models.BooleanField(default=False)
@@ -322,6 +323,8 @@ class PostAward(models.Model):
 
     def __str__(self: "PostAward") -> str:
         return f"@{self.giver}: {self.choice} for post: {self.post}"
+    
+    
 
     def save(self: "PostAward", *args: int, **kwargs: int) -> None:
         if self.check_duplicate_award():

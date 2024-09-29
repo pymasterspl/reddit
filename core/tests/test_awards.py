@@ -16,9 +16,9 @@ fake = Faker()
 @pytest.mark.parametrize(
     ("choice", "expected_gold"),
     [
-        (PostAward.REWARD_CHOICES[0][0], 15),
-        (PostAward.REWARD_CHOICES[5][0], 25),
-        (PostAward.REWARD_CHOICES[10][0], 50),
+        (PostAward.get_reward_choices()[0][0], 15),
+        (PostAward.get_reward_choices()[5][0], 25),
+        (PostAward.get_reward_choices()[10][0], 50),
     ],
 )
 def test_post_award_level(choice: str, expected_gold: int) -> None:
@@ -52,9 +52,9 @@ def test_post_award_level(choice: str, expected_gold: int) -> None:
 @pytest.mark.parametrize(
     ("choice", "expected_gold"),
     [
-        (PostAward.REWARD_CHOICES[0][0], 15),
-        (PostAward.REWARD_CHOICES[5][0], 25),
-        (PostAward.REWARD_CHOICES[10][0], 50),
+        (PostAward.get_reward_choices()[0][0], 15),
+        (PostAward.get_reward_choices()[5][0], 25),
+        (PostAward.get_reward_choices()[10][0], 50),
     ],
 )
 def test_post_award_all_choices(choice: str, expected_gold: int) -> None:
@@ -88,9 +88,9 @@ def test_post_award_multiple_users() -> None:
     user3.save()
     post = Post.objects.create(author=user1, title="Test post", community=community)
 
-    award1 = PostAward.objects.create(post=post, giver=user1, choice=PostAward.REWARD_CHOICES[1][0])
-    award2 = PostAward.objects.create(post=post, giver=user2, choice=PostAward.REWARD_CHOICES[6][0])
-    award3 = PostAward.objects.create(post=post, giver=user3, choice=PostAward.REWARD_CHOICES[11][0])
+    award1 = PostAward.objects.create(post=post, giver=user1, choice=PostAward.get_reward_choices()[1][0])
+    award2 = PostAward.objects.create(post=post, giver=user2, choice=PostAward.get_reward_choices()[6][0])
+    award3 = PostAward.objects.create(post=post, giver=user3, choice=PostAward.get_reward_choices()[11][0])
 
     post = Post.objects.get(author=user1, title="Test post", community=community)
     user1 = User.objects.get(email="testuser1@example.com", nickname="testuser1")
@@ -128,7 +128,7 @@ def test_post_award_duplicate_prevention() -> None:
     user = User.objects.create_user(email="test@example.com", password=password, nickname="testuser")
     post = Post.objects.create(author=user, title="Test post", content="Test content", community=community)
 
-    PostAward.objects.create(post=post, giver=user, choice=PostAward.REWARD_CHOICES[0][0])
+    PostAward.objects.create(post=post, giver=user, choice=PostAward.get_reward_choices()[0][0])
 
     with pytest.raises(ValueError, match="Already given award"):
-        PostAward.objects.create(post=post, giver=user, choice=PostAward.REWARD_CHOICES[0][0])
+        PostAward.objects.create(post=post, giver=user, choice=PostAward.get_reward_choices()[0][0])
