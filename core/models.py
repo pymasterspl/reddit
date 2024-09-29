@@ -331,13 +331,14 @@ class PostAward(models.Model):
             msg = "Already given award"
             raise ValueError(msg)
 
-        if self.choice.startswith("1"):
-            self.gold = 15
-        elif self.choice.startswith("2"):
-            self.gold = 25
-        elif self.choice.startswith("3"):
-            self.gold = 50
-
+        match self.choice[0]:
+            case "1":
+                self.gold = 15
+            case "2":
+                self.gold = 25
+            case "3":
+                self.gold = 50
+        
         super().save(*args, **kwargs)
 
         self.post.author.profile.gold_awards = F("gold_awards") + self.gold
