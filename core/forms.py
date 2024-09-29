@@ -51,8 +51,8 @@ class IconRadioSelect(forms.RadioSelect):
 class PostAwardForm(forms.ModelForm):
     class Meta:
         model = PostAward
-        fields: ClassVar[list[str]] = ["choice", "anonymous", "comment"]
-        widgets: ClassVar[dict[str, forms.Widget]] = {
+        fields = ["choice", "anonymous", "comment"]
+        widgets = {
             "choice": IconRadioSelect(attrs={"class": "form-check-input"}),
             "anonymous": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "comment": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Optional comment"}),

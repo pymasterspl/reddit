@@ -13,7 +13,15 @@ fake = Faker()
 
 
 @pytest.mark.django_db()
-def test_post_award_level_1() -> None:
+@pytest.mark.parametrize(
+    ("choice", "expected_gold"),
+    [
+        (PostAward.REWARD_CHOICES[0][0], 15),
+        (PostAward.REWARD_CHOICES[5][0], 25),
+        (PostAward.REWARD_CHOICES[10][0], 50),
+    ],
+)
+def test_post_award_level(choice: str, expected_gold: int) -> None:
     community = Community.objects.create(name="Test community")
     password = fake.password()
     user = User.objects.create_user(email="testuser@example.com", nickname="testuser", password=password)
@@ -21,57 +29,23 @@ def test_post_award_level_1() -> None:
     user.username = "testuser"
     user.community = community
     user.save()
-    user.username = "testuser2"
-    user.community = community
-    user.save()
+    user2.username = "testuser2"
+    user2.community = community
+    user2.save()
     post = Post.objects.create(author=user2, title="Test post", community=community)
-    award = PostAward.objects.create(post=post, giver=user, choice=PostAward.REWARD_CHOICES[0][0])
+    award = PostAward.objects.create(post=post, giver=user, choice=choice)
     user2.profile.refresh_from_db()
     post.refresh_from_db()
+    award.refresh_from_db()
+    
 
     assert award.post == post
     assert award.giver == user
     assert post.post_awards.count() == 1
     assert user.awards_given.count() == 1
-    assert award.gold == 15
-    assert post.gold == 15
-    assert user2.profile.gold_awards == 15
-
-
-@pytest.mark.django_db()
-def test_post_award_level_2() -> None:
-    community = Community.objects.create(name="Test community")
-    password = fake.password()
-    user = User.objects.create_user(email="testuser@example.com", nickname="testuser", password=password)
-    user.username = "testuser"
-    user.community = community
-    user.save()
-    post = Post.objects.create(author=user, title="Test post", community=community)
-    award = PostAward.objects.create(post=post, giver=user, choice=PostAward.REWARD_CHOICES[5][0])
-
-    assert award.post == post
-    assert award.giver == user
-    assert post.post_awards.count() == 1
-    assert user.awards_given.count() == 1
-    assert award.gold == 25
-
-
-@pytest.mark.django_db()
-def test_post_award_level_3() -> None:
-    community = Community.objects.create(name="Test community")
-    password = fake.password()
-    user = User.objects.create_user(email="testuser@example.com", nickname="testuser", password=password)
-    user.username = "testuser"
-    user.community = community
-    user.save()
-    post = Post.objects.create(author=user, title="Test post", community=community)
-    award = PostAward.objects.create(post=post, giver=user, choice=PostAward.REWARD_CHOICES[10][0])
-
-    assert award.post == post
-    assert award.giver == user
-    assert post.post_awards.count() == 1
-    assert user.awards_given.count() == 1
-    assert award.gold == 50
+    assert award.gold == expected_gold
+    assert post.gold == expected_gold
+    assert user2.profile.gold_awards == expected_gold
 
 
 @pytest.mark.django_db()
