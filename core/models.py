@@ -327,9 +327,6 @@ class PostAward(models.Model):
     
 
     def save(self: "PostAward", *args: int, **kwargs: int) -> None:
-        if self.check_duplicate_award():
-            msg = "Already given award"
-            raise ValueError(msg)
 
         match self.choice[0]:
             case "1":
@@ -345,9 +342,6 @@ class PostAward(models.Model):
         self.post.author.profile.save(update_fields=["gold_awards"])
 
         Post.objects.filter(pk=self.post.pk).update(gold=F("gold") + self.gold)
-
-    def check_duplicate_award(self: "PostAward") -> bool:
-        return PostAward.objects.filter(giver=self.giver, post=self.post).exists()
 
 
 class Image(models.Model):

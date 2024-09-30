@@ -57,13 +57,12 @@ class PostAwardForm(forms.ModelForm):
 
     class Meta:
         model = PostAward
-        fields = ["choice", "anonymous", "comment"]
+        fields = ["choice", "anonymous", "comment", "post"]  
         widgets = {
             "anonymous": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "comment": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Optional comment"}),
         }
         labels = {"choice": ""}
-
 
 class CommunityForm(forms.ModelForm):
     class Meta:

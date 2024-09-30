@@ -113,17 +113,15 @@ class PostAwardCreateView(LoginRequiredMixin, CreateView):
         post = get_object_or_404(Post, pk=self.kwargs["pk"])
         context["post"] = post
         return context
-
-    def form_valid(self: "PostAwardCreateView", form: PostAwardForm) -> HttpResponseRedirect:
-        form.instance.giver = self.request.user  # Set current user
-        form.instance.post = get_object_or_404(Post, pk=self.kwargs["pk"])  # Get post with pk from URL
-
-        try:
-            return super().form_valid(form)
-        except ValueError as e:
-            form.add_error(None, str(e))
-            return self.form_invalid(form)
-
+    
+    def dispatch(self, request, *args, **kwargs):
+        post = get_object_or_404(Post, pk=self.kwargs["pk"])
+        user = request.user
+        if PostAward.objects.filter(post=post, giver=user).exists():
+            messages.error(request, "You've already given an award to this post")
+            return redirect('post-detail', pk=post.pk)
+        return super().dispatch(request, *args, **kwargs)
+    
     def get_success_url(self: "PostAwardCreateView") -> str:
         return reverse("post-detail", kwargs={"pk": self.kwargs["pk"]})
 
