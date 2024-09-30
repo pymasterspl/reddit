@@ -30,13 +30,6 @@ class UserProfileView(LoginRequiredMixin, DetailView):
     def get_object(self: "UserProfileView") -> User:
         return self.request.user
 
-    def get_context_data(self: "UserProfileView", **kwargs: dict[str, Any]) -> dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context["awards"] = self.request.user.awards.all()
-        context["profile"] = self.request.user.profile
-
-        return context
-
 
 class UserEditView(LoginRequiredMixin, UpdateView):
     model = User

@@ -309,6 +309,7 @@ class PostAward(models.Model):
         return REWARD_CHOICES
 
     giver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="awards_given")
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="awards_received")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="post_awards")
     choice = models.CharField(max_length=20, choices=get_reward_choices())
     gold = models.IntegerField(default=0)

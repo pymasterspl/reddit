@@ -21,8 +21,8 @@
                     </span>
                 </p>
                 <p>
-                    Awards(gold={{profile.gold_awards}}):
-                    {%for award in awards %}
+                    Awards(gold={{user.profile.gold_awards}}):
+                    {%for award in user.awards_received.all %}
                         <img src="{% static 'core/icons/' %}{{ award.choice }}.png" alt="{{ option.label }}" width="30" height="30">
                     {%endfor%}
                 </p>
