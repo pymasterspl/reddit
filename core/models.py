@@ -48,7 +48,7 @@ class ActivePostManagers(PostManagerMixin, ActiveOnlyManager):
 
 
 class PostAwardManager(models.Manager):
-    def get_post_awards_anonimous(self: "PostAwardManager") -> QuerySet:
+    def get_post_awards_anonymous(self: "PostAwardManager") -> QuerySet:
         return (
             self.get_queryset()
             .values(
@@ -208,7 +208,7 @@ class Post(GenericModel):
         return ContentType.objects.get_for_model(self)
 
     def get_post_awards(self: "Post") -> QuerySet:
-        return PostAward.objects.get_post_awards_anonimous().filter(post=self)
+        return PostAward.objects.get_post_awards_anonymous().filter(post=self)
 
     def update_tags(self: "Post") -> None:
         current_tags = set(re.findall(r"#(\w+)", self.content))
@@ -295,13 +295,13 @@ class PostVote(models.Model):
 class PostAward(models.Model):
 
     def get_reward_choices():
-        REWARD_POINTS = {
-            1: 15,  # Level 1 gives 15 points
-            2: 25,  # Level 2 gives 25 points
-            3: 50,  # Level 3 gives 50 points
-        }
+        REWARD_POINTS = (
+            (1, 15),
+            (2, 25),
+            (3, 50),
+        )
         REWARD_CHOICES = []
-        for level, points in REWARD_POINTS.items():
+        for level, points in REWARD_POINTS:
             for i in range(1, 6):  # 5 icons for each level
                 reward_code = f"{level}{i}_REWARD"
                 reward_points = f"{points} points"
