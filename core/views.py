@@ -120,6 +120,10 @@ class PostAwardCreateView(LoginRequiredMixin, CreateView):
         if PostAward.objects.filter(post=post, giver=user).exists():
             messages.error(request, "You've already given an award to this post")
             return redirect('post-detail', pk=post.pk)
+        if post.author == request.user:
+            messages.error(request, "You cannot give an award to your own post")
+            return redirect('post-detail', pk=post.pk)
+        
         return super().dispatch(request, *args, **kwargs)
     
     def form_valid(self, form):
