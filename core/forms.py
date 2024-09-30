@@ -49,20 +49,20 @@ class IconRadioSelect(forms.RadioSelect):
 
 
 class PostAwardForm(forms.ModelForm):
+    choice = forms.ChoiceField(
+        choices=PostAward.get_reward_choices(),
+        widget=IconRadioSelect(attrs={"class": "form-check-input"}),
+        required=True
+    )
+
     class Meta:
         model = PostAward
         fields = ["choice", "anonymous", "comment"]
         widgets = {
-            "choice": IconRadioSelect(attrs={"class": "form-check-input"}),
             "anonymous": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "comment": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Optional comment"}),
         }
-
-        labels: ClassVar[dict[str, str]] = {"choice": ""}
-
-    def __init__(self: "PostAwardForm", *args: list, **kwargs: dict) -> None:
-        super().__init__(*args, **kwargs)
-        self.fields["choice"].choices = [choice for choice in self.fields["choice"].choices if choice[0] != ""]
+        labels = {"choice": ""}
 
 
 class CommunityForm(forms.ModelForm):
