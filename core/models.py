@@ -335,9 +335,9 @@ class PostAward(models.Model):
         )
         reward_choices = []
         for level, points in reward_points:
+            reward_points_display = f"{points} points"
             for i in range(1, 6):  # 5 icons for each level
                 reward_code = f"{level}{i}_REWARD"
-                reward_points_display = f"{points} points"
                 reward_choices.append((reward_code, reward_points_display))
         cls.choice.choices = reward_choices  # Assign choices to the class variable
         return reward_choices

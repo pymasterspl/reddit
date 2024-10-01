@@ -1,5 +1,6 @@
 # Standard library imports
 import pytest
+from django.contrib import messages
 
 # Django imports
 from django.contrib.auth import get_user_model
@@ -24,8 +25,10 @@ def test_post_award_anonymous(users: list[User], post: Post) -> None:
     PostAward.objects.create(
         receiver=post.author, post=post, giver=users[0], anonymous=False, choice=PostAward.get_reward_choices()[0][0]
     )
+    users[0].profile.refresh_from_db()
     awards = post.get_post_awards()
     assert len(awards) == 2
+    assert post.author.profile.gold_awards == 30
     assert awards[0]["giver_anonim"] == "Anonymous"
     assert awards[1]["giver_anonim"] == "test_user_1"
 
@@ -85,9 +88,11 @@ def test_post_award_multiple_users(users: list[User], post: Post) -> None:
 @pytest.mark.django_db()
 def test_post_award_duplicate_prevention(users: list[User], post: Post, user: User) -> None:
     post.author = user
-    PostAward.objects.create(
+    award = PostAward.objects.create(
         receiver=post.author, post=post, giver=users[1], choice=PostAward.get_reward_choices()[0][0]
     )
+
+    assert PostAward.objects.filter(id=award.id).exists()
 
     with pytest.raises(
         IntegrityError, match="UNIQUE constraint failed: core_postaward.post_id, core_postaward.giver_id"
@@ -102,6 +107,16 @@ def test_cannot_give_award_to_own_post(client: Client, user: User, post: Post) -
     client.force_login(user)  # log in user
     award_url = reverse("post-award", kwargs={"pk": post.pk})
     response = client.post(award_url, {"choice": "1"})  # try to add award to your own post
+    msg_storage = list(messages.get_messages(response.wsgi_request))
 
     assert response.status_code == 302  # check if user is unable to give reward to his own post
     assert PostAward.objects.count() == 0  # check if user is unable to give reward to his own post
+    assert msg_storage[0].message == "You cannot give an award to your own post"
+
+
+@pytest.mark.django_db()
+def test_award_comment(user: User, post: Post) -> None:
+    award = PostAward.objects.create(
+        receiver=post.author, post=post, giver=user, choice=PostAward.get_reward_choices()[0][0], comment="Test comment"
+    )
+    assert award.comment == "Test comment"
