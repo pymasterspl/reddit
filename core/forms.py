@@ -52,17 +52,18 @@ class PostAwardForm(forms.ModelForm):
     choice = forms.ChoiceField(
         choices=PostAward.get_reward_choices(),
         widget=IconRadioSelect(attrs={"class": "form-check-input"}),
-        required=True
+        required=True,
     )
 
     class Meta:
         model = PostAward
-        fields = ["choice", "anonymous", "comment"]  
+        fields = ["choice", "anonymous", "comment"]
         widgets = {
             "anonymous": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "comment": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Optional comment"}),
         }
         labels = {"choice": ""}
+
 
 class CommunityForm(forms.ModelForm):
     class Meta:

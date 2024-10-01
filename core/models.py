@@ -293,7 +293,6 @@ class PostVote(models.Model):
 
 
 class PostAward(models.Model):
-
     def get_reward_choices():
         REWARD_POINTS = (
             (1, 15),
@@ -324,11 +323,8 @@ class PostAward(models.Model):
 
     def __str__(self: "PostAward") -> str:
         return f"@{self.giver}: {self.choice} for post: {self.post}"
-    
-    
 
     def save(self: "PostAward", *args: int, **kwargs: int) -> None:
-
         match self.choice[0]:
             case "1":
                 self.gold = 15
@@ -336,7 +332,7 @@ class PostAward(models.Model):
                 self.gold = 25
             case "3":
                 self.gold = 50
-        
+
         super().save(*args, **kwargs)
 
         self.post.author.profile.gold_awards = F("gold_awards") + self.gold
