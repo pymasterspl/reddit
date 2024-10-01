@@ -1,17 +1,33 @@
 # Standard library imports
 import pytest
 
-# Django and third-party imports
+# Django imports
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
+from django.test import Client
 from django.urls import reverse
 from faker import Faker
 
 # Local application imports
-from core.models import PostAward
+from core.models import Post, PostAward
 
 User = get_user_model()
 fake = Faker()
+
+
+@pytest.mark.django_db()
+def test_post_award_anonymous(users: list[User], post: Post) -> None:
+    post.author = users[0]
+    PostAward.objects.create(
+        receiver=post.author, post=post, giver=users[1], anonymous=True, choice=PostAward.get_reward_choices()[0][0]
+    )
+    PostAward.objects.create(
+        receiver=post.author, post=post, giver=users[0], anonymous=False, choice=PostAward.get_reward_choices()[0][0]
+    )
+    awards = post.get_post_awards()
+    assert len(awards) == 2
+    assert awards[0]["giver_anonim"] == "Anonymous"
+    assert awards[1]["giver_anonim"] == "test_user_1"
 
 
 @pytest.mark.django_db()
@@ -23,7 +39,7 @@ fake = Faker()
         (PostAward.get_reward_choices()[10][0], 50),
     ],
 )
-def test_post_award_level(choice: str, expected_gold: int, users, post) -> None:
+def test_post_award_level(choice: str, expected_gold: int, users: list[User], post: Post) -> None:
     post.author = users[0]
     award = PostAward.objects.create(receiver=post.author, post=post, giver=users[1], choice=choice)
     users[1].profile.refresh_from_db()
@@ -41,7 +57,7 @@ def test_post_award_level(choice: str, expected_gold: int, users, post) -> None:
 
 
 @pytest.mark.django_db()
-def test_post_award_multiple_users(users, post) -> None:
+def test_post_award_multiple_users(users: list[User], post: Post) -> None:
     post.author = users[0]
     award1 = PostAward.objects.create(
         receiver=post.author, post=post, giver=users[0], choice=PostAward.get_reward_choices()[1][0]
@@ -67,22 +83,7 @@ def test_post_award_multiple_users(users, post) -> None:
 
 
 @pytest.mark.django_db()
-def test_post_award_anonymous(users, post) -> None:
-    post.author = users[0]
-    PostAward.objects.create(
-        receiver=post.author, post=post, giver=users[1], anonymous=True, choice=PostAward.get_reward_choices()[0][0]
-    )
-    PostAward.objects.create(
-        receiver=post.author, post=post, giver=users[0], anonymous=False, choice=PostAward.get_reward_choices()[0][0]
-    )
-    awards = post.get_post_awards()
-    assert len(awards) == 2
-    assert awards[0]["giver_anonim"] == "Anonymous"
-    assert awards[1]["giver_anonim"] == "test_user_1"
-
-
-@pytest.mark.django_db()
-def test_post_award_duplicate_prevention(users, post, user) -> None:
+def test_post_award_duplicate_prevention(users: list[User], post: Post, user: User) -> None:
     post.author = user
     PostAward.objects.create(
         receiver=post.author, post=post, giver=users[1], choice=PostAward.get_reward_choices()[0][0]
@@ -97,7 +98,7 @@ def test_post_award_duplicate_prevention(users, post, user) -> None:
 
 
 @pytest.mark.django_db()
-def test_cannot_give_award_to_own_post(client, user, post):
+def test_cannot_give_award_to_own_post(client: Client, user: User, post: Post) -> None:
     client.force_login(user)  # log in user
     award_url = reverse("post-award", kwargs={"pk": post.pk})
     response = client.post(award_url, {"choice": "1"})  # try to add award to your own post

@@ -114,7 +114,7 @@ class PostAwardCreateView(LoginRequiredMixin, CreateView):
         context["post"] = post
         return context
 
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self: "PostAwardCreateView", request: HttpRequest, *args: any, **kwargs: any) -> HttpResponse:
         post = get_object_or_404(Post, pk=self.kwargs["pk"])
         user = request.user
         if PostAward.objects.filter(post=post, giver=user).exists():
@@ -126,7 +126,7 @@ class PostAwardCreateView(LoginRequiredMixin, CreateView):
 
         return super().dispatch(request, *args, **kwargs)
 
-    def form_valid(self, form):
+    def form_valid(self: "PostAwardCreateView", form: PostAwardForm) -> HttpResponse:
         post = get_object_or_404(Post, pk=self.kwargs["pk"])
         form.instance.giver = self.request.user
         form.instance.receiver = post.author

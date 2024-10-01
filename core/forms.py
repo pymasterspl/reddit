@@ -57,12 +57,12 @@ class PostAwardForm(forms.ModelForm):
 
     class Meta:
         model = PostAward
-        fields = ["choice", "anonymous", "comment"]
-        widgets = {
+        fields: ClassVar[list[str]] = ["choice", "anonymous", "comment"]
+        widgets: ClassVar[dict[str, forms.Widget]] = {
             "anonymous": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "comment": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Optional comment"}),
         }
-        labels = {"choice": ""}
+        labels: ClassVar[dict[str, str]] = {"choice": ""}
 
 
 class CommunityForm(forms.ModelForm):

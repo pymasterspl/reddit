@@ -33,21 +33,19 @@ def generated_password() -> str:
 def user_model() -> type[get_user_model()]:
     return get_user_model()
 
+
 @pytest.fixture()
 def users(reusable_password: Callable[[], str]) -> list[User]:
     password = reusable_password()
     users = []
-    
-    for i in range(1, 4): 
-        user = User.objects.create_user(
-            email=f"test{i}@example.com", 
-            nickname=f"test_user_{i}", 
-            password=password
-        )
+
+    for i in range(1, 4):
+        user = User.objects.create_user(email=f"test{i}@example.com", nickname=f"test_user_{i}", password=password)
         user.plain_password = password
         users.append(user)
-    
+
     return users
+
 
 @pytest.fixture()
 def user(reusable_password: Callable[[], str]) -> User:

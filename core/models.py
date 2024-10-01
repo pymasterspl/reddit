@@ -293,24 +293,10 @@ class PostVote(models.Model):
 
 
 class PostAward(models.Model):
-    def get_reward_choices():
-        REWARD_POINTS = (
-            (1, 15),
-            (2, 25),
-            (3, 50),
-        )
-        REWARD_CHOICES = []
-        for level, points in REWARD_POINTS:
-            for i in range(1, 6):  # 5 icons for each level
-                reward_code = f"{level}{i}_REWARD"
-                reward_points = f"{points} points"
-                REWARD_CHOICES.append((reward_code, reward_points))
-        return REWARD_CHOICES
-
     giver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="awards_given")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="awards_received")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="post_awards")
-    choice = models.CharField(max_length=20, choices=get_reward_choices())
+    choice = models.CharField(max_length=20, choices=[], blank=True)  # Placeholder for choices
     gold = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     anonymous = models.BooleanField(default=False)
@@ -339,6 +325,22 @@ class PostAward(models.Model):
         self.post.author.profile.save(update_fields=["gold_awards"])
 
         Post.objects.filter(pk=self.post.pk).update(gold=F("gold") + self.gold)
+
+    @classmethod
+    def get_reward_choices(cls: "PostAward") -> list[tuple[str, str]]:
+        reward_points = (
+            (1, 15),
+            (2, 25),
+            (3, 50),
+        )
+        reward_choices = []
+        for level, points in reward_points:
+            for i in range(1, 6):  # 5 icons for each level
+                reward_code = f"{level}{i}_REWARD"
+                reward_points_display = f"{points} points"
+                reward_choices.append((reward_code, reward_points_display))
+        cls.choice.choices = reward_choices  # Assign choices to the class variable
+        return reward_choices
 
 
 class Image(models.Model):
