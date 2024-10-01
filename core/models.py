@@ -58,7 +58,7 @@ class PostAwardManager(models.Manager):
                 "anonymous",
             )
             .annotate(
-                giver_anonim=Case(
+                giver_anonymous=Case(
                     When(anonymous=True, giver__isnull=False, then=Value("Anonymous")),
                     default=F("giver__nickname"),
                     output_field=models.CharField(max_length=255),

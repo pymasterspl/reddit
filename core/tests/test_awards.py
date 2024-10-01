@@ -29,8 +29,8 @@ def test_post_award_anonymous(users: list[User], post: Post) -> None:
     awards = post.get_post_awards()
     assert len(awards) == 2
     assert post.author.profile.gold_awards == 30
-    assert awards[0]["giver_anonim"] == "Anonymous"
-    assert awards[1]["giver_anonim"] == "test_user_1"
+    assert awards[0]["giver_anonymous"] == "Anonymous"
+    assert awards[1]["giver_anonymous"] == "test_user_1"
 
 
 @pytest.mark.django_db()
