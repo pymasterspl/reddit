@@ -15,8 +15,9 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
-from .forms import AddModeratorForm, CommentForm, CommunityForm, PostAwardForm, PostForm, RemoveModeratorForm
-from .models import Community, CommunityMember, Post, PostAward, PostVote, SavedPost
+from .forms import AddModeratorForm, AdminActionForm, CommentForm, CommunityForm, PostAwardForm, PostForm, RemoveModeratorForm
+from .models import AdminAction, Community, CommunityMember, Post, PostAward, PostVote, SavedPost
+from .services import handle_admin_action
 
 
 class PostListView(ListView):
