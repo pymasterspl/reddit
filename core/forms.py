@@ -5,7 +5,7 @@ from crispy_forms.layout import Submit
 from django import forms
 from django.core.exceptions import ValidationError
 
-from .models import Community, Post, PostAward, User
+from .models import ACTION_CHOICES, REPORT_CHOICES, Community, Post, PostReport, User, PostAward
 
 
 class CommentForm(forms.Form):
@@ -75,9 +75,29 @@ class CommunityForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = "post"
         self.helper.add_input(Submit("submit", "Create Community"))
-
         self.fields["is_18_plus"].widget = forms.CheckboxInput()
         self.fields["is_18_plus"].label = "Mature (18+) - only users over 18 can view and contribute"
+
+
+class PostReportForm(forms.ModelForm):
+    report_type: forms.ChoiceField = forms.ChoiceField(
+        choices=REPORT_CHOICES, widget=forms.Select(attrs={"class": "form-control"})
+    )
+    report_details: forms.CharField = forms.CharField(
+        widget=forms.Textarea(attrs={"class": "form-control"}),
+        required=True,
+    )
+
+    class Meta:
+        model = PostReport
+        fields: ClassVar[list[str]] = ["report_type", "report_details"]
+
+
+class AdminActionForm(forms.Form):
+    action: forms.ChoiceField = forms.ChoiceField(
+        choices=ACTION_CHOICES, widget=forms.Select(attrs={"class": "form-control"})
+    )
+    comment: forms.Textarea = forms.CharField(widget=forms.Textarea, required=False)
 
 
 class AddModeratorForm(forms.Form):

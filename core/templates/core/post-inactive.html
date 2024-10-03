@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="mx-auto col-10 col-md-8 col-lg-8 mt-lg-3">
+        <h2>You do not have permission to view this page.</h2>
+    </div>
+</div>
+{% endblock content %}

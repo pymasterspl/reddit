@@ -52,6 +52,9 @@
                             </li>
                             {% if request.user.is_staff %}
                                 <li class="nav-item">
+                                    <a class="nav-link " href="{% url 'post-list-reported' %}">Reported Post</a>
+                                </li>
+                                <li class="nav-item">
                                     <a class="nav-link text-danger" href="{% url 'admin:index' %}">Admin</a>
                                 </li>
                             {% endif %}

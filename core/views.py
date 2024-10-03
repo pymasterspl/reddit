@@ -6,24 +6,27 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db import models
-from django.db.models import QuerySet
+from django.db.models import Exists, OuterRef, QuerySet
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
 from .forms import (
     AddModeratorForm,
+    AdminActionForm,
     CommentForm,
     CommunityForm,
     PostAwardForm,
     PostForm,
+    PostReportForm,
     RemoveModeratorForm,
 )
-from .models import Community, CommunityMember, Post, PostAward, PostVote, SavedPost
+from .models import AdminAction, Community, CommunityMember, Post, PostAward, PostReport, PostVote, SavedPost
+from .services import handle_admin_action
 
 
 class PostListView(ListView):
@@ -31,7 +34,7 @@ class PostListView(ListView):
     context_object_name = "posts"
 
     def get_queryset(self: "PostListView") -> models.QuerySet:
-        return Post.objects.filter(parent=None)
+        return Post.objects.filter(parent=None, is_active=True)
 
 
 @method_decorator(login_required, name="post")
@@ -42,7 +45,10 @@ class PostDetailView(DetailView):
 
     def get_object(self: "Post", queryset: QuerySet[Post] | None = None) -> Post:
         obj = super().get_object(queryset=queryset)
-        obj.update_display_counter()
+        if not obj.is_active:
+            self.template_name = "core/post-inactive.html"
+        else:
+            obj.update_display_counter()
         return obj
 
     def get_context_data(self: "PostDetailView", **kwargs: dict[str, Any]) -> dict[str, Any]:
@@ -93,7 +99,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         return context
 
     def get_success_url(self: "PostCreateView") -> str:
-        return reverse("post-detail", kwargs={"pk": self.object.pk})
+        return reverse_lazy("post-detail", kwargs={"pk": self.object.pk})
 
 
 class PostVoteView(LoginRequiredMixin, View):
@@ -164,6 +170,24 @@ class CommunityListView(ListView):
     context_object_name = "communities"
     paginate_by = 10
 
+    def get_queryset(self: "CommunityListView") -> models.QuerySet:
+        user = self.request.user
+        return (
+            super()
+            .get_queryset()
+            .prefetch_related("members")
+            .annotate(has_access=Exists(CommunityMember.objects.filter(community=OuterRef("pk"), user=user)))
+        )
+
+    def get_context_data(self: "CommunityListView", **kwargs: any) -> dict[str, any]:
+        context = super().get_context_data(**kwargs)
+        communities = context["communities"]
+
+        for community in communities:
+            community.has_access = community.privacy != "30_PRIVATE" or community.has_access
+
+        return context
+
 
 class CommunityCreateView(LoginRequiredMixin, CreateView):
     model = Community
@@ -222,6 +246,7 @@ class CommunityDetailView(DetailView):
         if add_moderator_form.is_valid():
             user = add_moderator_form.cleaned_data["nickname"]
             self.object.add_moderator(user)
+            messages.success(request, f"{user.nickname} is now a moderator of this community.")
         else:
             messages.error(request, "Invalid user or nickname.")
             return self.get(request, *args, **kwargs)
@@ -232,7 +257,13 @@ class CommunityDetailView(DetailView):
         remove_moderator_form = RemoveModeratorForm(request.POST)
         if remove_moderator_form.is_valid():
             user = remove_moderator_form.cleaned_data["nickname"]
+            if not CommunityMember.objects.filter(
+                community=self.object, user=user, role=CommunityMember.MODERATOR
+            ).exists():
+                messages.error(request, "User is not a moderator of this community.")
+                return self.get(request, *args, **kwargs)
             self.object.remove_moderator(user)
+            messages.success(request, f"{user.nickname} was successfully removed from moderators.")
         else:
             messages.error(request, "Invalid user or nickname.")
             return self.get(request, *args, **kwargs)
@@ -246,9 +277,9 @@ class CommunityDetailView(DetailView):
 
         action = request.POST.get("action")
         if action == "add_moderator":
-            return self.post_add_moderator(request, *args, **kwargs)
+            return self.post_add_moderator(request)
         if action == "remove_moderator":
-            return self.post_remove_moderator(request, *args, **kwargs)
+            return self.post_remove_moderator(request)
 
         messages.error(request, "Invalid action.")
         return self.get(request, *args, **kwargs)
@@ -268,5 +299,118 @@ class CommunityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         messages.error(self.request, "You do not have permission to update this community.")
         return redirect("community-detail", slug=self.get_object().slug)
 
+    def form_valid(self: "CommunityUpdateView", form: forms.ModelForm) -> HttpResponseRedirect:
+        response = super().form_valid(form)
+        messages.success(self.request, "Community updated successfully.")
+        return response
+
     def get_success_url(self: "CommunityUpdateView") -> str:
         return reverse_lazy("community-detail", kwargs={"slug": self.object.slug})
+
+
+class PostReportView(LoginRequiredMixin, CreateView):
+    template_name = "core/post-report.html"
+    form_class = PostReportForm
+    success_url = reverse_lazy("home")
+    login_url = "login"
+
+    def form_valid(self: "PostReportView", form: forms.ModelForm) -> HttpResponseRedirect:
+        post = get_object_or_404(Post, pk=self.kwargs["pk"])
+        report_person = self.request.user
+        post_report = form.save(commit=False)
+        post_report.post = post
+        post_report.report_person = report_person
+        post_report.save()
+        messages.success(self.request, "Your post has been reported.")
+        return super().form_valid(form)
+
+    def get_initial(self: "PostReportView") -> dict[str, Any]:
+        initial = super().get_initial()
+        initial["post"] = Post.objects.get(pk=self.kwargs["pk"])
+        return initial
+
+    def get_form_kwargs(self: "PostReportView") -> dict[str, Any]:
+        kwargs = super().get_form_kwargs()
+        kwargs.update({"initial": self.get_initial()})
+        return kwargs
+
+    def get_context_data(self: "PostReportView", **kwargs: dict[str, Any]) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["post"] = Post.objects.get(pk=self.kwargs["pk"])
+        return context
+
+
+class PostListReportedView(UserPassesTestMixin, LoginRequiredMixin, ListView):
+    model = PostReport
+    template_name = "core/reported-posts.html"
+    context_object_name = "reports"
+    paginate_by = 10
+
+    def get_queryset(self: "PostListReportedView") -> QuerySet:
+        if not self.request.user.is_staff:
+            messages.error(self.request, "You do not have permission to view this page.")
+            return redirect("home")
+        return PostReport.objects.filter(verified=False)
+
+    def test_func(self: "PostListReportedView") -> bool:
+        return self.request.user.is_staff
+
+    def handle_no_permission(self: "PostListReportedView") -> HttpResponse | None:
+        if self.request.user.is_authenticated:
+            messages.error(self.request, "You do not have permission to view this page.")
+            return redirect("home")
+        return super().handle_no_permission()
+
+
+class PostReportedView(UserPassesTestMixin, LoginRequiredMixin, DetailView):
+    model = PostReport
+    template_name = "core/reported-post.html"
+    context_object_name = "report"
+
+    def get_queryset(self: "PostReportedView") -> QuerySet:
+        queryset = super().get_queryset()
+        if not self.request.user.is_staff:
+            messages.error(self.request, "You do not have permission to view this page.")
+            return queryset.none()
+        return queryset
+
+    def get_context_data(self: "PostReportedView", **kwargs: dict[str, Any]) -> dict[str, Any]:
+        if not hasattr(self, "object"):
+            self.object = self.get_object()
+        context = super().get_context_data(**kwargs)
+        context["form"] = AdminActionForm()
+        return context
+
+    def post(self: "PostReportedView", request: HttpRequest, **kwargs: dict[str, Any]) -> HttpResponse:
+        form = AdminActionForm(request.POST)
+        report = self.get_object()
+
+        if form.is_valid():
+            action: str = form.cleaned_data["action"]
+            comment: str = form.cleaned_data["comment"]
+            post = report.post
+            user = post.author
+
+            admin_action = AdminAction(post_report=report, action=action, comment=comment, performed_by=request.user)
+            admin_action.save()
+
+            handle_admin_action(action, report, user, request)
+            return redirect(reverse_lazy("post-list-reported"))
+
+        context = self.get_context_data(**kwargs)
+        context["form"] = form
+        return self.render_to_response(context)
+
+    def get(self: "PostReportedView", request: HttpRequest, **kwargs: dict[str, Any]) -> HttpResponse:
+        self.object = self.get_object()
+        if not request.user.is_staff:
+            messages.error(request, "You do not have permission to view this page.")
+            return redirect("home")
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
+
+    def get_object(self: "PostReportedView", queryset: QuerySet | None = None) -> PostReport:
+        return super().get_object(queryset)
+
+    def test_func(self: "PostListReportedView") -> bool:
+        return self.request.user.is_staff

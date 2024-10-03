@@ -18,7 +18,6 @@ from django.urls import reverse_lazy
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -30,12 +29,10 @@ SECRET_KEY = config("SECRET_KEY")
 
 DEBUG = config("DEBUG")
 
-
 # SECURITY WARNING: don't run with debug turned on in production!
 
 
 ALLOWED_HOSTS = json.loads(config("ALLOWED_HOSTS"))
-
 
 # Application definition
 
@@ -86,7 +83,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "reddit.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -96,7 +92,6 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     },
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -116,7 +111,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -127,7 +121,6 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
@@ -165,8 +158,8 @@ EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="default@email.com")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="password")
 
+LIMIT_WARNINGS = 5
 LOGIN_URL = reverse_lazy("login")
-
 
 REST_FRAMEWORK = {"DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination", "PAGE_SIZE": 10}
 DEFAULT_AVATAR_URL = "/media/users_avatars/default.png"
