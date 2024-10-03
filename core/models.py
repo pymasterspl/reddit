@@ -302,6 +302,12 @@ class PostAward(models.Model):
     anonymous = models.BooleanField(default=False)
     comment = models.CharField(max_length=100, blank=True, default="")
 
+    REWARD_POINTS: ClassVar[dict[str, int]] = {
+        "1": 15,
+        "2": 25,
+        "3": 50,
+    }
+
     objects = PostAwardManager()
 
     class Meta:
@@ -311,13 +317,8 @@ class PostAward(models.Model):
         return f"@{self.giver}: {self.choice} for post: {self.post}"
 
     def save(self: "PostAward", *args: int, **kwargs: int) -> None:
-        match self.choice[0]:
-            case "1":
-                self.gold = 15
-            case "2":
-                self.gold = 25
-            case "3":
-                self.gold = 50
+        # Use the REWARD_POINTS to set the gold value
+        self.gold = self.REWARD_POINTS.get(self.choice[0], 0)
 
         super().save(*args, **kwargs)
 
@@ -328,13 +329,8 @@ class PostAward(models.Model):
 
     @classmethod
     def get_reward_choices(cls: "PostAward") -> list[tuple[str, str]]:
-        reward_points = (
-            (1, 15),
-            (2, 25),
-            (3, 50),
-        )
         reward_choices = []
-        for level, points in reward_points:
+        for level, points in cls.REWARD_POINTS.items():
             reward_points_display = f"{points} points"
             for i in range(1, 6):  # 5 icons for each level
                 reward_code = f"{level}{i}_REWARD"

@@ -104,13 +104,13 @@ def test_post_award_duplicate_prevention(users: list[User], post: Post, user: Us
 
 @pytest.mark.django_db()
 def test_cannot_give_award_to_own_post(client: Client, user: User, post: Post) -> None:
-    client.force_login(user)  # log in user
+    client.force_login(user)
     award_url = reverse("post-award", kwargs={"pk": post.pk})
     response = client.post(award_url, {"choice": "1"})  # try to add award to your own post
     msg_storage = list(messages.get_messages(response.wsgi_request))
 
     assert response.status_code == 302  # check if user is unable to give reward to his own post
-    assert PostAward.objects.count() == 0  # check if user is unable to give reward to his own post
+    assert PostAward.objects.count() == 0
     assert msg_storage[0].message == "You cannot give an award to your own post"
 
 
