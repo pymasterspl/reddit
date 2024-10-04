@@ -147,7 +147,7 @@ class PostAwardCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self: "PostAwardCreateView") -> str:
-        return reverse("post-detail", kwargs={"pk": self.kwargs["pk"]})
+        return reverse_lazy("post-detail", kwargs={"pk": self.kwargs["pk"]})
 
 
 class PostSaveView(LoginRequiredMixin, View):

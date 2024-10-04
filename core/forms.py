@@ -5,7 +5,7 @@ from crispy_forms.layout import Submit
 from django import forms
 from django.core.exceptions import ValidationError
 
-from .models import ACTION_CHOICES, REPORT_CHOICES, Community, Post, PostReport, User, PostAward
+from .models import ACTION_CHOICES, REPORT_CHOICES, Community, Post, PostAward, PostReport, User
 
 
 class CommentForm(forms.Form):
