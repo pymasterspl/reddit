@@ -309,6 +309,12 @@ class PostAward(models.Model):
         "3": 50,
     }
 
+    REWARD_CHOICES: ClassVar[list[tuple[str, str]]] = [
+        (f"{level}{i}_REWARD", f"{points} points")
+        for level, points in REWARD_POINTS.items()
+        for i in range(1, 6)
+    ]
+
     objects = PostAwardManager()
 
     class Meta:
@@ -330,14 +336,7 @@ class PostAward(models.Model):
 
     @classmethod
     def get_reward_choices(cls: "PostAward") -> list[tuple[str, str]]:
-        reward_choices = []
-        for level, points in cls.REWARD_POINTS.items():
-            reward_points_display = f"{points} points"
-            for i in range(1, 6):  # 5 icons for each level
-                reward_code = f"{level}{i}_REWARD"
-                reward_choices.append((reward_code, reward_points_display))
-        cls.choice.choices = reward_choices  # Assign choices to the class variable
-        return reward_choices
+        return cls.REWARD_CHOICES
 
 
 class Image(models.Model):
