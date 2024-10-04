@@ -310,9 +310,7 @@ class PostAward(models.Model):
     }
 
     REWARD_CHOICES: ClassVar[list[tuple[str, str]]] = [
-        (f"{level}{i}_REWARD", f"{points} points")
-        for level, points in REWARD_POINTS.items()
-        for i in range(1, 6)
+        (f"{level}{i}_REWARD", f"{points} points") for level, points in REWARD_POINTS.items() for i in range(1, 6)
     ]
 
     objects = PostAwardManager()
