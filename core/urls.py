@@ -1,12 +1,16 @@
-from django.urls import path
+from django.urls import include, path
 
 from .views import (
     CommunityCreateView,
     CommunityDetailView,
     CommunityListView,
+    CommunityUpdateView,
     PostCreateView,
     PostDetailView,
+    PostListReportedView,
     PostListView,
+    PostReportedView,
+    PostReportView,
     PostSaveView,
     PostVoteView,
 )
@@ -20,4 +24,9 @@ urlpatterns = [
     path("communities/", CommunityListView.as_view(), name="community-list"),
     path("community/create/", CommunityCreateView.as_view(), name="community-create"),
     path("community/<slug:slug>/", CommunityDetailView.as_view(), name="community-detail"),
+    path("post/report/<int:pk>/", PostReportView.as_view(), name="post-report"),
+    path("reported-posts/", PostListReportedView.as_view(), name="post-list-reported"),
+    path("reported-post/<int:pk>/", PostReportedView.as_view(), name="reported-post"),
+    path("community/<slug:slug>/update/", CommunityUpdateView.as_view(), name="community-update"),
+    path("api/", include("core.api_urls")),
 ]

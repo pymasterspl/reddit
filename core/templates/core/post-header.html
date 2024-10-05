@@ -4,11 +4,10 @@
 <div class="card-header">
     <div class="row align-items-center">
         <div class="col-auto">
-            <!-- TODO: Update avatar src with user avatar URL after merging feature/avatar -->
-            <img src="https://placehold.co/32x32.png"
-                 alt="{{ post.author }} avatar image"
-                 class="rounded-circle"
-                 style="width: 32px; height: 32px;">
+             <img src="{{ post.author.avatar_url }}"
+                   alt="{{ post.author }} avatar image"
+                   class="rounded-circle"
+                   style="width: 32px; height: 32px;">
         </div>
         <div class="col">
             <div class="d-flex flex-column">
@@ -23,8 +22,18 @@
                 <div>
                     <a href="#"
                        class="link-light link-offset-2 link-underline-opacity-0 link-opacity-75-hover link-underline-opacity-25-hover">
-                        {{ post.author.nickname }}
+                        {{ post.author.nickname }}                        
                     </a>
+                    <span class="fw-bold ms-3">
+                        pk: <span class="{% if post.author.profile.post_karma < 0 %}text-danger{% else %}text-success{% endif %}">
+                            {{ post.author.profile.post_karma }}
+                        </span>
+                    </span>
+                    <span class="fw-bold ms-3">
+                        ck: <span class="{% if post.author.profile.comment_karma < 0 %}text-danger{% else %}text-success{% endif %}">
+                            {{ post.author.profile.comment_karma }}
+                        </span>
+                    </span>
                 </div>
             </div>
         </div>
@@ -53,7 +62,7 @@
                         {% endif %}
                     </li>
                     <li><a class="dropdown-item" href="#"><i class="bi bi-eye-slash"></i> Hide</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-flag"></i> Report</a></li>
+                    <li><a class="dropdown-item" href="{%  url 'post-report' post.id %}"><i class="bi bi-flag"></i> Report</a></li>
                     {% if request.user.is_authenticated %}
                     {% if post.author == request.user %}
                     <li><a class="dropdown-item" href="#"><i class="bi bi-pencil-square"></i> Edit</a></li>
