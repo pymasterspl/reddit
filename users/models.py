@@ -19,13 +19,7 @@ from .choices import GENDER_CHOICES, LANGUAGE_CHOICES, get_locations
 class UserManager(BaseUserManager):
     use_in_migrations: bool = True
 
-    def _create_user(
-        self: "UserManager",
-        email: str,
-        nickname: str,
-        password: str,
-        **extra_fields: dict,
-    ) -> "User":
+    def _create_user(self: "UserManager", email: str, nickname: str, password: str, **extra_fields: dict) -> "User":
         if not email:
             message: str = "Users must have an email address"
             raise ValueError(message)
@@ -38,25 +32,13 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_user(
-        self: "UserManager",
-        email: str,
-        nickname: str,
-        password: str,
-        **extra_fields: dict,
-    ) -> "User":
+    def create_user(self: "UserManager", email: str, nickname: str, password: str, **extra_fields: dict) -> "User":
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
 
         return self._create_user(email, nickname, password, **extra_fields)
 
-    def create_superuser(
-        self: "UserManager",
-        email: str,
-        nickname: str,
-        password: str,
-        **extra_fields: dict,
-    ) -> "User":
+    def create_superuser(self: "UserManager", email: str, nickname: str, password: str, **extra_fields: dict) -> "User":
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
 
