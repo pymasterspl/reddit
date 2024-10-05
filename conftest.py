@@ -72,7 +72,7 @@ def community(user: User) -> Generator[Community, None, None]:
 def community2(user: User) -> Generator[Community, None, None]:
     return Community.objects.create(author=user, name="Test Community2")
 
-
+@pytest.fixture()
 def non_authored_community() -> Community:
     return Community.objects.create(name="Test Community", is_active=True)
 
