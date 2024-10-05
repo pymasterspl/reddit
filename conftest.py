@@ -28,9 +28,7 @@ def user_model() -> type[get_user_model()]:
 
 @pytest.fixture()
 def user(generated_password: str) -> User:
-    user = User.objects.create_user(
-        email="test@example.com", nickname="test_user", password=generated_password
-    )
+    user = User.objects.create_user(email="test@example.com", nickname="test_user", password=generated_password)
     user.plain_password = generated_password
     return user
 
