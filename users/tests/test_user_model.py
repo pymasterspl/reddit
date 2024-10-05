@@ -28,12 +28,12 @@ def test_create_user(user: User) -> None:
 
 @pytest.mark.django_db()
 def test_create_superuser(admin_user: User) -> None:
-    assert admin_user.nickname == "admin"
-    assert admin_user.email == "admin@example.com"
+    assert admin_user.nickname == "admin_user"
+    assert admin_user.email == "admin_user@example.com"
     assert admin_user.is_staff is True
     assert admin_user.is_superuser is True
     assert admin_user.check_password(admin_user.plain_password) is True
-    created_user = User.objects.filter(email="admin@example.com").first()
+    created_user = User.objects.filter(email="admin_user@example.com").first()
     assert created_user is not None
 
 
