@@ -53,7 +53,9 @@ def another_user(reusable_password: Callable[[], str]) -> User:
 
 @pytest.fixture()
 def admin_user(generated_password: str) -> User:
-    admin_user = User.objects.create_superuser(email="admin_user@example.com", nickname="admin_user", password=generated_password)
+    admin_user = User.objects.create_superuser(
+        email="admin_user@example.com", nickname="admin_user", password=generated_password
+    )
     admin_user.plain_password = generated_password
     return admin_user
 
