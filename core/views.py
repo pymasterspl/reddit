@@ -20,11 +20,12 @@ from .forms import (
     AdminActionForm,
     CommentForm,
     CommunityForm,
+    PostAwardForm,
     PostForm,
     PostReportForm,
     RemoveModeratorForm,
 )
-from .models import AdminAction, Community, CommunityMember, Post, PostReport, PostVote, SavedPost
+from .models import AdminAction, Community, CommunityMember, Post, PostAward, PostReport, PostVote, SavedPost
 from .services import handle_admin_action
 
 
@@ -113,6 +114,40 @@ class PostVoteView(LoginRequiredMixin, View):
         if next_url:
             return redirect(next_url)
         return redirect("post-detail", pk=post.id)
+
+
+class PostAwardCreateView(LoginRequiredMixin, CreateView):
+    model = PostAward
+    form_class = PostAwardForm
+    template_name = "core/post-award.html"
+
+    def get_context_data(self: "PostAwardCreateView", **kwargs: any) -> dict[str, any]:
+        context = super().get_context_data(**kwargs)
+        post = get_object_or_404(Post, pk=self.kwargs["pk"])
+        context["post"] = post
+        return context
+
+    def dispatch(self: "PostAwardCreateView", request: HttpRequest, *args: any, **kwargs: any) -> HttpResponse:
+        post = get_object_or_404(Post, pk=self.kwargs["pk"])
+        user = request.user
+        if PostAward.objects.filter(post=post, giver=user).exists():
+            messages.error(request, "You've already given an award to this post")
+            return redirect("post-detail", pk=post.pk)
+        if post.author == request.user:
+            messages.error(request, "You cannot give an award to your own post")
+            return redirect("post-detail", pk=post.pk)
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self: "PostAwardCreateView", form: PostAwardForm) -> HttpResponse:
+        post = get_object_or_404(Post, pk=self.kwargs["pk"])
+        form.instance.giver = self.request.user
+        form.instance.receiver = post.author
+        form.instance.post = post
+        return super().form_valid(form)
+
+    def get_success_url(self: "PostAwardCreateView") -> str:
+        return reverse_lazy("post-detail", kwargs={"pk": self.kwargs["pk"]})
 
 
 class PostSaveView(LoginRequiredMixin, View):

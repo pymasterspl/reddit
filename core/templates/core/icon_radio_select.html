@@ -1,0 +1,18 @@
+{% load static %}
+{% for group, options, index in widget.optgroups %}
+    {% for option in options %}
+        {% if forloop.parentloop.counter == 1 or forloop.parentloop.counter == 6 or forloop.parentloop.counter == 11 %}
+            {{ option.label }}
+            <br>
+        {% endif %}
+        <label class="form-check-label" for="{{ option.id_for_label }}">
+            <input type="radio" id="{{ option.id_for_label }}" name="{{ widget.name }}" value="{{ option.value }}" class="{{ widget.attrs.class }}">
+            <img src="{% static 'core/icons/' %}{{ option.value }}.png" alt="{{ option.label }}" width="30" height="30">
+        </label>
+
+        {% if forloop.parentloop.counter|divisibleby:5 %}
+            <br>
+        {% endif %}
+
+    {% endfor %}
+{% endfor %}

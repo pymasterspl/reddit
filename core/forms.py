@@ -1,4 +1,3 @@
-import typing
 from typing import ClassVar
 
 from crispy_forms.helper import FormHelper
@@ -6,7 +5,7 @@ from crispy_forms.layout import Submit
 from django import forms
 from django.core.exceptions import ValidationError
 
-from .models import ACTION_CHOICES, REPORT_CHOICES, Community, Post, PostReport, User
+from .models import ACTION_CHOICES, REPORT_CHOICES, Community, Post, PostAward, PostReport, User
 
 
 class CommentForm(forms.Form):
@@ -45,10 +44,31 @@ class PostForm(forms.ModelForm):
         self.fields["content"].required = True
 
 
+class IconRadioSelect(forms.RadioSelect):
+    template_name = "core/icon_radio_select.html"
+
+
+class PostAwardForm(forms.ModelForm):
+    choice = forms.ChoiceField(
+        choices=PostAward.get_reward_choices(),
+        widget=IconRadioSelect(attrs={"class": "form-check-input"}),
+        required=True,
+    )
+
+    class Meta:
+        model = PostAward
+        fields: ClassVar[list[str]] = ["choice", "anonymous", "comment"]
+        widgets: ClassVar[dict[str, forms.Widget]] = {
+            "anonymous": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "comment": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Optional comment"}),
+        }
+        labels: ClassVar[dict[str, str]] = {"choice": ""}
+
+
 class CommunityForm(forms.ModelForm):
     class Meta:
         model = Community
-        fields: typing.ClassVar = ["name", "privacy", "is_18_plus"]
+        fields: ClassVar[list[str]] = ["name", "privacy", "is_18_plus"]
 
     def __init__(self: "CommunityForm", *args: list, **kwargs: dict) -> None:
         super().__init__(*args, **kwargs)

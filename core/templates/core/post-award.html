@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center">
+        <h2 style="font-size: 24px;">{{ post.title }}</h2>
+        <p>{{ post.content }}</p>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="text-center">Choose an award: <br><br>
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Give Award</button>
+        </div>    
+    </form>
+</div>
+{% endblock content %}

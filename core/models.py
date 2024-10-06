@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import F, QuerySet
+from django.db.models import Case, F, QuerySet, Value, When
 from django.utils import timezone
 from django.utils.text import slugify
 
@@ -45,6 +45,26 @@ class PostManagerMixin:
 
 class ActivePostManagers(PostManagerMixin, ActiveOnlyManager):
     pass
+
+
+class PostAwardManager(models.Manager):
+    def get_post_awards_anonymous(self: "PostAwardManager") -> QuerySet:
+        return (
+            self.get_queryset()
+            .values(
+                "id",
+                "post_id",
+                "choice",
+                "anonymous",
+            )
+            .annotate(
+                giver_anonymous=Case(
+                    When(anonymous=True, giver__isnull=False, then=Value("Anonymous")),
+                    default=F("giver__nickname"),
+                    output_field=models.CharField(max_length=255),
+                )
+            )
+        )
 
 
 class AllObjectsPostManager(PostManagerMixin, models.Manager):
@@ -155,6 +175,7 @@ class Post(GenericModel):
     )
     up_votes = models.IntegerField(default=0)
     down_votes = models.IntegerField(default=0)
+    gold = models.IntegerField(default=0)
     version = models.CharField(
         max_length=32,
         help_text="Hash of the title + content to prevent overwriting already saved post",
@@ -186,6 +207,9 @@ class Post(GenericModel):
 
     def get_content_type(self: "Post") -> ContentType:
         return ContentType.objects.get_for_model(self)
+
+    def get_post_awards(self: "Post") -> QuerySet:
+        return PostAward.objects.get_post_awards_anonymous().filter(post=self)
 
     def update_tags(self: "Post") -> None:
         current_tags = set(re.findall(r"#(\w+)", self.content))
@@ -267,6 +291,49 @@ class PostVote(models.Model):
         up_votes = post_votes.filter(choice=PostVote.UPVOTE).count()
         down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
         Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
+
+
+class PostAward(models.Model):
+    giver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="awards_given")
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="awards_received")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="post_awards")
+    choice = models.CharField(max_length=20, choices=[], blank=True)  # Placeholder for choices
+    gold = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    anonymous = models.BooleanField(default=False)
+    comment = models.CharField(max_length=100, blank=True, default="")
+
+    REWARD_POINTS: ClassVar[dict[str, int]] = {
+        "1": 15,
+        "2": 25,
+        "3": 50,
+    }
+
+    REWARD_CHOICES: ClassVar[list[tuple[str, str]]] = [
+        (f"{level}{i}_REWARD", f"{points} points") for level, points in REWARD_POINTS.items() for i in range(1, 6)
+    ]
+
+    objects = PostAwardManager()
+
+    class Meta:
+        unique_together: ClassVar[list[str]] = ["post", "giver"]
+
+    def __str__(self: "PostAward") -> str:
+        return f"@{self.giver}: {self.choice} for post: {self.post}"
+
+    def save(self: "PostAward", *args: int, **kwargs: int) -> None:
+        self.gold = self.REWARD_POINTS.get(self.choice[0], 0)
+
+        super().save(*args, **kwargs)
+
+        self.post.author.profile.gold_awards = F("gold_awards") + self.gold
+        self.post.author.profile.save(update_fields=["gold_awards"])
+
+        Post.objects.filter(pk=self.post.pk).update(gold=F("gold") + self.gold)
+
+    @classmethod
+    def get_reward_choices(cls: "PostAward") -> list[tuple[str, str]]:
+        return cls.REWARD_CHOICES
 
 
 class Image(models.Model):
