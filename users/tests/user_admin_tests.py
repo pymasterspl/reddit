@@ -51,10 +51,8 @@ def test_add_fieldsets(model_admin: admin.ModelAdmin) -> None:
 
 
 def test_user_setting_inline_user(model_admin: admin.ModelAdmin) -> None:
-
     assert UserSettingAdmin in model_admin.inlines
 
 
 def test_user_profile_inline_user(model_admin: admin.ModelAdmin) -> None:
-
     assert ProfileAdmin in model_admin.inlines
