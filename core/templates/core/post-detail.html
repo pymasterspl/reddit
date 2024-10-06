@@ -35,7 +35,7 @@
                     <!-- TODO: add post image handling -->
                 </div>
 
-                {% include 'core/post-footer.html' with post=post %}
+                {% include 'core/post-footer.html' with post=post post_awards=post_awards %}
 
             </div>
             <button class="btn btn-sm btn-primary mb-3" onclick="toggleForm('postCommentForm')">Add Comment</button>

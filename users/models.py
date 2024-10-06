@@ -78,6 +78,7 @@ class Profile(models.Model):
     is_communities_visible = models.BooleanField(default=True)
     comment_karma = models.IntegerField(default=0)
     post_karma = models.IntegerField(default=0)
+    gold_awards = models.IntegerField(default=0)
     gender = models.CharField(choices=GENDER_CHOICES, max_length=1)
     user = models.OneToOneField("User", on_delete=models.CASCADE, null=False)
 
