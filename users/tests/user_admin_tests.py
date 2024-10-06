@@ -57,6 +57,7 @@ def test_user_setting_inline_user(model_admin: admin.ModelAdmin) -> None:
     assert user_setting_inline.model == UserSettings
     assert user_setting_inline.verbose_name == "Settings"
     assert user_setting_inline.extra == 3
+    assert user_setting_inline.can_delete is False
 
 
 def test_user_profile_inline_user(model_admin: admin.ModelAdmin) -> None:
@@ -67,3 +68,4 @@ def test_user_profile_inline_user(model_admin: admin.ModelAdmin) -> None:
     assert profile_inline.model == Profile
     assert profile_inline.verbose_name == "Profile"
     assert profile_inline.extra == 3
+    assert profile_inline.can_delete is False
