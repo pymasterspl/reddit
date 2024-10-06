@@ -2,8 +2,8 @@ import pytest
 from django.contrib import admin
 
 import users.models
-from users.admin import CustomUserAdmin
-from users.models import User
+from users.admin import CustomUserAdmin, ProfileAdmin, UserSettingAdmin
+from users.models import Profile, User, UserSettings
 
 FieldsetsType = tuple[tuple[None, dict[str, str | tuple[str]]]]
 
@@ -48,3 +48,24 @@ def test_add_fieldsets(model_admin: admin.ModelAdmin) -> None:
         ),
     )
     assert model_admin.add_fieldsets == expected_fields
+
+
+def test_user_setting_inline_user(model_admin: admin.ModelAdmin) -> None:
+    inlines = model_admin.inlines
+    assert UserSettingAdmin in inlines
+    user_setting_inline = next(inline for inline in inlines if inline == UserSettingAdmin)
+    assert user_setting_inline.model == UserSettings
+    assert user_setting_inline.verbose_name == "Settings"
+    assert user_setting_inline.extra == 3
+    assert user_setting_inline.can_delete is False
+
+
+def test_user_profile_inline_user(model_admin: admin.ModelAdmin) -> None:
+    inlines = model_admin.inlines
+    assert ProfileAdmin in inlines
+    profile_inline = next(inline for inline in inlines if inline == ProfileAdmin)
+    assert profile_inline is not None
+    assert profile_inline.model == Profile
+    assert profile_inline.verbose_name == "Profile"
+    assert profile_inline.extra == 3
+    assert profile_inline.can_delete is False
