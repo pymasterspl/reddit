@@ -61,7 +61,7 @@ class UserSettings(models.Model):
     is_over_18 = models.BooleanField(default=False)
 
     def __str__(self: "UserSettings") -> str:
-        return f"Settings: {self.user}"
+        return f"{self.user}"
 
 
 class Profile(models.Model):
@@ -82,7 +82,7 @@ class Profile(models.Model):
     user = models.OneToOneField("User", on_delete=models.CASCADE, null=False)
 
     def __str__(self: "Profile") -> str:
-        return f"Profile: {self.user.nickname}"
+        return f"{self.user.nickname}"
 
     def nickname(self: "Profile") -> str:
         return self.user.nickname
