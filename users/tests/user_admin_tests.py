@@ -3,7 +3,7 @@ from django.contrib import admin
 
 import users.models
 from users.admin import CustomUserAdmin, ProfileAdmin, UserSettingAdmin
-from users.models import User
+from users.models import Profile, User, UserSettings
 
 FieldsetsType = tuple[tuple[None, dict[str, str | tuple[str]]]]
 
@@ -51,10 +51,19 @@ def test_add_fieldsets(model_admin: admin.ModelAdmin) -> None:
 
 
 def test_user_setting_inline_user(model_admin: admin.ModelAdmin) -> None:
-
-    assert UserSettingAdmin in model_admin.inlines
+    inlines = model_admin.inlines
+    assert UserSettingAdmin in inlines
+    user_setting_inline = next(inline for inline in inlines if inline == UserSettingAdmin)
+    assert user_setting_inline.model == UserSettings
+    assert user_setting_inline.verbose_name == "Settings"
+    assert user_setting_inline.extra == 3
 
 
 def test_user_profile_inline_user(model_admin: admin.ModelAdmin) -> None:
-
-    assert ProfileAdmin in model_admin.inlines
+    inlines = model_admin.inlines
+    assert ProfileAdmin in inlines
+    profile_inline = next(inline for inline in inlines if inline == ProfileAdmin)
+    assert profile_inline is not None
+    assert profile_inline.model == Profile
+    assert profile_inline.verbose_name == "Profile"
+    assert profile_inline.extra == 3

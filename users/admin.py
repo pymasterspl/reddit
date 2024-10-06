@@ -11,11 +11,13 @@ FieldsetsType = tuple[tuple[None, dict[str, str | tuple[str]]]]
 class UserSettingAdmin(admin.StackedInline):
     model = UserSettings
     verbose_name = "Settings"
+    can_delete = False
 
 
 class ProfileAdmin(admin.StackedInline):
     model = Profile
     verbose_name = "Profile"
+    can_delete = False
 
 
 @admin.register(User)
