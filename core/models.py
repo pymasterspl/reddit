@@ -322,7 +322,6 @@ class PostAward(models.Model):
         return f"@{self.giver}: {self.choice} for post: {self.post}"
 
     def save(self: "PostAward", *args: int, **kwargs: int) -> None:
-        # Use the REWARD_POINTS to set the gold value
         self.gold = self.REWARD_POINTS.get(self.choice[0], 0)
 
         super().save(*args, **kwargs)
