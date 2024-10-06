@@ -2,6 +2,7 @@ import io
 from datetime import timedelta
 from typing import ClassVar
 
+from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
@@ -120,6 +121,38 @@ class User(AbstractUser):
         if self.avatar:
             self.avatar = self.process_avatar(self.avatar)
         super().save(*args, **kwargs)
+
+    def has_permission(self: "User", post_id: int, permission_name: str) -> bool:
+        permission_checkers = {
+            "edit": self.__check_permission_post_edit,
+            # Add more permissions here if needed
+        }
+        checker = permission_checkers.get(permission_name)
+        if checker:
+            return checker(post_id)
+        return False
+
+    def __check_permission_post_edit(self: "User", post_id: int) -> bool:
+        Post = apps.get_model("core", "Post")
+        CommunityMember = apps.get_model("core", "CommunityMember")
+
+        try:
+            post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            return False
+
+        if self == post.author:
+            return True
+
+        try:
+            community_member = CommunityMember.objects.get(community=post.community, user=self)
+        except CommunityMember.DoesNotExist:
+            return False
+
+        return community_member.role in {
+            CommunityMember.MODERATOR,
+            CommunityMember.ADMIN,
+        }
 
     def process_avatar(self: "User", avatar: any) -> ContentFile:
         image = Image.open(avatar)
