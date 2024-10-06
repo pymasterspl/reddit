@@ -2,7 +2,7 @@ import pytest
 from django.contrib import admin
 
 import users.models
-from users.admin import CustomUserAdmin
+from users.admin import CustomUserAdmin, ProfileAdmin, UserSettingAdmin
 from users.models import User
 
 FieldsetsType = tuple[tuple[None, dict[str, str | tuple[str]]]]
@@ -48,3 +48,13 @@ def test_add_fieldsets(model_admin: admin.ModelAdmin) -> None:
         ),
     )
     assert model_admin.add_fieldsets == expected_fields
+
+
+def test_user_setting_inline_user(model_admin: admin.ModelAdmin) -> None:
+
+    assert UserSettingAdmin in model_admin.inlines
+
+
+def test_user_profile_inline_user(model_admin: admin.ModelAdmin) -> None:
+
+    assert ProfileAdmin in model_admin.inlines
