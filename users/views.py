@@ -17,7 +17,8 @@ from django.views.generic import DetailView, FormView, UpdateView
 
 from core.models import User
 
-from .forms import UserProfileForm, UserRegistrationForm
+from .forms import UserProfileForm, UserRegistrationForm, UserForm
+from .models import Profile, UserSettings
 from .tokens import account_activation_token
 
 
@@ -28,17 +29,6 @@ class UserProfileView(LoginRequiredMixin, DetailView):
     login_url = "login"
 
     def get_object(self: "UserProfileView") -> User:
-        return self.request.user
-
-
-class UserEditView(LoginRequiredMixin, UpdateView):
-    model = User
-    form_class = UserProfileForm
-    template_name = "users/edit_profile.html"
-    success_url = reverse_lazy("profile")
-    login_url = "login"
-
-    def get_object(self: "UserEditView") -> User:
         return self.request.user
 
 
@@ -116,11 +106,55 @@ class ActivateUser(View):
             return redirect("home-page")
 
 
-class ProfileSettingsView(TemplateView):
-    # Work on this view is in progress
+class ProfileSettingsView(LoginRequiredMixin, UpdateView):
+    model = Profile
     template_name = "users/profile_settings.html"
+    form_class = UserProfileForm
+    success_url = reverse_lazy("profile")
+    login_url = "login"
+
+    def get_object(self):
+        return Profile.objects.get(user=self.request.user)
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        user = self.object.user
+
+        user_form = UserForm(instance=user)
+        profile_form = self.form_class(instance=self.object)
+
+        return self.render_to_response(self.get_context_data(user_form=user_form, profile_form=profile_form))
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        user = self.object.user
+
+        user_form = UserForm(request.POST, instance=user)
+        profile_form = self.form_class(request.POST, request.FILES, instance=self.object)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            return redirect(self.success_url)
+
+        return self.render_to_response(self.get_context_data(user_form=user_form, profile_form=profile_form))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if 'user_form' not in context:
+            context['user_form'] = UserForm(instance=self.request.user)
+        if 'profile_form' not in context:
+            context['profile_form'] = self.form_class(instance=self.get_object())
+        return context
 
 
-class AccountSettingsView(TemplateView):
-    # Work on this view is in progress
+class AccountSettingsView(LoginRequiredMixin, UpdateView):
+    model = UserSettings
     template_name = "users/account_settings.html"
+    form_class = UserProfileForm
+    success_url = reverse_lazy("profile")
+    login_url = "login"
+
+    def get_object(self):
+        return UserSettings.objects.get(user=self.request.user)
+

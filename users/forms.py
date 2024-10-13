@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 
-from .models import User
+from .models import User, Profile
 
 
 def validate_avatar(file: any) -> None:
@@ -21,26 +21,21 @@ class UserRegistrationForm(UserCreationForm):
         fields: ClassVar[list[str]] = ["nickname", "email", "password1", "password2"]
 
 
-class UserProfileForm(forms.ModelForm):
-    remove_avatar = forms.BooleanField(required=False, label="Remove avatar")
-
+class UserForm(forms.ModelForm):
     class Meta:
         model = User
-        fields: ClassVar[list[str]] = ["avatar", "nickname"]
+        fields = ['nickname']
 
-        widgets: ClassVar[dict[str, any]] = {
-            "avatar": forms.FileInput(attrs={"class": "form-control"}),
-        }
 
-    def __init__(self: "UserProfileForm", *args: any, **kwargs: dict) -> None:
-        super().__init__(*args, **kwargs)
-        self.fields["avatar"].validators.append(validate_avatar)
-
-    def save(self: "UserProfileForm", *, commit: bool = True) -> User:
-        user = super().save(commit=False)
-        if self.cleaned_data.get("remove_avatar"):
-            user.avatar.delete(save=False)
-            user.avatar = None
-        if commit:
-            user.save()
-        return user
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = [
+            'bio',
+            'avatar',
+            'gender',
+            'is_nsfw',
+            'is_followable',
+            'is_content_visible',
+            'is_communities_visible',
+        ]

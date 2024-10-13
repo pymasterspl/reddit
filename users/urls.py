@@ -9,14 +9,14 @@ from .views import (
     HomeView,
     LoginUserView,
     ProfileSettingsView,
-    UserEditView,
     UserProfileView,
     UserRegistrationView,
 )
 
 urlpatterns = [
     path("profile/", UserProfileView.as_view(), name="profile"),
-    path("profile/edit/", UserEditView.as_view(), name="edit_profile"),
+    path("profile/edit/profile/", ProfileSettingsView.as_view(), name="profile_settings"),
+    path("profile/edit/account/", AccountSettingsView.as_view(), name="account_settings"),
     path("", HomeView.as_view(), name="home"),
     path("login/", LoginUserView.as_view(), name="login"),
     path("logout-confirmation/", TemplateView.as_view(template_name="users/logout.html"), name="logout_confirmation"),
@@ -42,7 +42,5 @@ urlpatterns = [
         "reset_password_complete/",
         auth_views.PasswordResetCompleteView.as_view(template_name="users/password_reset_done.html"),
         name="password_reset_complete",
-    ),
-    path("settings/profile/", ProfileSettingsView.as_view(), name="profile_settings"),
-    path("settings/account/", AccountSettingsView.as_view(), name="account_settings"),
+    )
 ]
