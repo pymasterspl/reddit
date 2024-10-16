@@ -54,8 +54,9 @@ def user_with_avatar(client: Client, create_avatar: SimpleUploadedFile) -> User:
         nickname="TestUser",
         password=password,
     )
-    user.avatar = create_avatar
+    user.profile.avatar = create_avatar
     user.save()
+    user.profile.save()
     client.login(email=user.email, password=user.password)
 
     return user
@@ -403,7 +404,7 @@ def test_post_user_avatar_display(client: Client, community: Community, user_wit
     client.force_login(user_with_avatar)
     response = client.post(reverse("post-create"), data=data, follow=True)
     post = response.context["post"]
-    assert post.author.avatar.url == user_with_avatar.avatar_url
+    assert post.author.profile.avatar_url == user_with_avatar.profile.avatar_url
 
 
 @pytest.mark.django_db()
@@ -422,7 +423,7 @@ def test_post_user_without_avatar(
     form = response.context["form"]
     assert form.errors == {}
     post = Post.objects.first()
-    assert post.author.avatar_url == default_avatar_url
+    assert post.author.profile.avatar_url == default_avatar_url
 
 
 def test_restricted_community_access(client: Client, restricted_community: Community, user: User) -> None:

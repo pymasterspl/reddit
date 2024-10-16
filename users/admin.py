@@ -23,7 +23,7 @@ class ProfileAdmin(admin.StackedInline):
 @admin.register(User)
 class CustomUserAdmin(DjangoUserAdmin):
     inlines: ClassVar[list] = [UserSettingAdmin, ProfileAdmin]
-    list_display: tuple[str] = ("nickname", "email", "is_staff", "is_online", "last_activity_ago", "avatar")
+    list_display: tuple[str] = ("nickname", "email", "is_staff", "is_online", "last_activity_ago")
     ordering: tuple[str] = ("email",)
     fieldsets: FieldsetsType = ()
     add_fieldsets: FieldsetsType = (

@@ -1,165 +1,159 @@
 {% extends 'base.html' %} {% load static %} {% block content %}
-<div class="container mt-4">
-    {% include 'users/settings_navbar.html' %}
-    <div class="row justify-content-center">
-        <div class="col-12 col-md-8">
-            <div class="d-flex justify-content-between"></div>
-            <div class="bg-dark p-4">
-                <h2 class="mt-3 mb-3">Account settings</h2>
-                <form>
-                    <div>
-                        <div class="form-group mb-4" id="account-preferences">
-                            <h3 class="mt-4 mb-4 text-secondary fs-6 border-bottom border-secondary">Account preferences</h3>
-                            <div class="mt-3 mb-2">
-                                <div class="row align-items-center">
-                                    <div class="col d-flex flex-column">
-                                        <h4 class="fw-bolder fs-6">Email address</h4>
-                                        <p class="text-light-emphasis">current_email@example.com</p>
-                                    </div>
-                                    <div class="col d-flex justify-content-end">
-                                        <button type="button" class="btn btn-dark border-light rounded-pill">Change</button>
-                                        <!-- Add Modal for changing email address -->
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mb-2">
-                                <div class="row align-items-center">
-                                    <div class="col d-flex flex-column">
-                                        <h4 class="fw-bolder fs-6">Change password</h4>
-                                        <p class="text-light-emphasis">Password must be at least 8 characters long</p>
-                                    </div>
-                                    <div class="col d-flex justify-content-end">
-                                        <button type="button" class="btn btn-dark border-light rounded-pill">Change</button>
-                                        <!-- Add Modal for changing password -->
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mb-2">
-                                <div class="row align-items-center">
-                                    <div class="col d-flex flex-column">
-                                        <h4 class="fw-bolder fs-6">Gender</h4>
-                                        <p class="text-light-emphasis">This information may be used to improve your recommendations and ads.</p>
-                                    </div>
-                                    <div class="col d-flex justify-content-end">
-                                        <div class="form-group col-md-4">
-                                            <select id="gender" class="form-control">
-                                                <option selected>
-                                                    Select
-                                                </option>
-                                                <option>
-                                                    Woman
-                                                </option>
-                                                <option>
-                                                    Man
-                                                </option>
-                                                <option>
-                                                    Non-Binary
-                                                </option>
-                                                <option>
-                                                    I prefer not to say
-                                                </option>
-                                            </select>
+    <div class="container mt-4">
+        {% include 'users/settings_navbar.html' %}
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8">
+                <div class="d-flex justify-content-between"></div>
+                <div class="bg-dark p-4">
+                    <h2 class="mt-3 mb-3">Account settings</h2>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div>
+                            <div class="form-group mb-4" id="account-preferences">
+                                <h3 class="mt-4 mb-4 text-secondary fs-6 border-bottom border-secondary">Account
+                                    preferences</h3>
+
+                                <!-- Email address (manual, not part of form) -->
+                                <div class="mt-3 mb-2">
+                                    <div class="row align-items-center">
+                                        <div class="col d-flex flex-column">
+                                            <h4 class="fw-bolder fs-6">Email address</h4>
+                                            <p class="text-light-emphasis">current_email@example.com</p>
+                                        </div>
+                                        <div class="col d-flex justify-content-end">
+                                            <button type="button" class="btn btn-dark border-light rounded-pill">
+                                                Change
+                                            </button>
+                                            <!-- Add Modal for changing email address -->
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Password change (manual, not part of form) -->
+                                <div class="mb-2">
+                                    <div class="row align-items-center">
+                                        <div class="col d-flex flex-column">
+                                            <h4 class="fw-bolder fs-6">Change password</h4>
+                                            <p class="text-light-emphasis">Password must be at least 8 characters
+                                                long</p>
+                                        </div>
+                                        <div class="col d-flex justify-content-end">
+                                            <button type="button" class="btn btn-dark border-light rounded-pill">
+                                                Change
+                                            </button>
+                                            <!-- Add Modal for changing password -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Content languages from form -->
                                 <div class="mb-2">
                                     <div class="row align-items-center">
                                         <div class="col d-flex flex-column">
                                             <h4 class="fw-bolder fs-6">Content languages</h4>
-                                            <p class="text-light-emphasis">Add languages you’d like to see posts, community recommendations, and other content in</p>
+                                            <p class="text-light-emphasis">Add languages you’d like to see posts,
+                                                community recommendations, and other content in</p>
                                         </div>
                                         <div class="col d-flex justify-content-end">
-                                            <button type="button" class="btn btn-dark border-light rounded-pill">Change</button>
-                                            <!-- Add Modal for changing content languages -->
+                                            <!-- Content languages field from UserSettingsForm -->
+                                            {{ form.content_lang }}
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Location customization from form -->
                                 <div class="mb-2">
                                     <div class="d-flex flex-column flex-fill">
                                         <h4 class="fw-bolder fs-6">Location customization</h4>
-                                        <p class="text-light-emphasis mb-0">Specify a location to customize your recommendations and feed. Reddit does not track your precise geolocation data.</p>
+                                        <p class="text-light-emphasis mb-0">Specify a location to customize your
+                                            recommendations and feed. Reddit does not track your precise geolocation
+                                            data.</p>
                                         <div class="col-md-6">
-                                            <label for="location"></label>
-                                            <select id="location" class="form-control">
-                                                <option selected>
-                                                    Use approximate location (based on IP)
-                                                </option>
-                                                <!-- Add countries list -->
-                                            </select>
+                                            <!-- Location field from UserSettingsForm -->
+                                            {{ form.location }}
                                         </div>
                                     </div>
                                 </div>
-                                <h3 class="mt-4 mb-4 text-secondary fs-6 border-bottom border-secondary">Connected accounts</h3>
-                                <div class="mt-3 mb-3">
-                                    <div class="row align-items-center">
-                                        <div class="col d-flex flex-column flex-fill">
-                                            <h4 class="fw-bolder fs-6">Connect to twitter</h4>
-                                            <p class="text-light-emphasis">Connect a Twitter account to enable the choice to tweet your new posts and display a link on your profile. We will never post to Twitter without your permission.</p>
-                                        </div>
-                                        <div class="col d-flex justify-content-end">
-                                            <button type="button" class="btn btn-dark border-light rounded-pill">Connect to Twitter</button>
-                                            <!-- Add logic for adding Twitter account -->
-                                        </div>
-                                    </div>
-                                    <div class="row align-items-center">
-                                        <div class="col d-flex flex-column flex-fill">
-                                            <h4 class="fw-bolder fs-6 text-light-emphasis">Show link on profile</h4>
-                                        </div>
-                                        <div class="col d-flex justify-content-end">
-                                            <div class="form-check form-switch">
-                                                <input class="form-check-input" type="checkbox" role="switch" id="showTwitterProfile" />
-                                                <label class="form-check-label text-light-emphasis" for="showTwitterProfile">You can show a link to your Twitter account on your profile</label>
-                                            </div>
+                                <!-- Opt into is over 18 from form -->
+                                <div class="mb-2">
+                                    <div class="d-flex flex-column flex-fill">
+                                        <p></p>
+                                        <p></p>
+                                        <div class="form-check form-switch mb-3">
+                                            <input type="checkbox" class="form-check-input" name="is_over_18"
+                                                   {% if  form.is_over_18.value %}checked{% endif %}>
+                                            <label class="form-check-label" for="optInBetaTests">Is over 18 years
+                                                old</label>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="mb-3 mt-3">
-                                    <div class="row align-items-center">
-                                        <div class="col d-flex flex-column">
-                                            <h4 class="fw-bolder fs-6">Connect to Apple</h4>
-                                            <p class="text-light-emphasis">Connect account to log in to Reddit with Apple</p>
-                                        </div>
-                                        <div class="col d-flex justify-content-end">
-                                            <button type="button" class="btn btn-dark border-light rounded-pill">Connect to Apple</button>
-                                            <!-- Add logic for adding Apple account -->
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="mb-3 mt-3">
-                                    <div class="row align-items-center">
-                                        <div class="col d-flex flex-column">
-                                            <h4 class="fw-bolder fs-6">Connect to Google</h4>
-                                            <p class="text-light-emphasis fs-6">Connect account to log in to Reddit with Google</p>
-                                        </div>
-                                        <div class="col d-flex justify-content-end">
-                                            <button type="button" class="btn btn-dark border-light rounded-pill">Connect to Apple</button>
-                                            <!-- Add logic for adding Google account account -->
-                                        </div>
-                                    </div>
-                                </div>
+
+                                <!-- Opt into beta tests from form -->
+
+
+                                {#            <h3 class="mt-4 mb-4 text-secondary fs-6 border-bottom border-secondary">Connected accounts</h3>#}
+
+                                <!-- Connected accounts (manual, not part of form) -->
+                                {#            <div class="mt-3 mb-3">#}
+                                {#                <div class="row align-items-center">#}
+                                {#                    <div class="col d-flex flex-column flex-fill">#}
+                                {#                        <h4 class="fw-bolder fs-6">Connect to Twitter</h4>#}
+                                {#                        <p class="text-light-emphasis">Connect a Twitter account to enable the choice to tweet your new posts and display a link on your profile. We will never post to Twitter without your permission.</p>#}
+                                {#                    </div>#}
+                                {#                    <div class="col d-flex justify-content-end">#}
+                                {#                        <button type="button" class="btn btn-dark border-light rounded-pill">Connect to Twitter</button>#}
+                                {#                        <!-- Add logic for adding Twitter account -->#}
+                                {#                    </div>#}
+                                {#                </div>#}
+                                {#                <div class="row align-items-center">#}
+                                {#                    <div class="col d-flex flex-column flex-fill">#}
+                                {#                        <h4 class="fw-bolder fs-6 text-light-emphasis">Show link on profile</h4>#}
+                                {#                    </div>#}
+                                {#                    <div class="col d-flex justify-content-end">#}
+                                {#                        <div class="form-check form-switch">#}
+                                {#                            <input class="form-check-input" type="checkbox" role="switch" id="showTwitterProfile" />#}
+                                {#                            <label class="form-check-label text-light-emphasis" for="showTwitterProfile">You can show a link to your Twitter account on your profile</label>#}
+                                {#                        </div>#}
+                                {#                    </div>#}
+                                {#                </div>#}
+                                {#            </div>#}
+
+                                <!-- Opt into beta tests from form -->
                                 <h3 class="mt-4 mb-4 text-secondary fs-6 border-bottom border-secondary">Beta tests</h3>
                                 <h4 class="fw-bolder fs-6 mb-3">Opt into beta tests</h4>
                                 <div class="form-check form-switch mb-3">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="optInBetaTests" />
-                                    <label class="form-check-label text-light-emphasis" for="optInBetaTests">See the newest features from Reddit and join the r/beta community</label>
+                                    <input type="checkbox" class="form-check-input" name="is_beta"
+                                           {% if  form.is_beta.value %}checked{% endif %}>
+                                    <label class="form-check-label" for="optInBetaTests">See the newest features from
+                                        Reddit and join the r/beta community</label>
                                 </div>
+
+                                <!-- Revert to old Reddit from form -->
                                 <h4 class="fw-bolder fs-6 mb-3">Opt out of the redesign</h4>
                                 <div class="form-check form-switch mb-3">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="optOutRedesign" />
-                                    <label class="form-check-label text-light-emphasis" for="optOutRedesign">Revert back to old Reddit for the time being</label>
+                                    <input type="checkbox" class="form-check-input" name="revert_to_old_reddit"
+                                           {% if  form.revert_to_old_reddit.value %}checked{% endif %}>
+                                    <label class="form-check-label" for="optOutRedesign">Revert back to old Reddit for
+                                        the time being</label>
                                 </div>
-                                <h3 class="mt-4 mb-4 text-secondary fs-6 border-bottom border-secondary">Delete account</h3>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+
+                                <h3 class="mt-4 mb-4 text-secondary fs-6 border-bottom border-secondary">Delete
+                                    account</h3>
                                 <div class="mb-3 mt-3">
-                                   <div class="col d-flex justify-content-end">
-                                       <button type="button" class="btn btn-dark border-danger text-danger bolder rounded-pill">Delete account</button>
-                                   </div>
+                                    <div class="col d-flex justify-content-end">
+                                        <button type="button"
+                                                class="btn btn-dark border-danger text-danger bolder rounded-pill">
+                                            Delete account
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </form>
+                    </form>
+
+                </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
