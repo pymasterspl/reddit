@@ -17,7 +17,7 @@ from django.views.generic import DetailView, FormView, UpdateView
 
 from core.models import User
 
-from .forms import UserProfileForm, UserRegistrationForm, UserForm, UserSettingsForm
+from .forms import UserForm, UserProfileForm, UserRegistrationForm, UserSettingsForm
 from .models import Profile, UserSettings
 from .tokens import account_activation_token
 
@@ -113,10 +113,10 @@ class ProfileSettingsView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("profile")
     login_url = "login"
 
-    def get_object(self):
+    def get_object(self: "ProfileSettingsView") -> Profile:
         return Profile.objects.get(user=self.request.user)
 
-    def get(self, request, *args, **kwargs):
+    def get(self: "ProfileSettingsView") -> HttpResponse:
         self.object = self.get_object()
         user = self.object.user
 
@@ -125,7 +125,7 @@ class ProfileSettingsView(LoginRequiredMixin, UpdateView):
 
         return self.render_to_response(self.get_context_data(user_form=user_form, profile_form=profile_form))
 
-    def post(self, request, *args, **kwargs):
+    def post(self: "ProfileSettingsView", request: HttpRequest) -> HttpResponse:
         self.object = self.get_object()
         user = self.object.user
 
@@ -139,12 +139,12 @@ class ProfileSettingsView(LoginRequiredMixin, UpdateView):
 
         return self.render_to_response(self.get_context_data(user_form=user_form, profile_form=profile_form))
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self: "ProfileSettingsView", **kwargs: dict[str, Any]) -> dict:
         context = super().get_context_data(**kwargs)
-        if 'user_form' not in context:
-            context['user_form'] = UserForm(instance=self.request.user)
-        if 'profile_form' not in context:
-            context['profile_form'] = self.form_class(instance=self.get_object())
+        if "user_form" not in context:
+            context["user_form"] = UserForm(instance=self.request.user)
+        if "profile_form" not in context:
+            context["profile_form"] = self.form_class(instance=self.get_object())
         return context
 
 
@@ -155,6 +155,5 @@ class AccountSettingsView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("profile")
     login_url = "login"
 
-    def get_object(self):
+    def get_object(self: "AccountSettingsView") -> UserSettings:
         return UserSettings.objects.get(user=self.request.user)
-

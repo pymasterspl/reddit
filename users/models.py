@@ -84,13 +84,13 @@ class Profile(models.Model):
     avatar = models.ImageField(upload_to="users_avatars/", null=True, blank=True, default=None)
     user = models.OneToOneField("User", on_delete=models.CASCADE, null=False)
 
+    def __str__(self: "Profile") -> str:
+        return f"{self.user.nickname}"
+
     def save(self: "Profile", *args: any, **kwargs: dict) -> None:
         if self.avatar:
             self.avatar = self.process_avatar(self.avatar)
         super().save(*args, **kwargs)
-
-    def __str__(self: "Profile") -> str:
-        return f"{self.user.nickname}"
 
     def nickname(self: "Profile") -> str:
         return self.user.nickname
