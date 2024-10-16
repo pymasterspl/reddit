@@ -84,9 +84,10 @@ def test_process_avatar(user: User) -> None:
     image.save(image_io, format="JPEG")
     image_io.seek(0)
     avatar = SimpleUploadedFile("test_avatar.jpg", image_io.read(), content_type="image/jpeg")
-    user.avatar = avatar
+    user.profile.avatar = avatar
+    user.profile.save()
     user.save()
-    processed_avatar = Image.open(user.avatar)
+    processed_avatar = Image.open(user.profile.avatar)
     assert processed_avatar.size == (32, 32)
 
 

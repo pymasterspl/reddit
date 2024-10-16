@@ -42,7 +42,6 @@ class CustomUserAdmin(DjangoUserAdmin):
             },
         ),
     )
-#test
     def is_online(self: "CustomUserAdmin", obj: User) -> bool | str:
         return obj.is_online
 

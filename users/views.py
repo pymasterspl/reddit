@@ -17,7 +17,7 @@ from django.views.generic import DetailView, FormView, UpdateView
 
 from core.models import User
 
-from .forms import UserProfileForm, UserRegistrationForm, UserForm
+from .forms import UserProfileForm, UserRegistrationForm, UserForm, UserSettingsForm
 from .models import Profile, UserSettings
 from .tokens import account_activation_token
 
@@ -151,7 +151,7 @@ class ProfileSettingsView(LoginRequiredMixin, UpdateView):
 class AccountSettingsView(LoginRequiredMixin, UpdateView):
     model = UserSettings
     template_name = "users/account_settings.html"
-    form_class = UserProfileForm
+    form_class = UserSettingsForm
     success_url = reverse_lazy("profile")
     login_url = "login"
 

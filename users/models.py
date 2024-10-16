@@ -58,6 +58,7 @@ class UserSettings(models.Model):
     location = models.CharField(max_length=2, choices=get_locations, default="PL")
 
     is_beta = models.BooleanField(default=False)
+    revert_to_old_reddit = models.BooleanField(default=False)
     is_over_18 = models.BooleanField(default=False)
 
     def __str__(self: "UserSettings") -> str:

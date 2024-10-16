@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 
-from .models import User, Profile
+from .models import User, Profile, UserSettings
 
 
 def validate_avatar(file: any) -> None:
@@ -38,4 +38,16 @@ class UserProfileForm(forms.ModelForm):
             'is_followable',
             'is_content_visible',
             'is_communities_visible',
+        ]
+
+
+class UserSettingsForm(forms.ModelForm):
+    class Meta:
+        model = UserSettings
+        fields = [
+            'content_lang',
+            'location',
+            'is_beta',
+            'is_over_18',
+            'revert_to_old_reddit',
         ]
