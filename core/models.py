@@ -294,15 +294,7 @@ class PostVote(models.Model):
 
 
 class PostAward(models.Model):
-    giver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="awards_given")
-    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="awards_received")
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="post_awards")
-    choice = models.CharField(max_length=20, choices=[], blank=True)  # Placeholder for choices
-    gold = models.IntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
-    anonymous = models.BooleanField(default=False)
-    comment = models.CharField(max_length=100, blank=True, default="")
-
+    
     REWARD_POINTS: ClassVar[dict[str, int]] = {
         "1": 15,
         "2": 25,
@@ -312,6 +304,15 @@ class PostAward(models.Model):
     REWARD_CHOICES: ClassVar[list[tuple[str, str]]] = [
         (f"{level}{i}_REWARD", f"{points} points") for level, points in REWARD_POINTS.items() for i in range(1, 6)
     ]
+
+    giver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="awards_given")
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="awards_received")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="post_awards")
+    choice = models.CharField(max_length=20, choices=REWARD_CHOICES, blank=True)  # Placeholder for choices
+    gold = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    anonymous = models.BooleanField(default=False)
+    comment = models.CharField(max_length=100, blank=True, default="")    
 
     objects = PostAwardManager()
 
