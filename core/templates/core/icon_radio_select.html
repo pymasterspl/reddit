@@ -5,8 +5,8 @@
             {{ option.label }}
             <br>
         {% endif %}
-        <label class="form-check-label" for="{{ option.id_for_label }}">
-            <input type="radio" id="{{ option.id_for_label }}" name="{{ widget.name }}" value="{{ option.value }}" class="{{ widget.attrs.class }}">
+        <label class="form-check-label" for="{{ option.value }}">
+            <input type="radio" id="{{ option.value }}" name="{{ widget.name }}" value="{{ option.value }}" class="{{ widget.attrs.class }}">
             <img src="{% static 'core/icons/' %}{{ option.value }}.png" alt="{{ option.label }}" width="30" height="30">
         </label>
 

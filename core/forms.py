@@ -62,8 +62,10 @@ class PostAwardForm(forms.ModelForm):
             "anonymous": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "comment": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Optional comment"}),
         }
-        labels: ClassVar[dict[str, str]] = {"choice": ""}
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['choice'].label = ''
 
 class CommunityForm(forms.ModelForm):
     class Meta:
