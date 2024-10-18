@@ -294,7 +294,6 @@ class PostVote(models.Model):
 
 
 class PostAward(models.Model):
-    
     REWARD_POINTS: ClassVar[dict[str, int]] = {
         "1": 15,
         "2": 25,
@@ -312,7 +311,7 @@ class PostAward(models.Model):
     gold = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     anonymous = models.BooleanField(default=False)
-    comment = models.CharField(max_length=100, blank=True, default="")    
+    comment = models.CharField(max_length=100, blank=True, default="")
 
     objects = PostAwardManager()
 
