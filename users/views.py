@@ -129,7 +129,7 @@ class ProfileSettingsView(LoginRequiredMixin, FormView):
             return super().form_valid(form)
         return self.form_invalid(form)
 
-    def post(self: "ProfileSettingsView", request: HttpRequest, *args: tuple, **kwargs: dict[str, Any]) -> HttpResponse:
+    def post(self: "ProfileSettingsView", request: HttpRequest, *args: tuple, **kwargs: dict[str, Any]) -> HttpResponse:  # noqa: ARG002
         with transaction.Atomic():
             form = self.get_form()
             form["user_form"] = UserForm(request.POST, instance=request.user)
