@@ -66,13 +66,9 @@ class UserSettings(models.Model):
 
 
 class Profile(models.Model):
-    bio = models.TextField(default="")
+    bio = models.TextField(default="", max_length=1000)
     is_nsfw = models.BooleanField(
         default=False,
-        help_text=(
-            "Profile contains content which is NSFW "
-            "(may contain nudity, pornography, profanity, or inappropriate content for those under 18)"
-        ),
     )
     is_followable = models.BooleanField(default=True)
     is_content_visible = models.BooleanField(default=True)

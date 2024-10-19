@@ -6,6 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, TemplateView
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
@@ -13,7 +14,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views import View
-from django.views.generic import DetailView, FormView, UpdateView
+from django.views.generic import DetailView, FormView
 
 from core.models import User
 
@@ -106,54 +107,50 @@ class ActivateUser(View):
             return redirect("home-page")
 
 
-class ProfileSettingsView(LoginRequiredMixin, UpdateView):
+class ProfileSettingsView(LoginRequiredMixin, FormView):
     model = Profile
     template_name = "users/profile_settings.html"
     form_class = UserProfileForm
     success_url = reverse_lazy("profile")
     login_url = "login"
 
-    def get_object(self: "ProfileSettingsView") -> Profile:
-        return Profile.objects.get(user=self.request.user)
+    def get_form(self: "ProfileSettingsView") -> dict[str, Any]:
+        return {
+            "user_form": UserForm(instance=self.request.user),
+            "profile_form": self.form_class(instance=self.request.user.profile),
+        }
 
-    def get(self: "ProfileSettingsView") -> HttpResponse:
-        self.object = self.get_object()
-        user = self.object.user
-
-        user_form = UserForm(instance=user)
-        profile_form = self.form_class(instance=self.object)
-
-        return self.render_to_response(self.get_context_data(user_form=user_form, profile_form=profile_form))
-
-    def post(self: "ProfileSettingsView", request: HttpRequest) -> HttpResponse:
-        self.object = self.get_object()
-        user = self.object.user
-
-        user_form = UserForm(request.POST, instance=user)
-        profile_form = self.form_class(request.POST, request.FILES, instance=self.object)
-
+    def form_valid(self: "ProfileSettingsView", form: dict[str, Any]) -> HttpResponse:
+        user_form = form["user_form"]
+        profile_form = form["profile_form"]
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-            return redirect(self.success_url)
+            return super().form_valid(form)
+        return self.form_invalid(form)
 
-        return self.render_to_response(self.get_context_data(user_form=user_form, profile_form=profile_form))
+    def post(self: "ProfileSettingsView", request: HttpRequest, *args: tuple, **kwargs: dict[str, Any]) -> HttpResponse:
+        with transaction.Atomic():
+            form = self.get_form()
+            form["user_form"] = UserForm(request.POST, instance=request.user)
+            form["profile_form"] = self.form_class(request.POST, request.FILES, instance=request.user.profile)
+            if self.form_valid(form):
+                return self.form_valid(form)
+            return self.form_invalid(form)
 
-    def get_context_data(self: "ProfileSettingsView", **kwargs: dict[str, Any]) -> dict:
-        context = super().get_context_data(**kwargs)
-        if "user_form" not in context:
-            context["user_form"] = UserForm(instance=self.request.user)
-        if "profile_form" not in context:
-            context["profile_form"] = self.form_class(instance=self.get_object())
-        return context
 
-
-class AccountSettingsView(LoginRequiredMixin, UpdateView):
+class AccountSettingsView(LoginRequiredMixin, FormView):
     model = UserSettings
     template_name = "users/account_settings.html"
     form_class = UserSettingsForm
     success_url = reverse_lazy("profile")
     login_url = "login"
 
-    def get_object(self: "AccountSettingsView") -> UserSettings:
-        return UserSettings.objects.get(user=self.request.user)
+    def form_valid(self: "AccountSettingsView", form: UserSettingsForm) -> HttpResponse:
+        form.save()
+        return super().form_valid(form)
+
+    def get_form_kwargs(self: "AccountSettingsView") -> dict[str, Any]:
+        kwargs = super().get_form_kwargs()
+        kwargs["instance"] = self.request.user.usersettings
+        return kwargs
