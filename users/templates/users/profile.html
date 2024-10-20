@@ -5,7 +5,7 @@
         <h2>User Profile</h2>
         <div class="row">
             <div class="col-md-4">
-                <img src="{{ user.avatar_url  }}" class="img-thumbnail" alt="User Avatar">
+                <img src="{{ user.profile.avatar_url  }}" class="img-thumbnail" alt="User Avatar">
             </div>
             <div class="col-md-8">
                 <p><strong>Nickname:</strong> {{ user.nickname }} </p>
@@ -26,7 +26,7 @@
                         <img src="{% static 'core/icons/' %}{{ award.choice }}.png" alt="{{ option.label }}" width="30" height="30">
                     {%endfor%}
                 </p>
-                <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
+                <a href="{% url 'account_settings' %}" class="btn btn-primary">Edit Profile</a>
             </div>
         </div>
     </div>

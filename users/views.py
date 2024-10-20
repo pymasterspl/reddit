@@ -6,6 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, TemplateView
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
@@ -13,11 +14,12 @@ from django.urls import reverse, reverse_lazy
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views import View
-from django.views.generic import DetailView, FormView, UpdateView
+from django.views.generic import DetailView, FormView
 
 from core.models import User
 
-from .forms import UserProfileForm, UserRegistrationForm
+from .forms import UserForm, UserProfileForm, UserRegistrationForm, UserSettingsForm
+from .models import Profile, UserSettings
 from .tokens import account_activation_token
 
 
@@ -28,17 +30,6 @@ class UserProfileView(LoginRequiredMixin, DetailView):
     login_url = "login"
 
     def get_object(self: "UserProfileView") -> User:
-        return self.request.user
-
-
-class UserEditView(LoginRequiredMixin, UpdateView):
-    model = User
-    form_class = UserProfileForm
-    template_name = "users/edit_profile.html"
-    success_url = reverse_lazy("profile")
-    login_url = "login"
-
-    def get_object(self: "UserEditView") -> User:
         return self.request.user
 
 
@@ -116,11 +107,50 @@ class ActivateUser(View):
             return redirect("home-page")
 
 
-class ProfileSettingsView(TemplateView):
-    # Work on this view is in progress
+class ProfileSettingsView(LoginRequiredMixin, FormView):
+    model = Profile
     template_name = "users/profile_settings.html"
+    form_class = UserProfileForm
+    success_url = reverse_lazy("profile")
+    login_url = "login"
+
+    def get_form(self: "ProfileSettingsView") -> dict[str, Any]:
+        return {
+            "user_form": UserForm(instance=self.request.user),
+            "profile_form": self.form_class(instance=self.request.user.profile),
+        }
+
+    def form_valid(self: "ProfileSettingsView", form: dict[str, Any]) -> HttpResponse:
+        user_form = form["user_form"]
+        profile_form = form["profile_form"]
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            return super().form_valid(form)
+        return self.form_invalid(form)
+
+    def post(self: "ProfileSettingsView", request: HttpRequest, *args: tuple, **kwargs: dict[str, Any]) -> HttpResponse:  # noqa: ARG002
+        with transaction.atomic():
+            form = self.get_form()
+            form["user_form"] = UserForm(request.POST, instance=request.user)
+            form["profile_form"] = self.form_class(request.POST, request.FILES, instance=request.user.profile)
+            if self.form_valid(form):
+                return self.form_valid(form)
+            return self.form_invalid(form)
 
 
-class AccountSettingsView(TemplateView):
-    # Work on this view is in progress
+class AccountSettingsView(LoginRequiredMixin, FormView):
+    model = UserSettings
     template_name = "users/account_settings.html"
+    form_class = UserSettingsForm
+    success_url = reverse_lazy("profile")
+    login_url = "login"
+
+    def form_valid(self: "AccountSettingsView", form: UserSettingsForm) -> HttpResponse:
+        form.save()
+        return super().form_valid(form)
+
+    def get_form_kwargs(self: "AccountSettingsView") -> dict[str, Any]:
+        kwargs = super().get_form_kwargs()
+        kwargs["instance"] = self.request.user.usersettings
+        return kwargs

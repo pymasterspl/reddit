@@ -1,79 +1,83 @@
-{% extends 'base.html' %} {% load static %} {% block content %}
-<div class="container mt-4">
-    {% include 'users/settings_navbar.html' %}
-    <div class="row justify-content-center">
-        <div class="col-12 col-md-8">
-            <div class="d-flex justify-content-between"></div>
-            <div class="bg-dark p-4">
-                <h2 class="mt-3 mb-3">Customize Profile</h2>
-                <form>
-                    <div>
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="container mt-4">
+        {% include 'users/settings_navbar.html' %}
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8">
+                <div class="d-flex justify-content-between"></div>
+                <div class="bg-dark p-4">
+                    <h2 class="mt-3 mb-3">Customize Profile</h2>
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Display Name Field -->
                         <div class="form-group mb-4" id="profile-information">
-                            <h3 class="mt-4 mb-4 text-secondary fs-6 border-bottom border-secondary">Profile Information</h3>
-                            <label for="displayName" class="fw-bolder">Display Name (optional)</label>
-                            <p class="form-text text-light-emphasis">Set a display name. This does not change your username.</p>
-                            <input type="text" class="form-control text-red" id="text-field" placeholder="Display name (optional)" maxlength="30" data-max-chars="30" />
+                            <h3 class="mt-4 mb-4 text-secondary fs-6 border-bottom border-secondary">Profile
+                                Information</h3>
+                            {{ form.user_form.nickname|as_crispy_field }}
+                            <p class="form-text text-light-emphasis">Set a nickname. This does not change your
+                                username.</p>
                         </div>
+
+                        <!-- Bio Field -->
                         <div class="form-group mb-4">
-                            <label for="about" class="fw-bolder">About (optional)</label>
-                            <p class="form-text text-light-emphasis">A brief description of yourself shown on your profile.</p>
-                            <textarea class="form-control" id="about" rows="4" maxlength="200" placeholder="About (optional)"></textarea>
+                            {{ form.profile_form.bio|as_crispy_field }}
+                            <p class="form-text text-light-emphasis">A brief description of yourself shown on your
+                                profile.</p>
                         </div>
+
+                        <!-- Avatar Image Field -->
                         <div class="form-group mb-4">
-                            <h4 class="fw-bolder fs-6">Social Links (5 max)</h4>
-                            <p>People who visit your profile will see your social links.</p>
-                            <button type="button" class="btn btn-secondary">Add Social Link</button>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="form-group mb-4">
-                            <h3 class="mt-4 mb-4 text-secondary fs-6 border-bottom border-secondary">Images</h3>
                             <h4 class="fw-bolder fs-6">Avatar and Banner Image</h4>
                             <p class="form-text text-light-emphasis">Images must be .png or .jpg format</p>
-                            <div class="mb-3"><label for="avatar-image" class="form-label">Add Avatar Image</label> <input class="form-control" type="file" id="avatar-image" accept=".png, .jpg" /></div>
-                            <div class="mb-3"><label for="banner-image" class="form-label">Add Banner Image</label> <input class="form-control" type="file" id="banner-image" accept=".png, .jpg" /></div>
+                            <label for="avatar" class="form-label">Avatar Image</label>
+                            <input type="file" class="form-control" id="avatar" name="avatar" accept=".png, .jpg">
                         </div>
-                    </div>
-                    <div>
+
+                        <!-- Gender Field -->
                         <div class="form-group mb-4">
-                            <h3 class="mt-4 mb-4 text-secondary fs-6 border-bottom border-secondary">Profile category</h3>
-                            <h4 class="fw-bolder fs-6">Profile Category</h4>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch" id="nsfwSwitchCheckDefault" />
-                                <label class="form-check-label text-light-emphasis" for="nsfwSwitchCheckDefault">This content is NSFW (may contain nudity, pornography, profanity, or inappropriate content for those under 18)</label>
+                            {{ form.profile_form.gender|as_crispy_field }}
+                        </div>
+
+                        <!-- NSFW Field -->
+                        <div class="form-group mb-4">
+                            <h4 class="fw-bolder fs-6">Profile category</h4>
+                            <!-- Crispy form rendering with Bootstrap 5 switch class -->
+                            <div class="form-check form-switch mb-3">
+                                {{ form.profile_form.is_nsfw|as_crispy_field }}
                             </div>
                         </div>
-                    </div>
-                    <div>
+
+                        <!-- Followable Field -->
                         <div class="form-group mb-4">
-                            <h3 class="mt-4 mb-4 text-secondary fs-6 border-bottom border-secondary">Advanced</h3>
                             <h4 class="fw-bolder fs-6">Allow People to Follow You</h4>
-                            <div class="form-check form-switch mb-3">
-                                <input type="checkbox" class="form-check-input" id="followSwitch" />
-                                <label class="form-check-label text-light-emphasis" for="followSwitch">Followers will be notified about posts you make to your profile and see them in their home feed.</label>
+                            <div class="form-check form-switch">
+                                {{ form.profile_form.is_followable|as_crispy_field }}
                             </div>
-                            <h4 class="fw-bolder fs-6">Content visibility</h4>
-                            <div class="form-check form-switch mb-3">
-                                <input class="form-check-input" type="checkbox" role="switch" id="visibilitySwitch" />
-                                <label class="form-check-label text-light-emphasis" for="visibilitySwitch">Posts to this profile can appear in r/all and your profile can be discovered in /users</label>
+                        </div>
+
+                        <!-- Content Visibility Field -->
+                        <div class="form-group mb-4">
+                            <h4 class="fw-bolder fs-6">Content Visibility</h4>
+                            <div class="form-check form-switch">
+                                {{ form.profile_form.is_content_visible|as_crispy_field }}
                             </div>
+                        </div>
+
+                        <!-- Communities Visibility Field -->
+                        <div class="form-group mb-4">
                             <h4 class="fw-bolder fs-6">Active in Communities Visibility</h4>
                             <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch" id="communitiesVisibilitySwitch" />
-                                <label class="form-check-label text-light-emphasis" for="communitiesVisibilitySwitch">Show which communities I am active in on my profile.</label>
-                            </div>
-                            <div class="mt-3 mb-4">
-                                <h4 class="fw-bolder fs-6">Clear history</h4>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <p class="text-light-emphasis">Delete your post views history.</p>
-                                    <button type="button" class="btn btn-dark border-light rounded-pill">Clear History</button>
-                                </div>
+                                {{ form.profile_form.is_communities_visible|as_crispy_field }}
                             </div>
                         </div>
-                    </div>
-                </form>
+
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}

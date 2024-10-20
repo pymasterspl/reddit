@@ -58,6 +58,7 @@ class UserSettings(models.Model):
     location = models.CharField(max_length=2, choices=get_locations, default="PL")
 
     is_beta = models.BooleanField(default=False)
+    revert_to_old_reddit = models.BooleanField(default=False)
     is_over_18 = models.BooleanField(default=False)
 
     def __str__(self: "UserSettings") -> str:
@@ -65,7 +66,7 @@ class UserSettings(models.Model):
 
 
 class Profile(models.Model):
-    bio = models.TextField(default="")
+    bio = models.TextField(default="", max_length=1000)
     is_nsfw = models.BooleanField(
         default=False,
         help_text=(
@@ -80,16 +81,40 @@ class Profile(models.Model):
     post_karma = models.IntegerField(default=0)
     gold_awards = models.IntegerField(default=0)
     gender = models.CharField(choices=GENDER_CHOICES, max_length=1)
+    avatar = models.ImageField(upload_to="users_avatars/", null=True, blank=True, default=None)
     user = models.OneToOneField("User", on_delete=models.CASCADE, null=False)
 
     def __str__(self: "Profile") -> str:
         return f"{self.user.nickname}"
+
+    def save(self: "Profile", *args: any, **kwargs: dict) -> None:
+        if self.avatar:
+            self.avatar = self.process_avatar(self.avatar)
+        super().save(*args, **kwargs)
 
     def nickname(self: "Profile") -> str:
         return self.user.nickname
 
     def email(self: "Profile") -> str:
         return self.user.email
+
+    def process_avatar(self: "User", avatar: any) -> ContentFile:
+        image = Image.open(avatar)
+        if image.mode != "RGB":
+            image = image.convert("RGB")
+        image = image.resize((32, 32), Image.LANCZOS)
+        image_io = io.BytesIO()
+        image.save(image_io, format="JPEG")
+        return ContentFile(image_io.getvalue(), avatar.name)
+
+    @property
+    def avatar_url(self: "Profile") -> str:
+        if self.avatar and hasattr(self.avatar, "url"):
+            try:
+                return self.avatar.url
+            except ValueError:
+                return settings.DEFAULT_AVATAR_URL
+        return settings.DEFAULT_AVATAR_URL
 
 
 class User(AbstractUser):
@@ -113,14 +138,8 @@ class User(AbstractUser):
         default=True, help_text="Indicates whether the user can create posts. Defaults to True."
     )
     warnings = models.IntegerField(default=0, help_text="The number of warnings assigned to the user. Defaults to 0.")
-    avatar = models.ImageField(upload_to="users_avatars/", null=True, blank=True, default=None)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: ClassVar[list[str]] = ["nickname"]
-
-    def save(self: "User", *args: any, **kwargs: dict) -> None:
-        if self.avatar:
-            self.avatar = self.process_avatar(self.avatar)
-        super().save(*args, **kwargs)
 
     def has_permission(self: "User", post_id: int, permission_name: str) -> bool:
         permission_checkers = {
@@ -154,15 +173,6 @@ class User(AbstractUser):
             CommunityMember.ADMIN,
         }
 
-    def process_avatar(self: "User", avatar: any) -> ContentFile:
-        image = Image.open(avatar)
-        if image.mode != "RGB":
-            image = image.convert("RGB")
-        image = image.resize((32, 32), Image.LANCZOS)
-        image_io = io.BytesIO()
-        image.save(image_io, format="JPEG")
-        return ContentFile(image_io.getvalue(), avatar.name)
-
     def update_last_activity(self: "User") -> None:
         User.objects.filter(pk=self.pk).update(last_activity=timezone.now())
 
@@ -188,15 +198,6 @@ class User(AbstractUser):
             result = f"{delta.days} days ago"
 
         return result
-
-    @property
-    def avatar_url(self: "User") -> str:
-        if self.avatar and hasattr(self.avatar, "url"):
-            try:
-                return self.avatar.url
-            except ValueError:
-                return settings.DEFAULT_AVATAR_URL
-        return settings.DEFAULT_AVATAR_URL
 
 
 class SocialLink(models.Model):
