@@ -111,7 +111,7 @@ class ProfileSettingsView(LoginRequiredMixin, FormView):
     model = Profile
     template_name = "users/profile_settings.html"
     form_class = UserProfileForm
-    success_url = reverse_lazy("profile")
+    success_url = reverse_lazy("profile_settings")
     login_url = "login"
 
     def get_form(self: "ProfileSettingsView") -> dict[str, Any]:
@@ -135,6 +135,7 @@ class ProfileSettingsView(LoginRequiredMixin, FormView):
             form["user_form"] = UserForm(request.POST, instance=request.user)
             form["profile_form"] = self.form_class(request.POST, request.FILES, instance=request.user.profile)
             if self.form_valid(form):
+                messages.success(self.request, "Your profile settings have been updated successfully!")
                 return self.form_valid(form)
             return self.form_invalid(form)
 
@@ -143,11 +144,12 @@ class AccountSettingsView(LoginRequiredMixin, FormView):
     model = UserSettings
     template_name = "users/account_settings.html"
     form_class = UserSettingsForm
-    success_url = reverse_lazy("profile")
+    success_url = reverse_lazy("account_settings")
     login_url = "login"
 
     def form_valid(self: "AccountSettingsView", form: UserSettingsForm) -> HttpResponse:
         form.save()
+        messages.success(self.request, "Your account settings have been updated successfully!")
         return super().form_valid(form)
 
     def get_form_kwargs(self: "AccountSettingsView") -> dict[str, Any]:

@@ -23,4 +23,5 @@ def get_locations() -> list[tuple[str, str]]:
 
 
 # https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes
-LANGUAGE_CHOICES = [("en", "English")]
+def get_languages() -> list[tuple[str, str]]:
+    return [(language.alpha_2, language.name) for language in pycountry.languages if hasattr(language, "alpha_2")]
