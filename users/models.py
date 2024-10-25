@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from PIL import Image
 
-from .choices import GENDER_CHOICES, LANGUAGE_CHOICES, get_locations
+from .choices import GENDER_CHOICES, get_languages, get_locations
 
 
 class UserManager(BaseUserManager):
@@ -53,7 +53,7 @@ class UserManager(BaseUserManager):
 
 
 class UserSettings(models.Model):
-    content_lang = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default="en")
+    content_lang = models.CharField(max_length=2, choices=get_languages, default="en")
     user = models.OneToOneField("User", on_delete=models.CASCADE, null=False)  # default name usessetigns
     location = models.CharField(max_length=2, choices=get_locations, default="PL")
 
