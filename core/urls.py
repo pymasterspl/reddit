@@ -3,8 +3,8 @@ from django.urls import include, path
 from .views import (
     CommunityCreateView,
     CommunityDetailView,
-    CommunityListView,
     CommunityJoin,
+    CommunityListView,
     CommunityUpdateView,
     PostAwardCreateView,
     PostCreateView,

@@ -211,7 +211,7 @@ class CommunityCreateView(LoginRequiredMixin, CreateView):
 class CommunityJoin(LoginRequiredMixin, View):
     model = Community
 
-    def get_object(self: "CommunityDetailView") -> Community:
+    def get_object(self: "CommunityJoin") -> Community:
         error_message = "Community does not exist"
         try:
             community = Community.objects.get(slug=self.kwargs["slug"])
@@ -219,13 +219,13 @@ class CommunityJoin(LoginRequiredMixin, View):
             raise Http404(error_message) from None
         return community
 
-    def post(self, request, slug, *args, **kwargs):
+    def post(self: "CommunityJoin", request: HttpRequest, slug: str) -> any:
         if request.user in self.get_object().members.all():
             messages.info(request, "You are already a member of this community.")
         else:
             self.get_object().members.add(self.request.user)
             messages.success(request, "You have joined the community!")
-        return redirect('community-detail', slug=slug)
+        return redirect("community-detail", slug=slug)
 
 
 class CommunityDetailView(DetailView):
