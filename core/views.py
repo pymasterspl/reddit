@@ -208,6 +208,26 @@ class CommunityCreateView(LoginRequiredMixin, CreateView):
         return reverse_lazy("community-detail", kwargs={"slug": self.object.slug})
 
 
+class CommunityJoin(LoginRequiredMixin, View):
+    model = Community
+
+    def get_object(self: "CommunityDetailView") -> Community:
+        error_message = "Community does not exist"
+        try:
+            community = Community.objects.get(slug=self.kwargs["slug"])
+        except ObjectDoesNotExist:
+            raise Http404(error_message) from None
+        return community
+
+    def post(self, request, slug, *args, **kwargs):
+        if request.user in self.get_object().members.all():
+            messages.info(request, "You are already a member of this community.")
+        else:
+            self.get_object().members.add(self.request.user)
+            messages.success(request, "You have joined the community!")
+        return redirect('community-detail', slug=slug)
+
+
 class CommunityDetailView(DetailView):
     model = Community
     template_name = "core/community-detail.html"
@@ -219,8 +239,6 @@ class CommunityDetailView(DetailView):
             community = Community.objects.get(slug=self.kwargs["slug"])
         except ObjectDoesNotExist:
             raise Http404(error_message) from None
-        if community.privacy == "30_PRIVATE" and not community.members.filter(id=self.request.user.id).exists():
-            raise PermissionDenied
         return community
 
     def get_context_data(self: "CommunityDetailView", **kwargs: any) -> dict[str, any]:
