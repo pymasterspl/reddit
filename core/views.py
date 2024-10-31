@@ -224,7 +224,7 @@ class CommunityJoin(LoginRequiredMixin, CommunityMixin, View):
     model = Community
 
     @transaction.atomic
-    def post(self: "CommunityJoin", request: HttpRequest, slug: str) -> any:
+    def post(self: "CommunityJoin", request: HttpRequest, slug: str) -> HttpResponseRedirect:
         if request.user in self.get_object().members.all():
             messages.error(request, "You are already a member of this community.")
         else:

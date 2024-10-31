@@ -470,6 +470,12 @@ def test_join_community_view(client: Client, user: User, community: Community) -
     assert response.status_code == 404
     assert "Community does not exist" in str(response.context)
 
+    client.alogout()
+    url = reverse("community-join", kwargs={"slug": community.slug})
+    response = client.post(url)
+    assert response.status_code == 302
+    assert "You have joined the community!" not in str(response.context)
+
 
 def test_community_detail_view(client: Client, user: User, community: Community) -> None:
     client.force_login(user)
