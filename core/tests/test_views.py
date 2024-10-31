@@ -452,6 +452,25 @@ def test_create_community_view(client: Client, user: User) -> None:
     )
 
 
+def test_join_community_view(client: Client, user: User, community: Community) -> None:
+    client.force_login(user)
+    url = reverse("community-join", kwargs={"slug": community.slug})
+    response = client.post(url)
+    messages = list(get_messages(response.wsgi_request))
+    assert response.status_code == 302
+    assert any("You have joined the community!" in message.message for message in messages)
+
+    response = client.post(url)
+    messages = list(get_messages(response.wsgi_request))
+    assert any("You are already a member of this community." in message.message for message in messages)
+    assert response.status_code == 302
+
+    url = reverse("community-join", kwargs={"slug": "not_exist"})
+    response = client.post(url)
+    assert response.status_code == 404
+    assert "Community does not exist" in str(response.context)
+
+
 def test_community_detail_view(client: Client, user: User, community: Community) -> None:
     client.force_login(user)
     url = reverse("community-detail", kwargs={"slug": community.slug})
