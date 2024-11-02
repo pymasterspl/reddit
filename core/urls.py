@@ -3,6 +3,7 @@ from django.urls import include, path
 from .views import (
     CommunityCreateView,
     CommunityDetailView,
+    CommunityJoin,
     CommunityListView,
     CommunityUpdateView,
     PostAwardCreateView,
@@ -26,6 +27,7 @@ urlpatterns = [
     path("communities/", CommunityListView.as_view(), name="community-list"),
     path("community/create/", CommunityCreateView.as_view(), name="community-create"),
     path("community/<slug:slug>/", CommunityDetailView.as_view(), name="community-detail"),
+    path("community/<slug:slug>/community-join", CommunityJoin.as_view(), name="community-join"),
     path("post/report/<int:pk>/", PostReportView.as_view(), name="post-report"),
     path("reported-posts/", PostListReportedView.as_view(), name="post-list-reported"),
     path("reported-post/<int:pk>/", PostReportedView.as_view(), name="reported-post"),

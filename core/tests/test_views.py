@@ -452,6 +452,40 @@ def test_create_community_view(client: Client, user: User) -> None:
     )
 
 
+def test_join_community_success(client: Client, user: User, community: Community) -> None:
+    """Test that a user can successfully join a community."""
+    client.force_login(user)
+    url = reverse("community-join", kwargs={"slug": community.slug})
+    response = client.post(url)
+
+    messages = list(get_messages(response.wsgi_request))
+    assert response.status_code == 302
+    assert any("You have joined the community!" in message.message for message in messages)
+
+
+def test_join_already_member(client: Client, user: User, community: Community) -> None:
+    """Test that a user is notified if they are already a member of the community."""
+    client.force_login(user)
+    url = reverse("community-join", kwargs={"slug": community.slug})
+    client.post(url)  # First join to become a member
+
+    # Attempt to join again
+    response = client.post(url)
+    messages = list(get_messages(response.wsgi_request))
+    assert response.status_code == 302
+    assert any("You are already a member of this community." in message.message for message in messages)
+
+
+def test_join_non_existent_community(client: Client, user: User) -> None:
+    """Test that attempting to join a non-existent community returns a 404 error."""
+    client.force_login(user)
+    url = reverse("community-join", kwargs={"slug": "not_exist"})
+    response = client.post(url)
+
+    assert response.status_code == 404
+    assert "Community does not exist" in str(response.context)
+
+
 def test_community_detail_view(client: Client, user: User, community: Community) -> None:
     client.force_login(user)
     url = reverse("community-detail", kwargs={"slug": community.slug})

@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Exists, OuterRef, QuerySet
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
@@ -164,6 +164,21 @@ class PostSaveView(LoginRequiredMixin, View):
         return redirect("post-detail", pk=post.id)
 
 
+class CommunityMixin:
+    model = Community
+
+    def get_object(self: "CommunityJoin") -> Community:
+        error_message = "Community does not exist"
+        try:
+            community = Community.objects.get(slug=self.kwargs["slug"])
+        except ObjectDoesNotExist:
+            raise Http404(error_message) from None
+        if community.privacy == "30_PRIVATE" and not community.members.filter(id=self.request.user.id).exists():
+            error_message = "This will be implemented by add https://app.clickup.com/t/8696fatek"
+            raise NotImplementedError(error_message)
+        return community
+
+
 class CommunityListView(ListView):
     model = Community
     template_name = "core/community-list.html"
@@ -208,20 +223,23 @@ class CommunityCreateView(LoginRequiredMixin, CreateView):
         return reverse_lazy("community-detail", kwargs={"slug": self.object.slug})
 
 
-class CommunityDetailView(DetailView):
+class CommunityJoin(LoginRequiredMixin, CommunityMixin, View):
+    model = Community
+
+    @transaction.atomic
+    def post(self: "CommunityJoin", request: HttpRequest, slug: str) -> HttpResponseRedirect:
+        if request.user in self.get_object().members.all():
+            messages.error(request, "You are already a member of this community.")
+        else:
+            self.get_object().members.add(self.request.user)
+            messages.success(request, "You have joined the community!")
+        return redirect("community-detail", slug=slug)
+
+
+class CommunityDetailView(CommunityMixin, DetailView):
     model = Community
     template_name = "core/community-detail.html"
     context_object_name = "community"
-
-    def get_object(self: "CommunityDetailView") -> Community:
-        error_message = "Community does not exist"
-        try:
-            community = Community.objects.get(slug=self.kwargs["slug"])
-        except ObjectDoesNotExist:
-            raise Http404(error_message) from None
-        if community.privacy == "30_PRIVATE" and not community.members.filter(id=self.request.user.id).exists():
-            raise PermissionDenied
-        return community
 
     def get_context_data(self: "CommunityDetailView", **kwargs: any) -> dict[str, any]:
         context = super().get_context_data(**kwargs)

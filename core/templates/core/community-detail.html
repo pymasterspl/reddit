@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'core/css/style.css' %}" xmlns="http://www.w3.org/1999/html">
+<link rel="stylesheet" href="{% static 'core/css/style.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -17,8 +17,10 @@
                     {% if community.is_18_plus %}
                     <p>This community contains 18+ content. Users must be over 18 to view and contribute.</p>
                     {% endif %}
+
                     {% if community.privacy == "10_PUBLIC" %}
                     <!-- Display content for public communities -->
+
                     {% elif community.privacy == "20_RESTRICTED" %}
                     <!-- Display content for restricted communities -->
                     {% if user.is_authenticated and user in community.members.all %}
@@ -26,6 +28,7 @@
                     {% else %}
                     <!-- User is not approved to contribute -->
                     {% endif %}
+
                     {% elif community.privacy == "30_PRIVATE" %}
                     {% if user.is_authenticated and user in community.members.all %}
                     <!-- User is approved to view and contribute -->
@@ -34,12 +37,25 @@
                     {% endif %}
                     {% endif %}
                 </div>
+
                 <div class="card-body">
                     <p>Author: {{ community.author.nickname }}</p>
                     <p>Members: {{ community.members.count }}</p>
                     <p>Created at: {{ community.created_at }}</p>
                     <p>Privacy: {{ community.get_privacy_display }}</p>
+
+                    {% if user.is_authenticated and user not in community.members.all %}
+                    <form method="post" action="{% url 'community-join' community.slug %}">
+                        {% csrf_token %}
+                        <button class="btn btn-success" type="submit">Join</button>
+                    </form>
+                    {% elif user.is_authenticated and user in community.members.all %}
+                    <p class="text-success">You are a member of this community.</p>
+                    {% else %}
+                    <p class="text-warning">Log in to join this community.</p>
+                    {% endif %}
                 </div>
+
                 <div class="card-footer">
                     {% if is_admin_or_moderator %}
                     <a href="{% url 'community-update' community.slug %}" class="btn btn-primary">Update Community</a>
@@ -61,6 +77,7 @@
                     {% endif %}
                 </div>
             </div>
+
             {% if is_admin_or_moderator %}
             <div class="card bg-dark shadow-sm mb-3 text-light">
                 <div class="card-header">
@@ -82,5 +99,5 @@
         </div>
     </div>
 </div>
-</div>
 {% endblock content %}
+
