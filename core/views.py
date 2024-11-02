@@ -173,6 +173,9 @@ class CommunityMixin:
             community = Community.objects.get(slug=self.kwargs["slug"])
         except ObjectDoesNotExist:
             raise Http404(error_message) from None
+        if community.privacy == "30_PRIVATE" and not community.members.filter(id=self.request.user.id).exists():
+            error_message = "This will be implemented by add https://app.clickup.com/t/8696fatek"
+            raise NotImplementedError(error_message)
         return community
 
 
