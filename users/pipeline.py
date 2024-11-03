@@ -1,15 +1,17 @@
 from typing import Any
 
 from django.contrib.auth import get_user_model
-from social_core.exceptions import AuthException
+from django.contrib.auth.backends import BaseBackend
+from django.core.exceptions import ValidationError
+from social_core.strategy import BaseStrategy
 
 User = get_user_model()
 
 
 def associate_by_email(
-    strategy: any,  # noqa: ARG001
-    details: any,
-    backend: any,  # noqa: ARG001
+    strategy: BaseStrategy,  # noqa: ARG001
+    details: dict,
+    backend: BaseBackend,  # noqa: ARG001
     user: User = None,
     *args: tuple,  # noqa: ARG001
     **kwargs: dict[str, Any],  # noqa: ARG001
@@ -28,12 +30,12 @@ def associate_by_email(
             return {"user": existing_user}
     else:
         error_message = "Email address is required to authenticate."
-        raise AuthException(error_message)
+        raise ValidationError(error_message)
 
 
 def set_default_nickname(
-    strategy: any,  # noqa: ARG001
-    details: any,
+    strategy: BaseStrategy,  # noqa: ARG001
+    details: dict,
     user: User = None,
     *args: tuple,  # noqa: ARG001
     **kwargs: dict[str, Any],  # noqa: ARG001

@@ -166,7 +166,9 @@ EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="password")
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config("GOOGLE_OAUTH2_KEY", default="test")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config("GOOGLE_OAUTH2_SECRET", default="test")
 SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
-SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = "http://127.0.0.1:8000/users/google/complete/google-oauth2/"
+SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = (
+    config("BASE_URL", default="127.0.0.1") + "/users/google/complete/google-oauth2/"
+)
 SOCIAL_AUTH_USER_MODEL = "users.User"
 SOCIAL_AUTH_USER_FIELDS = ["email", "nickname", "password"]
 
