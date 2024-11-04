@@ -11,18 +11,15 @@ User = get_user_model()
 
 @pytest.mark.django_db()
 def test_associate_by_email_existing_user() -> None:
-    # Setup: Create an existing user
     email = "existing@example.com"
-    existing_user = User.objects.create(email=email)
-
-    # Prepare the data
+    nickname = "ExistingNick"
+    existing_user = User.objects.create(email=email, nickname=nickname)
     details = {"email": email}
 
-    # Run the function
     result = associate_by_email(strategy=Mock(), details=details, backend=Mock(), user=None)
 
-    # Assert that the function returns the existing user
     assert result["user"] == existing_user
+    assert result["user"].nickname == nickname
 
 
 @pytest.mark.django_db()
@@ -51,6 +48,15 @@ def test_associate_by_email_no_email_provided() -> None:
 
 
 @pytest.mark.django_db()
+@pytest.mark.parametrize("email_value", [None, ""])
+def test_associate_by_email_invalid_email(email_value: str) -> None:
+    details = {"email": email_value} if email_value is not None else {}
+    with pytest.raises(ValidationError) as excinfo:
+        associate_by_email(strategy=Mock(), details=details, backend=Mock(), user=None)
+    assert excinfo.value.messages[0] == "Email address is required to authenticate."
+
+
+@pytest.mark.django_db()
 def test_associate_by_email_user_already_authenticated() -> None:
     # Setup: Create an existing user
     email = "authenticated@example.com"
@@ -72,7 +78,7 @@ def test_set_default_nickname_with_no_nickname() -> None:
     set_default_nickname(strategy=Mock(), details=details, user=None)
 
     # Assert that the nickname in details is set to the email
-    assert details["nickname"] == details["email"]
+    assert details["nickname"] == "newuser"
 
 
 @pytest.mark.django_db()

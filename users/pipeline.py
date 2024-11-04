@@ -41,4 +41,4 @@ def set_default_nickname(
     **kwargs: dict[str, Any],  # noqa: ARG001
 ) -> None:
     if not user:
-        details["nickname"] = details.get("email")
+        details["nickname"] = details.get("email").split("@")[0][:144]
