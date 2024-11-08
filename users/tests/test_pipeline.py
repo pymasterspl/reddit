@@ -1,3 +1,4 @@
+import hashlib
 from unittest.mock import Mock
 
 import pytest
@@ -78,7 +79,7 @@ def test_set_default_nickname_with_no_nickname() -> None:
     set_default_nickname(strategy=Mock(), details=details, user=None)
 
     # Assert that the nickname in details is set to the email
-    assert "newuser" in details["nickname"]
+    assert details["nickname"][:10] in str(hashlib.sha256(b"newuser@example.com").hexdigest())
 
 
 @pytest.mark.django_db()

@@ -1,3 +1,4 @@
+import hashlib
 import secrets
 from typing import Any
 
@@ -11,6 +12,11 @@ User = get_user_model()
 
 def generate_secure_random_digits(length: int = 6) -> str:
     return "".join([str(secrets.randbelow(10)) for _ in range(length)])
+
+
+def generate_username_from_email(email: str, length: int = 10) -> str:
+    email_hash = hashlib.sha256(email.encode()).hexdigest()
+    return email_hash[:length]
 
 
 def associate_by_email(
@@ -46,4 +52,4 @@ def set_default_nickname(
     **kwargs: dict[str, Any],  # noqa: ARG001
 ) -> None:
     if not user:
-        details["nickname"] = details.get("email").split("@")[0][:138] + generate_secure_random_digits()
+        details["nickname"] = generate_username_from_email(details.get("email")[:135]) + generate_secure_random_digits()
