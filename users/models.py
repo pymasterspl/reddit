@@ -1,5 +1,4 @@
 import io
-import secrets
 from datetime import timedelta
 from typing import ClassVar
 
@@ -9,16 +8,12 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.files.base import ContentFile
-from django.db import IntegrityError, models, transaction
+from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from PIL import Image
 
 from .choices import GENDER_CHOICES, get_languages, get_locations
-
-
-def generate_secure_random_digits(length: int = 6) -> str:
-    return "".join([str(secrets.randbelow(10)) for _ in range(length)])
 
 
 class UserManager(BaseUserManager):
@@ -34,15 +29,8 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, nickname=nickname, **extra_fields)
         user.set_password(password)
-        try:
-            with transaction.atomic():
-                user.save(using=self._db)
-                return user
-        except IntegrityError:
-            user.nickname = nickname + generate_secure_random_digits()
-            with transaction.atomic():
-                user.save(using=self._db)
-                return user
+        user.save()
+        return user
 
     def create_user(self: "UserManager", email: str, nickname: str, password: str, **extra_fields: dict) -> "User":
         extra_fields.setdefault("is_staff", False)

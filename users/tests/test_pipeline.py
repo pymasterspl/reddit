@@ -78,7 +78,7 @@ def test_set_default_nickname_with_no_nickname() -> None:
     set_default_nickname(strategy=Mock(), details=details, user=None)
 
     # Assert that the nickname in details is set to the email
-    assert details["nickname"] == "newuser"
+    assert "newuser" in details["nickname"]
 
 
 @pytest.mark.django_db()

@@ -1,3 +1,4 @@
+import secrets
 from typing import Any
 
 from django.contrib.auth import get_user_model
@@ -6,6 +7,10 @@ from django.core.exceptions import ValidationError
 from social_core.strategy import BaseStrategy
 
 User = get_user_model()
+
+
+def generate_secure_random_digits(length: int = 6) -> str:
+    return "".join([str(secrets.randbelow(10)) for _ in range(length)])
 
 
 def associate_by_email(
@@ -18,14 +23,14 @@ def associate_by_email(
 ) -> User:
     """Associates an existing user with a social account if the email matches."""
     if user:
-        return None  # User is already authenticated, no need to associate
+        return None
 
     email = details.get("email")
     if email:
         try:
             existing_user = User.objects.get(email=email)
         except User.DoesNotExist:
-            pass  # If no user is found, proceed with creating a new one
+            pass
         else:
             return {"user": existing_user}
     else:
@@ -41,4 +46,4 @@ def set_default_nickname(
     **kwargs: dict[str, Any],  # noqa: ARG001
 ) -> None:
     if not user:
-        details["nickname"] = details.get("email").split("@")[0][:144]
+        details["nickname"] = details.get("email").split("@")[0][:138] + generate_secure_random_digits()
