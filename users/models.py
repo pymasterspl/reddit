@@ -29,7 +29,7 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, nickname=nickname, **extra_fields)
         user.set_password(password)
-        user.save(using=self._db)
+        user.save()
         return user
 
     def create_user(self: "UserManager", email: str, nickname: str, password: str, **extra_fields: dict) -> "User":

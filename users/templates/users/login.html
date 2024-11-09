@@ -14,11 +14,19 @@
                         <button type="submit" class="btn btn-primary mt-2 mb-2">Submit</button>
                     </div>
                 </form>
+
                 <div class="c">
-                    <a href="{% url 'reset_password'  %}">Forgot password?</a>
+                    <a href="{% url 'reset_password' %}">Forgot password?</a>
                 </div>
+
+                <div class="d-flex justify-content-center mt-4">
+                   <a href="{% url 'social:begin' 'google-oauth2' %}" class="btn btn-light border d-flex align-items-center shadow-sm" style="padding: 10px 20px; color: #4285F4;">
+                       <i class="fab fa-google me-2" style="color: #4285F4;"></i>
+                       <span><strong>Sign in with Google</strong></span>
+                   </a>
+                </div>
+
             </div>
         </div>
     </div>
-
-{%  endblock content %}
+{% endblock content %}
