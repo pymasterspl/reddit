@@ -197,62 +197,61 @@ In the env file you need to set these fields
   * Gmail returns you a code that you enter into the env file (EMAIL_HOST_PASSWORD).
    ```
 
-# Setting Up Google Login in Django
+## Setting Up Google Login in Django
 
 This guide will help you set up Google OAuth login in a Django project using environment variables for client credentials.
 
-## 1. Create Google OAuth Credentials
+### 1. Create Google OAuth Credentials
 
-### Step 1: Go to Google Cloud Console
+#### Step 1: Go to Google Cloud Console
 
 - Navigate to [Google Cloud Console](https://console.cloud.google.com/).
 - Make sure you're logged in with the Google account you want to use.
 
-### Step 2: Create a New Project (if needed)
+#### Step 2: Create a New Project (if needed)
 
 - In the top navigation bar, click on the project dropdown.
 - Select **New Project** if you don't have an existing one.
 - Give your project a name and click **Create**.
 
-### Step 3: Enable the OAuth Consent Screen
+#### Step 3: Enable the OAuth Consent Screen
 
 1. In the left sidebar, go to **API & Services > OAuth consent screen**.
 2. Select **External** if you want users outside your organization to log in (e.g., for testing purposes).
 3. Fill in the required fields, such as **App Name**, **User Support Email**, and **Developer Contact Information**.
 4. Click **Save and Continue**.
 
-### Step 4: Set Up OAuth Credentials
+#### Step 4: Set Up OAuth Credentials
 
 1. In the left sidebar, go to **API & Services > Credentials**.
 2. Click **Create Credentials** and select **OAuth client ID**.
 3. Choose **Web application** as the Application type.
 4. Enter a name for the client, like `Django Google Login`.
-5. Under **Authorized redirect URIs**, add the redirect URI for your Django app.
+5. In the **Authorized JavaScript origins** section, add:.
+
+   - If running locally, the URI should look like this:
+     ```
+     http://127.0.0.1:8000
+     ```
+6. Under **Authorized redirect URIs**, add the redirect URI for your Django app.
 
    - If running locally, the URI should look like this:
      ```
      http://127.0.0.1:8000/users/google/complete/google-oauth2/
      ```
    
-6. Click **Create**. Google will generate a **Client ID** and **Client Secret**.
+7. Click **Create**. Google will generate a **Client ID** and **Client Secret**.
 
-7. Copy the **Client ID** and **Client Secret**. You will use these in your `.env` file.
+8. Copy the **Client ID** and **Client Secret**. You will use these in your `.env` file.
 
-### Step 5: Add JavaScript Origins
-
-In the **Authorized JavaScript origins** section, add:
-     ```
-     http://127.0.0.1:8000
-     ```
-
-### Step 6: Save and wait for propagation
+#### Step 5: Save and wait for propagation
 
 After saving, changes can take from 5 minutes to a few hours to take effect.
 
-## 2. Configure Your `.env` File
+### 2. Configure Your `.env` File
 
 1. Open the `.env` file in the root of your Django project (create it if it doesn’t exist).
-2. Add the following environment variables, replacing `YOUR_CLIENT_ID` and `YOUR_CLIENT_SECRET`
+2. Add the following environment variables from Step 4.8, replacing default values in `GOOGLE_OAUTH2_KEY` and `GOOGLE_OAUTH2_SECRET`.
 
 
 ### Ruff formatting and linting
