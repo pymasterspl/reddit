@@ -9,6 +9,7 @@ from django.test import Client
 from django.urls import reverse_lazy
 from PIL import Image
 
+from users.forms import UserProfileForm
 from users.models import Profile, SocialLink, UserSettings
 
 User = get_user_model()
@@ -99,6 +100,22 @@ def test_get_avatar_url(user: User) -> None:
 
 
 @pytest.mark.django_db()
+def test_avatar_file_size_validation(user: User) -> None:
+    image = Image.new("RGB", (1000, 1000), color=(73, 109, 137))
+    image_io = io.BytesIO()
+    image.save(image_io, format="JPEG")
+    oversized_image = image_io.getvalue() + b"a" * (2 * 1024 * 10024)
+    avatar = SimpleUploadedFile("oversized_avatar.jpg", oversized_image, content_type="image/jpeg")
+    user.profile.bio = "test"
+    user.profile.gender = "M"
+    user.profile.avatar = avatar
+    form_data = {"bio": "test", "gender": "M", "avatar": oversized_image}
+    form = UserProfileForm(data=form_data, instance=user.profile)
+    assert not form.is_valid()
+    assert "Avatar file size should not exceed" in str(form.errors["avatar"])
+
+
+@pytest.mark.django_db()
 def test_process_banner(user: User) -> None:
     image = Image.new("RGB", (1000, 1000), color=(73, 109, 137))
     image_io = io.BytesIO()
@@ -117,6 +134,22 @@ def test_get_banner_url(user: User) -> None:
     image = Image.new("RGB", (100, 100), color=(73, 109, 137))
     image_io = io.BytesIO()
     image.save(image_io, format="JPEG")
+
+
+@pytest.mark.django_db()
+def test_banner_file_size_validation(user: User) -> None:
+    image = Image.new("RGB", (1000, 1000), color=(73, 109, 137))
+    image_io = io.BytesIO()
+    image.save(image_io, format="JPEG")
+    oversized_image = image_io.getvalue() + b"a" * (2 * 1024 * 10024)
+    banner = SimpleUploadedFile("oversized_banner.jpg", oversized_image, content_type="image/jpeg")
+    user.profile.bio = "test"
+    user.profile.gender = "M"
+    user.profile.banner = banner
+    form_data = {"bio": "test", "gender": "M", "banner": oversized_image}
+    form = UserProfileForm(data=form_data, instance=user.profile)
+    assert not form.is_valid()
+    assert "Banner file size should not exceed" in str(form.errors["banner"])
 
 
 @pytest.mark.django_db()
