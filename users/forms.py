@@ -33,6 +33,7 @@ class UserProfileForm(forms.ModelForm):
         fields: ClassVar[list[str]] = [
             "bio",
             "avatar",
+            "banner",
             "gender",
             "is_nsfw",
             "is_followable",

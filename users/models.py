@@ -1,5 +1,6 @@
 import io
 from datetime import timedelta
+from pathlib import Path
 from typing import ClassVar
 
 from django.apps import apps
@@ -9,11 +10,20 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.files.base import ContentFile
 from django.db import models
+from django.db.models import Model
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from PIL import Image
 
 from .choices import GENDER_CHOICES, get_languages, get_locations
+
+
+def user_avatar_path(_: Model, filename: str) -> Path:
+    return Path("users_avatars") / filename
+
+
+def user_banner_path(_: Model, filename: str) -> Path:
+    return Path("users_banners") / filename
 
 
 class UserManager(BaseUserManager):
@@ -81,7 +91,8 @@ class Profile(models.Model):
     post_karma = models.IntegerField(default=0)
     gold_awards = models.IntegerField(default=0)
     gender = models.CharField(choices=GENDER_CHOICES, max_length=1)
-    avatar = models.ImageField(upload_to="users_avatars/", null=True, blank=True, default=None)
+    avatar = models.ImageField(upload_to=user_avatar_path, null=True, blank=True, default=None)
+    banner = models.ImageField(upload_to=user_banner_path, null=True, blank=True, default=None)
     user = models.OneToOneField("User", on_delete=models.CASCADE, null=False)
 
     def __str__(self: "Profile") -> str:
@@ -89,7 +100,9 @@ class Profile(models.Model):
 
     def save(self: "Profile", *args: any, **kwargs: dict) -> None:
         if self.avatar:
-            self.avatar = self.process_avatar(self.avatar)
+            self.avatar = self.process_image(self.avatar, (32, 32))
+        if self.banner:
+            self.banner = self.process_image(self.banner, (300, 100))
         super().save(*args, **kwargs)
 
     def nickname(self: "Profile") -> str:
@@ -98,14 +111,15 @@ class Profile(models.Model):
     def email(self: "Profile") -> str:
         return self.user.email
 
-    def process_avatar(self: "User", avatar: any) -> ContentFile:
-        image = Image.open(avatar)
+    @staticmethod
+    def process_image(image_file: any, size: tuple[int, int], formatting: str = "JPEG") -> ContentFile:
+        image = Image.open(image_file)
         if image.mode != "RGB":
             image = image.convert("RGB")
-        image = image.resize((32, 32), Image.LANCZOS)
+        image = image.resize(size, Image.LANCZOS)
         image_io = io.BytesIO()
-        image.save(image_io, format="JPEG")
-        return ContentFile(image_io.getvalue(), avatar.name)
+        image.save(image_io, format=formatting)
+        return ContentFile(image_io.getvalue(), image_file.name)
 
     @property
     def avatar_url(self: "Profile") -> str:
@@ -115,6 +129,15 @@ class Profile(models.Model):
             except ValueError:
                 return settings.DEFAULT_AVATAR_URL
         return settings.DEFAULT_AVATAR_URL
+
+    @property
+    def banner_url(self: "Profile") -> str:
+        if self.banner and hasattr(self.banner, "url"):
+            try:
+                return self.banner.url
+            except ValueError:
+                return settings.DEFAULT_BANNER_URL
+        return settings.DEFAULT_BANNER_URL
 
 
 class User(AbstractUser):

@@ -177,6 +177,7 @@ LOGIN_URL = reverse_lazy("login")
 LOGIN_REDIRECT_URL = "/"
 REST_FRAMEWORK = {"DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination", "PAGE_SIZE": 10}
 DEFAULT_AVATAR_URL = "/media/users_avatars/default.png"
+DEFAULT_BANNER_URL = "/media/users_banners/default_banner.jpg"
 
 SOCIAL_AUTH_PIPELINE = [
     "social_core.pipeline.social_auth.social_details",

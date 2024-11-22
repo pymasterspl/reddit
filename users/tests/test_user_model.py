@@ -99,6 +99,27 @@ def test_get_avatar_url(user: User) -> None:
 
 
 @pytest.mark.django_db()
+def test_process_banner(user: User) -> None:
+    image = Image.new("RGB", (1000, 1000), color=(73, 109, 137))
+    image_io = io.BytesIO()
+    image.save(image_io, format="JPEG")
+    image_io.seek(0)
+    banner = SimpleUploadedFile("test_banner.jpg", image_io.read(), content_type="image/jpeg")
+    user.profile.banner = banner
+    user.profile.save()
+    user.save()
+    processed_banner = Image.open(user.profile.banner)
+    assert processed_banner.size == (300, 100)
+
+
+@pytest.mark.django_db()
+def test_get_banner_url(user: User) -> None:
+    image = Image.new("RGB", (100, 100), color=(73, 109, 137))
+    image_io = io.BytesIO()
+    image.save(image_io, format="JPEG")
+
+
+@pytest.mark.django_db()
 def test_nickname_is_null(user: User) -> None:
     user.nickname = None
     with pytest.raises(IntegrityError):
