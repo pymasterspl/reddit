@@ -99,11 +99,16 @@ class Profile(models.Model):
         return f"{self.user.nickname}"
 
     def save(self: "Profile", *args: any, **kwargs: dict) -> None:
-        if self.avatar:
+        if self.avatar != self._initial_avatar:
             self.avatar = self.process_image(self.avatar, (32, 32))
-        if self.banner:
+        if self.banner != self._initial_banner:
             self.banner = self.process_image(self.banner, (300, 100))
         super().save(*args, **kwargs)
+
+    def __init__(self: "Profile", *args: any, **kwargs: any) -> None:
+        super().__init__(*args, **kwargs)
+        self._initial_avatar = self.__dict__.get("avatar")
+        self._initial_banner = self.__dict__.get("banner")
 
     def nickname(self: "Profile") -> str:
         return self.user.nickname
