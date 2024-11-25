@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-    <div class="container">
+    <div class="banner">
+        <img src="{{ user.profile.banner_url }}" alt="Profile Banner" class="img-fluid" style="width: 100%; max-height: 100px; object-fit: cover;">
+    </div>
+    <div class="container mt-3">
         <h2>User Profile</h2>
         <div class="row">
             <div class="col-md-4">
@@ -22,9 +25,9 @@
                 </p>
                 <p>
                     Awards(gold={{user.profile.gold_awards}}):
-                    {%for award in user.awards_received.all %}
+                    {% for award in user.awards_received.all %}
                         <img src="{% static 'core/icons/' %}{{ award.choice }}.png" alt="{{ option.label }}" width="30" height="30">
-                    {%endfor%}
+                    {% endfor %}
                 </p>
                 <a href="{% url 'account_settings' %}" class="btn btn-primary">Edit Profile</a>
             </div>
