@@ -126,6 +126,7 @@ class ProfileSettingsView(LoginRequiredMixin, FormView):
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
+            messages.success(self.request, "Your profile settings have been updated successfully!")
             return super().form_valid(form)
         return self.form_invalid(form)
 
@@ -134,10 +135,7 @@ class ProfileSettingsView(LoginRequiredMixin, FormView):
             form = self.get_form()
             form["user_form"] = UserForm(request.POST, instance=request.user)
             form["profile_form"] = self.form_class(request.POST, request.FILES, instance=request.user.profile)
-            if self.form_valid(form):
-                messages.success(self.request, "Your profile settings have been updated successfully!")
-                return self.form_valid(form)
-            return self.form_invalid(form)
+            return self.form_valid(form)
 
 
 class AccountSettingsView(LoginRequiredMixin, FormView):

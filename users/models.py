@@ -97,14 +97,14 @@ class Profile(models.Model):
         null=True,
         blank=True,
         default=None,
-        validators=[FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png"])],
+        validators=[FileExtensionValidator(allowed_extensions=list(settings.WHITELISTED_IMAGE_TYPES.keys()))],
     )
     banner = models.ImageField(
         upload_to=user_banner_path,
         null=True,
         blank=True,
         default=None,
-        validators=[FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png"])],
+        validators=[FileExtensionValidator(allowed_extensions=list(settings.WHITELISTED_IMAGE_TYPES.keys()))],
     )
     user = models.OneToOneField("User", on_delete=models.CASCADE, null=False)
 

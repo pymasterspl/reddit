@@ -1,5 +1,6 @@
 from typing import ClassVar
 
+import magic
 from django import forms
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
@@ -40,14 +41,24 @@ class UserProfileForm(forms.ModelForm):
             msg = f"{field_name} file size should not exceed {max_size}"
             raise ValidationError(msg)
 
+    def validate_mime_type(self: "UserProfileForm", file: any) -> None:
+        file_mime_type = magic.from_buffer(file.read(2048), mime=True)
+        if file_mime_type not in list(settings.WHITELISTED_IMAGE_TYPES.values()):
+            msg = "Unsupported file type"
+            raise ValidationError(msg)
+
     def clean_banner(self: "UserProfileForm") -> ImageField:
         banner = self.cleaned_data.get("banner")
-        self.validate_file_size(banner, settings.MAX_BANNER_SIZE_KB, "Banner")
+        if banner:
+            self.validate_file_size(banner, settings.MAX_BANNER_SIZE_KB, "Banner")
+            self.validate_mime_type(banner)
         return banner
 
     def clean_avatar(self: "UserProfileForm") -> ImageField:
         avatar = self.cleaned_data.get("avatar")
-        self.validate_file_size(avatar, settings.MAX_AVATAR_SIZE_MB * 1024, "Avatar")
+        if avatar:
+            self.validate_file_size(avatar, settings.MAX_AVATAR_SIZE_MB * 1024, "Avatar")
+            self.validate_mime_type(avatar)
         return avatar
 
 
