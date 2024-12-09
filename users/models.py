@@ -9,6 +9,7 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.files.base import ContentFile
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.db.models import Model
 from django.utils import timezone
@@ -91,8 +92,20 @@ class Profile(models.Model):
     post_karma = models.IntegerField(default=0)
     gold_awards = models.IntegerField(default=0)
     gender = models.CharField(choices=GENDER_CHOICES, max_length=1)
-    avatar = models.ImageField(upload_to=user_avatar_path, null=True, blank=True, default=None)
-    banner = models.ImageField(upload_to=user_banner_path, null=True, blank=True, default=None)
+    avatar = models.ImageField(
+        upload_to=user_avatar_path,
+        null=True,
+        blank=True,
+        default=None,
+        validators=[FileExtensionValidator(allowed_extensions=list(settings.WHITELISTED_IMAGE_TYPES.keys()))],
+    )
+    banner = models.ImageField(
+        upload_to=user_banner_path,
+        null=True,
+        blank=True,
+        default=None,
+        validators=[FileExtensionValidator(allowed_extensions=list(settings.WHITELISTED_IMAGE_TYPES.keys()))],
+    )
     user = models.OneToOneField("User", on_delete=models.CASCADE, null=False)
 
     def __str__(self: "Profile") -> str:
