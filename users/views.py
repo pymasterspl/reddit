@@ -1,6 +1,7 @@
 from typing import Any
 
 from django.contrib import messages
+from django.contrib.auth import get_user_model, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, TemplateView
 from django.db import transaction
@@ -14,7 +15,7 @@ from django.views.generic import DetailView, FormView, DeleteView
 
 from core.models import User
 
-from .forms import UserForm, UserProfileForm, UserRegistrationForm, UserSettingsForm
+from .forms import UserForm, UserProfileForm, UserRegistrationForm, UserSettingsForm, ConfirmDeleteAccountForm
 from .models import Profile, UserSettings
 from .tokens import account_activation_token
 from .utils import user_creation
@@ -131,4 +132,20 @@ class AccountSettingsView(LoginRequiredMixin, FormView):
 
 
 class AccountDeleteView(LoginRequiredMixin, DeleteView):
-    pass
+    model = get_user_model()
+    template_name = "users/delete_account.html"
+    success_url = reverse_lazy("home")
+
+    def get_object(self: "AccountDeleteView") -> User:
+        return self.request.user
+
+    def post(self, request, *args, **kwargs):
+        form = ConfirmDeleteAccountForm(self.request.user, self.request.POST)
+        if form.is_valid():
+            self.request.user.delete()
+            logout(self.request)
+            messages.success(request, "Your account has been deleted.")
+            return redirect(self.success_url)
+        else:
+            messages.error(request, "Password confirmation failed.")
+            return self.get(request,*args, **kwargs)
