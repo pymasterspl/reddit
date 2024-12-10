@@ -66,7 +66,7 @@ class UserManager(BaseUserManager):
 
 class UserSettings(models.Model):
     content_lang = models.CharField(max_length=2, choices=get_languages, default="en")
-    user = models.OneToOneField("User", on_delete=models.CASCADE, null=False)  # default name usessetigns
+    user = models.OneToOneField("User", on_delete=models.CASCADE, null=False)  # default name usersettings
     location = models.CharField(max_length=2, choices=get_locations, default="PL")
 
     is_beta = models.BooleanField(default=False)

@@ -1,3 +1,5 @@
+from tkinter.font import names
+
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
 from django.views.generic import TemplateView
@@ -11,12 +13,14 @@ from .views import (
     ProfileSettingsView,
     UserProfileView,
     UserRegistrationView,
+    AccountDeleteView,
 )
 
 urlpatterns = [
     path("profile/", UserProfileView.as_view(), name="profile"),
     path("profile/edit/profile/", ProfileSettingsView.as_view(), name="profile_settings"),
     path("profile/edit/account/", AccountSettingsView.as_view(), name="account_settings"),
+    path("profile/delete-account", AccountDeleteView.as_view(), name="delete_account"),
     path("", HomeView.as_view(), name="home"),
     path("login/", LoginUserView.as_view(), name="login"),
     path("logout-confirmation/", TemplateView.as_view(template_name="users/logout.html"), name="logout_confirmation"),

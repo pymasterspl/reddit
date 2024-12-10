@@ -10,7 +10,7 @@ from django.urls import reverse_lazy
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.views import View
-from django.views.generic import DetailView, FormView
+from django.views.generic import DetailView, FormView, DeleteView
 
 from core.models import User
 
@@ -128,3 +128,7 @@ class AccountSettingsView(LoginRequiredMixin, FormView):
         kwargs = super().get_form_kwargs()
         kwargs["instance"] = self.request.user.usersettings
         return kwargs
+
+
+class AccountDeleteView(LoginRequiredMixin, DeleteView):
+    pass
