@@ -2,7 +2,8 @@ from typing import ClassVar
 
 from django import forms
 from django.conf import settings
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from rest_framework.fields import ImageField
 from django.contrib.auth.forms import UserCreationForm
@@ -49,8 +50,17 @@ class UserSettingsForm(forms.ModelForm):
         ]
 
 
-class ConfirmDeleteAccountForm(AuthenticationForm):
-    class Meta:
-        model = User
-        fields: ClassVar[list[str]] = ["password"]
+class ConfirmDeleteAccountForm(forms.Form):
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Confirm your password"}),
+        label="")
 
+    def __init__(self, user: User, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_password(self) -> str:
+        password = self.cleaned_data.get("password")
+        if not authenticate(username=self.user.email, password=password):
+            raise forms.ValidationError("Incorrect password.")
+        return password

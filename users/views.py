@@ -142,11 +142,11 @@ class AccountDeleteView(LoginRequiredMixin, View):
     success_url = reverse_lazy("home")
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        form = ConfirmDeleteAccountForm()
+        form = ConfirmDeleteAccountForm(user=request.user)
         return render(request, self.template_name, {"form": form})
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        form = ConfirmDeleteAccountForm(request, data=request.POST)
+        form = ConfirmDeleteAccountForm(user=request.user, data=request.POST)
         if form.is_valid():
             request.user.delete()
             logout(request)
