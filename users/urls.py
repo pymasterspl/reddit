@@ -1,10 +1,10 @@
-from tkinter.font import names
 
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
 from django.views.generic import TemplateView
 
 from .views import (
+    AccountDeleteView,
     AccountSettingsView,
     ActivateUser,
     CustomLogoutView,
@@ -13,7 +13,6 @@ from .views import (
     ProfileSettingsView,
     UserProfileView,
     UserRegistrationView,
-    AccountDeleteView,
 )
 
 urlpatterns = [

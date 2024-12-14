@@ -1,7 +1,7 @@
 from typing import Any
 
 from django.contrib import messages
-from django.contrib.auth import get_user_model, logout
+from django.contrib.auth import logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, TemplateView
 from django.db import transaction
@@ -10,12 +10,17 @@ from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
+from django.template.base import kwarg_re
+from django.template.loader import render_to_string
+from django.urls import reverse, reverse_lazy
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views import View
-from django.views.generic import DetailView, FormView, DeleteView
+from django.views.generic import DetailView, FormView
 
 from core.models import User
 
-from .forms import UserForm, UserProfileForm, UserRegistrationForm, UserSettingsForm, ConfirmDeleteAccountForm
+from .forms import ConfirmDeleteAccountForm, UserForm, UserProfileForm, UserRegistrationForm, UserSettingsForm
 from .models import Profile, UserSettings
 from .tokens import account_activation_token
 from .utils import user_creation
@@ -131,21 +136,22 @@ class AccountSettingsView(LoginRequiredMixin, FormView):
         return kwargs
 
 
-class AccountDeleteView(LoginRequiredMixin, DeleteView):
-    model = get_user_model()
+
+class AccountDeleteView(LoginRequiredMixin, View):
     template_name = "users/delete_account.html"
     success_url = reverse_lazy("home")
 
-    def get_object(self: "AccountDeleteView") -> User:
-        return self.request.user
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        form = ConfirmDeleteAccountForm()
+        return render(request, self.template_name, {"form": form})
 
-    def post(self, request, *args, **kwargs):
-        form = ConfirmDeleteAccountForm(self.request.user, self.request.POST)
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        form = ConfirmDeleteAccountForm(request, data=request.POST)
         if form.is_valid():
-            self.request.user.delete()
-            logout(self.request)
-            messages.success(request, "Your account has been deleted.")
+            request.user.delete()
+            logout(request)
+            messages.success(request, "Your account has been deleted successfully.")
             return redirect(self.success_url)
         else:
             messages.error(request, "Password confirmation failed.")
-            return self.get(request,*args, **kwargs)
+            return render(request, self.template_name, {"form": form})
