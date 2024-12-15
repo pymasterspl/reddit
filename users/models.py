@@ -8,6 +8,8 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+from django.db import models, transaction
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.db.models import Model

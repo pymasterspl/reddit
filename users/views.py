@@ -19,6 +19,7 @@ from django.views import View
 from django.views.generic import DetailView, FormView
 
 from core.models import User
+from reddit.settings import ACCOUNT_EXPIRATION_TIME_IN_DAYS
 
 from .forms import ConfirmDeleteAccountForm, UserForm, UserProfileForm, UserRegistrationForm, UserSettingsForm
 from .models import Profile, UserSettings
@@ -151,7 +152,7 @@ class AccountDeleteView(LoginRequiredMixin, View):
             request.user.deactivate()
             logout(request)
             messages.warning(request, "Your account has been deactivated. ")
-            messages.success(request, "You have 30 days to reactivate it. After this time, your account will be permanently deleted. To reactivate you account, contact our support. Thank you for using our service! We hope to see you again soon! ")
+            messages.success(request, f"You have {ACCOUNT_EXPIRATION_TIME_IN_DAYS} days to reactivate it. After this time, your account will be permanently deleted. To reactivate you account, contact our support. Thank you for using our service! We hope to see you again soon! ")
             return redirect(self.success_url)
         else:
             messages.error(request, "Password confirmation failed.")
