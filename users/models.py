@@ -254,15 +254,6 @@ class User(AbstractUser):
         self.reactivate_until = timezone.now() + timedelta(days=30)
         self.save()
 
-    def reactivate(self) -> None:
-        if self.reactivate_until and self.reactivate_until >= timezone.now():
-            self.is_active = True
-            self.deactivated_at = None
-            self.reactivate_until = None
-            self.save()
-        else:
-            raise ValueError("The account cannot be reactivated because the reactivation period has expired.")
-
 
 class SocialLink(models.Model):
     name = models.CharField(max_length=150)
