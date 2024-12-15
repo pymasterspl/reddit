@@ -18,6 +18,7 @@ from .choices import GENDER_CHOICES, get_languages, get_locations
 from reddit.settings import TIME_EXPIRATION_IN_DAYS
 from .validators import validate_avatar_file, validate_banner_file
 
+from reddit.settings import ACCOUNT_EXPIRATION_TIME_IN_DAYS
 
 def user_avatar_path(_: Model, filename: str) -> Path:
     return Path("users_avatars") / filename
@@ -251,7 +252,7 @@ class User(AbstractUser):
     def deactivate(self) -> None:
         self.is_active = False
         self.deactivated_at = timezone.now()
-        self.reactivate_until = timezone.now() + timedelta(days=30)
+        self.reactivate_until = timezone.now() + timedelta(days=ACCOUNT_EXPIRATION_TIME_IN_DAYS)
         self.save()
 
 

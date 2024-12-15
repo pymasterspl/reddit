@@ -220,4 +220,4 @@ MESSAGE_TAGS = {
     messages.WARNING: 'warning',
     messages.ERROR: 'danger',
 }
-TIME_EXPIRATION_IN_DAYS = 30
+ACCOUNT_EXPIRATION_TIME_IN_DAYS = 30
