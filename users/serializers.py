@@ -26,7 +26,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate(self: "UserSerializer", attrs: dict) -> dict:
         if attrs["password"] != attrs["password2"]:
-            msg = {"password": "Passwords are no the same", "password2": "Passwords are no the same"}
+            msg = {"password": "Passwords are not the same", "password2": "Passwords are not the same"}
             raise serializers.ValidationError(msg)
         return attrs
 

@@ -28,7 +28,12 @@ def test_registration_form_valid_data(
     assert not user_model.objects.filter(email="testuser@example.com").exists()
     response = client.post(register_url, data)
     assert response.status_code == 201
+    assert (
+        response.data["message"]
+        == "Account created for testuser@example.com! Please confirm your email to activate your account."
+    )
     assert user_model.objects.filter(email="testuser@example.com").exists()
+    assert not user_model.objects.get(email="testuser@example.com").is_active
 
 
 @pytest.mark.django_db()
@@ -57,7 +62,7 @@ def test_registration_form_user_already_exist(
     data: dict = {
         "email": user.email,
         "nickname": user.nickname,
-        "password1": generated_password,
+        "password": generated_password,
         "password2": generated_password,
     }
     assert user_model.objects.filter(email=user.email).exists()
