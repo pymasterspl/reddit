@@ -1,8 +1,7 @@
 from typing import ClassVar
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-from django.utils.safestring import mark_safe
-
+from django.utils.safestring import mark_safe, SafeString
 from users.models import Profile, User, UserSettings
 from django.utils.timezone import now
 from django.urls import path
@@ -90,7 +89,7 @@ class CustomUserAdmin(DjangoUserAdmin):
             self.message_user(request, f"Cannot reactivate user {user.email} (already active).", messages.ERROR)
         return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/admin/users/user/"))
 
-    def reactivate_user_link(self, obj: User):
+    def reactivate_user_link(self, obj: User) -> SafeString | str:
         if not obj.is_active:
             return mark_safe(f'<a href="{obj.id}/reactivate/">Reactivate</a>')
         return "-"
