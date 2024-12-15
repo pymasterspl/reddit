@@ -1,8 +1,7 @@
 import io
-from datetime import timedelta
 from pathlib import Path
 from typing import ClassVar
-
+from datetime import timedelta
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
@@ -186,6 +185,8 @@ class User(AbstractUser):
         default=True, help_text="Indicates whether the user can create posts. Defaults to True."
     )
     warnings = models.IntegerField(default=0, help_text="The number of warnings assigned to the user. Defaults to 0.")
+    deactivated_at = models.DateTimeField(null=True, blank=True)
+    reactivate_until = models.DateTimeField(null=True, blank=True)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: ClassVar[list[str]] = ["nickname"]
 
@@ -246,6 +247,21 @@ class User(AbstractUser):
             result = f"{delta.days} days ago"
 
         return result
+
+    def deactivate(self) -> None:
+        self.is_active = False
+        self.deactivated_at = timezone.now()
+        self.reactivate_until = timezone.now() + timedelta(days=30)
+        self.save()
+
+    def reactivate(self) -> None:
+        if self.reactivate_until and self.reactivate_until >= timezone.now():
+            self.is_active = True
+            self.deactivated_at = None
+            self.reactivate_until = None
+            self.save()
+        else:
+            raise ValueError("The account cannot be reactivated because the reactivation period has expired.")
 
 
 class SocialLink(models.Model):
