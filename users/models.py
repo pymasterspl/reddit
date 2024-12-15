@@ -14,8 +14,8 @@ from django.db.models import Model
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from PIL import Image
-
 from .choices import GENDER_CHOICES, get_languages, get_locations
+from reddit.settings import TIME_EXPIRATION_IN_DAYS
 from .validators import validate_avatar_file, validate_banner_file
 
 
