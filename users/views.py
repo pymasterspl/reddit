@@ -148,9 +148,10 @@ class AccountDeleteView(LoginRequiredMixin, View):
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         form = ConfirmDeleteAccountForm(user=request.user, data=request.POST)
         if form.is_valid():
-            request.user.delete()
+            request.user.deactivate()
             logout(request)
-            messages.success(request, "Your account has been deleted successfully.")
+            messages.warning(request, "Your account has been deactivated. ")
+            messages.success(request, "You have 30 days to reactivate it. After this time, your account will be permanently deleted. To reactivate you account, contact our support. Thank you for using our service! We hope to see you again soon! ")
             return redirect(self.success_url)
         else:
             messages.error(request, "Password confirmation failed.")
