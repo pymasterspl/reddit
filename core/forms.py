@@ -1,13 +1,9 @@
 from typing import ClassVar
-
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
 from django.core.exceptions import ValidationError
-
 from .models import ACTION_CHOICES, REPORT_CHOICES, Community, Post, PostAward, PostReport, User
-
-
 class CommentForm(forms.Form):
     MAX_COMMENT_LENGTH = 500
     content = forms.CharField(
@@ -34,7 +30,7 @@ class PostForm(forms.ModelForm):
         widgets: ClassVar[dict[str, forms.Widget]] = {
             "community": forms.Select(attrs={"class": "form-select"}),
             "title": forms.TextInput(attrs={"class": "form-control"}),
-            "content": forms.Textarea(attrs={"class": "form-control"}),
+            "content": forms.Textarea(attrs={"class": "form-control", "maxlength": 1000}),
         }
 
     def __init__(self: "Post", *args: tuple, **kwargs: dict) -> None:
