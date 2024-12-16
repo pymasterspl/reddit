@@ -1,7 +1,7 @@
 from rest_framework.urls import path
 
-from .api_views import UserApiRegistration
+from .api_views import UserAPIRegistration
 
 urlpatterns = [
-    path("registration/", UserApiRegistration.as_view(), name="api-user-registration"),
+    path("register/", UserAPIRegistration.as_view(), name="api-user-registration"),
 ]

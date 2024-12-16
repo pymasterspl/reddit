@@ -17,6 +17,7 @@ from django.utils.translation import gettext_lazy as _
 from PIL import Image
 
 from .choices import GENDER_CHOICES, get_languages, get_locations
+from .validators import validate_avatar_file, validate_banner_file
 
 
 def user_avatar_path(_: Model, filename: str) -> Path:
@@ -97,14 +98,20 @@ class Profile(models.Model):
         null=True,
         blank=True,
         default=None,
-        validators=[FileExtensionValidator(allowed_extensions=list(settings.WHITELISTED_IMAGE_TYPES.keys()))],
+        validators=[
+            FileExtensionValidator(allowed_extensions=list(settings.WHITELISTED_IMAGE_TYPES.keys())),
+            validate_avatar_file,
+        ],
     )
     banner = models.ImageField(
         upload_to=user_banner_path,
         null=True,
         blank=True,
         default=None,
-        validators=[FileExtensionValidator(allowed_extensions=list(settings.WHITELISTED_IMAGE_TYPES.keys()))],
+        validators=[
+            FileExtensionValidator(allowed_extensions=list(settings.WHITELISTED_IMAGE_TYPES.keys())),
+            validate_banner_file,
+        ],
     )
     user = models.OneToOneField("User", on_delete=models.CASCADE, null=False)
 
