@@ -132,6 +132,7 @@ class Profile(models.Model):
         self._initial_avatar = self.__dict__.get("avatar")
         self._initial_banner = self.__dict__.get("banner")
 
+
     def nickname(self: "Profile") -> str:
         return self.user.nickname
 
@@ -165,6 +166,20 @@ class Profile(models.Model):
             except ValueError:
                 return settings.DEFAULT_BANNER_URL
         return settings.DEFAULT_BANNER_URL
+
+    def delete_avatar(self: "Profile") -> None:
+        if self.avatar:
+            if default_storage.exists(self.avatar.path):
+                default_storage.delete(self.avatar.path)
+            self.avatar = None
+            self.save()
+
+    def delete_banner(self: "Profile") -> None:
+        if self.banner:
+            if default_storage.exists(self.banner.path):
+                default_storage.delete(self.banner.path)
+            self.banner = settings.DEFAULT_BANNER_URL
+            self.save()
 
 
 class User(AbstractUser):
@@ -257,6 +272,43 @@ class User(AbstractUser):
         self.reactivate_until = timezone.now() + timedelta(days=ACCOUNT_EXPIRATION_TIME_IN_DAYS)
         self.save()
 
+    def anonymize_account(self) -> None:
+        if not self.is_active and self.reactivate_until and self.reactivate_until >= timezone.now():
+            with transaction.atomic():
+                self.is_active = False
+                self.nickname = f"deleted_user_{self.pk}"
+                self.email = f"deleted_user_{self.pk}@example.com"
+                self.username = None
+                self.password = ""
+                self.first_name = ""
+                self.last_name = ""
+                self.is_staff = False
+                self.is_superuser = False
+                self.can_create_post = False
+                self.anonymize_related_models()
+                self.save()
+
+    def anonymize_related_models(self) -> None:
+        try:
+            self.usersettings.delete()
+        except UserSettings.DoesNotExist:
+            pass
+        try:
+            profile = self.profile
+        except Profile.DoesNotExist:
+            pass
+        else:
+            profile.bio = ""
+            profile.is_nsfw = False
+            profile.is_followable = False
+            profile.is_content_visible = False
+            profile.is_communities_visible = False
+            profile.gender = ""
+            profile.user = self
+            profile.delete_avatar()
+            profile.delete_banner()
+            profile.save()
+        SocialLink.objects.filter(profile__user=self).delete()
 
 class SocialLink(models.Model):
     name = models.CharField(max_length=150)
