@@ -44,4 +44,5 @@ urlpatterns = [
         name="password_reset_complete",
     ),
     path("google/", include("social_django.urls", namespace="social")),
+    path("api/", include("users.api_urls")),
 ]
