@@ -1,12 +1,19 @@
 from typing import ClassVar
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode
 from django.utils.safestring import mark_safe, SafeString
 from users.models import Profile, User, UserSettings
-from django.utils.timezone import now
 from django.urls import path
 from django.http import HttpResponseRedirect, HttpRequest
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
+from django.conf import settings
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from users.tokens import account_activation_token
 
 FieldsetsType = tuple[tuple[None, dict[str, str | tuple[str]]]]
 
@@ -75,22 +82,36 @@ class CustomUserAdmin(DjangoUserAdmin):
 
     def reactivate_user_view(self: "CustomUserAdmin", request: HttpRequest, user_id: int) -> HttpResponseRedirect:
         user = get_object_or_404(User, pk=user_id)
-        if not user.is_active:
-            if user.reactivate_until and user.reactivate_until >= now():
-                user.is_active = True
-                user.deactivated_at = None
-                user.reactivate_until = None
-                user.save()
-                self.message_user(request, f"User {user.email} reactivated successfully.", messages.SUCCESS)
-            else:
-                self.message_user(request, f"Cannot reactivate user {user.email} (grace period expired).", messages.ERROR)
-
-        else:
-            self.message_user(request, f"Cannot reactivate user {user.email} (already active).", messages.ERROR)
-        return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/admin/users/user/"))
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = account_activation_token.make_token(user)
+        protocol = "https" if request.is_secure() else "http"
+        current_site = get_current_site(request)
+        activation_link = reverse("activate-account", kwargs={"uidb64": uid, "token": token})
+        full_activation_link = f"{protocol}://{current_site.domain}{activation_link}"
+        send_mail(
+            "Confirm account reactivation",
+            f"Please click on the following link to confirm account reactivation: {activation_link}",
+            settings.EMAIL_HOST_USER,
+            [user.email],
+            fail_silently=False,
+            html_message=render_to_string(
+                "users/reactivate_account_email.html",
+                {
+                    "user": user,
+                    "activation_link": full_activation_link,
+                },
+            ),
+        )
+        self.message_user(
+            request,
+            f"The reactivation link has been sent successfully to {user.email} !",
+            messages.SUCCESS,
+        )
+        return redirect("admin:users_user_changelist")
 
     def reactivate_user_link(self, obj: User) -> SafeString | str:
         if not obj.is_active:
-            return mark_safe(f'<a href="{obj.id}/reactivate/">Reactivate</a>')
+            url = reverse(viewname="admin:reactivate_user", args=[obj.id])
+            return mark_safe(f'<a href="{url}">Reactivate</a>')
         return "-"
     reactivate_user_link.short_description = "Reactivate Link"
