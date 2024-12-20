@@ -22,7 +22,7 @@ pycountry = "^24.6.1"
 djangorestframework = "^3.15.2"
 freezegun = "^1.5.1"
 pytest-xdist = "^3.6.1"
-social-auth-app-django = "5.4.0"
+social-auth-app-django = "5.4.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
