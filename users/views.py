@@ -76,6 +76,8 @@ class ActivateUser(View):
             user = User.objects.get(pk=uid, is_active=False)
             if account_activation_token.check_token(user, token):
                 user.is_active = True
+                user.deactivated_at = None
+                user.reactivate_until = None
                 user.save()
                 messages.success(request, "Your account has been activated, you can now login!")
 
