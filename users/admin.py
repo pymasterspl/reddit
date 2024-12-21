@@ -111,7 +111,7 @@ class CustomUserAdmin(DjangoUserAdmin):
         return redirect("admin:users_user_changelist")
 
     def reactivate_user_link(self, obj: User) -> SafeString | str:
-        if not obj.is_active:
+        if not obj.is_active and obj.reactivate_until is not None:
             url = reverse(viewname="admin:reactivate_user", args=[obj.id])
             return mark_safe(f'<a href="{url}">Reactivate</a>')
         return "-"

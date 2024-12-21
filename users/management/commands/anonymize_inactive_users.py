@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from django.utils.timezone import now
+from django.utils import timezone
 
 from users.models import User
 
@@ -7,13 +7,14 @@ from users.models import User
 class Command(BaseCommand):
     help = "Anonymize inactive users"
 
-    def handle(self, *args, **kwargs):
-        users = User.objects.filter(
+    def handle(self: "Command", *args: str, **kwargs: str) -> None:
+        users_to_anonymize = User.objects.filter(
             is_active=False,
             deactivated_at__isnull=False,
-            reactivate_until__lte=now()
+            reactivate_until__isnull=False,
+            reactivate_until__lte=timezone.now()
         )
-        for user in users:
+        for user in users_to_anonymize:
             user.anonymize_account()
-            self.stdout.write(f"Anonymized user: {user.id}")
+            self.stdout.write(f"Anonymized user: {user.nickname}")
         self.stdout.write("Anonymization complete.")

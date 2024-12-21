@@ -276,7 +276,7 @@ class User(AbstractUser):
         self.save()
 
     def anonymize_account(self) -> None:
-        if not self.is_active and self.reactivate_until and self.reactivate_until >= timezone.now():
+        if not self.is_active and self.reactivate_until and self.reactivate_until <= timezone.now():
             with transaction.atomic():
                 self.is_active = False
                 self.nickname = f"deleted_user_{self.pk}"
@@ -288,6 +288,7 @@ class User(AbstractUser):
                 self.is_staff = False
                 self.is_superuser = False
                 self.can_create_post = False
+                self.reactivate_until = None
                 self.anonymize_related_models()
                 self.save()
 
