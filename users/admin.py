@@ -1,18 +1,19 @@
 from typing import ClassVar
+
+from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.utils.http import urlsafe_base64_encode
-from django.utils.safestring import mark_safe, SafeString
-from users.models import Profile, User, UserSettings
-from django.urls import path
-from django.http import HttpResponseRedirect, HttpRequest
+from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
-from django.conf import settings
-from django.urls import reverse
+from django.template.loader import render_to_string
+from django.urls import path, reverse
 from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.utils.safestring import SafeString, mark_safe
+
+from users.models import Profile, User, UserSettings
 from users.tokens import account_activation_token
 
 FieldsetsType = tuple[tuple[None, dict[str, str | tuple[str]]]]

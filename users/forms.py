@@ -5,8 +5,6 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from rest_framework.fields import ImageField
-from django.contrib.auth.forms import UserCreationForm
-
 from .models import Profile, User, UserSettings
 
 
@@ -35,6 +33,21 @@ class UserProfileForm(forms.ModelForm):
             "is_content_visible",
             "is_communities_visible",
         ]
+
+    def validate_file_size(self: "UserProfileForm", file: any, max_size: int, field_name: str) -> None:
+        if file and file.size > max_size * 1024:
+            msg = f"{field_name} file size should not exceed {max_size}"
+            raise ValidationError(msg)
+
+    def clean_banner(self: "UserProfileForm") -> ImageField:
+        banner = self.cleaned_data.get("banner")
+        self.validate_file_size(banner, settings.MAX_BANNER_SIZE_KB, "Banner")
+        return banner
+
+    def clean_avatar(self: "UserProfileForm") -> ImageField:
+        avatar = self.cleaned_data.get("avatar")
+        self.validate_file_size(avatar, settings.MAX_AVATAR_SIZE_MB * 1024, "Avatar")
+        return avatar
 
 
 class UserSettingsForm(forms.ModelForm):

@@ -1,9 +1,13 @@
 from typing import ClassVar
+
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
 from django.core.exceptions import ValidationError
+
 from .models import ACTION_CHOICES, REPORT_CHOICES, Community, Post, PostAward, PostReport, User
+
+
 class CommentForm(forms.Form):
     MAX_COMMENT_LENGTH = 500
     content = forms.CharField(

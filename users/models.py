@@ -1,7 +1,8 @@
 import io
+from datetime import timedelta
 from pathlib import Path
 from typing import ClassVar
-from datetime import timedelta
+
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
@@ -16,11 +17,13 @@ from django.db.models import Model
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from PIL import Image
+
 from .choices import GENDER_CHOICES, get_languages, get_locations
 from reddit.settings import TIME_EXPIRATION_IN_DAYS
 from .validators import validate_avatar_file, validate_banner_file
 
 from reddit.settings import ACCOUNT_EXPIRATION_TIME_IN_DAYS
+
 
 def user_avatar_path(_: Model, filename: str) -> Path:
     return Path("users_avatars") / filename

@@ -1,5 +1,6 @@
 from django import template
 from django.contrib.auth import get_user_model
+
 from core.models import Post
 
 register = template.Library()

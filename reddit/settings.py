@@ -187,7 +187,8 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config("GOOGLE_OAUTH2_KEY", default="test")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config("GOOGLE_OAUTH2_SECRET", default="test")
 SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
 SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = (
-    config("BASE_URL", default="127.0.0.1:8000") + "/users/google/complete/google-oauth2/"
+    config("BASE_URL", default="127.0.0.1:8000")
+    + "/users/google/complete/google-oauth2/"
 )
 SOCIAL_AUTH_USER_MODEL = "users.User"
 SOCIAL_AUTH_USER_FIELDS = ["email", "nickname", "password"]
@@ -195,6 +196,10 @@ SOCIAL_AUTH_USER_FIELDS = ["email", "nickname", "password"]
 LIMIT_WARNINGS = 5
 LOGIN_URL = reverse_lazy("login")
 LOGIN_REDIRECT_URL = "/"
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+}
 DEFAULT_AVATAR_URL = "/media/users_avatars/default.png"
 DEFAULT_BANNER_URL = "/media/users_banners/default_banner.jpg"
 
@@ -214,10 +219,10 @@ SOCIAL_AUTH_PIPELINE = [
 from django.contrib.messages import constants as messages
 
 MESSAGE_TAGS = {
-    messages.DEBUG: 'secondary',
-    messages.INFO: 'info',
-    messages.SUCCESS: 'success',
-    messages.WARNING: 'warning',
-    messages.ERROR: 'danger',
+    messages.DEBUG: "secondary",
+    messages.INFO: "info",
+    messages.SUCCESS: "success",
+    messages.WARNING: "warning",
+    messages.ERROR: "danger",
 }
 ACCOUNT_EXPIRATION_TIME_IN_DAYS = 30
