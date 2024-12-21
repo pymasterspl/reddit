@@ -8,7 +8,8 @@ from django.db.utils import IntegrityError
 from django.test import Client
 from django.urls import reverse_lazy
 from PIL import Image
-
+from django.utils import timezone
+from users.forms import UserProfileForm
 from users.models import Profile, SocialLink, UserSettings
 
 User = get_user_model()
@@ -261,3 +262,47 @@ def test_cascade_profile_sociallink_deletion(user: "User") -> None:
     assert not User.objects.filter(id=user_id).exists()
     assert not Profile.objects.filter(id=profile_id).exists()
     assert not SocialLink.objects.filter(id=sociallink_id).exists()
+
+@pytest.mark.django_db()
+def test_deactivate_user_sets_fields_correctly(generated_password: str) -> None:
+    user = User.objects.create(
+        nickname="test_user",
+        email="test@example.com",
+        password=generated_password,
+        is_active=True,
+    )
+    user.deactivate()
+    user.refresh_from_db()
+    assert not user.is_active
+    assert user.deactivated_at is not None
+    assert user.reactivate_until > timezone.now()
+
+@pytest.mark.django_db()
+def test_anonymize_user_successfully(generated_password: str) -> None:
+    user = User.objects.create(
+        nickname="test_user",
+        email="test@example.com",
+        password=generated_password,
+        is_active=False,
+        deactivated_at=timezone.now(),
+        reactivate_until=timezone.now()
+    )
+    user.anonymize_account()
+    user.refresh_from_db()
+    assert user.nickname.startswith("deleted_user_")
+    assert not user.is_active
+    assert user.email.startswith("deleted_user_")
+    assert user.reactivate_until is None
+
+@pytest.mark.django_db()
+def test_anonymize_active_user_does_not_work(generated_password: str) -> None:
+    user = User.objects.create(
+        nickname="test_user",
+        email="test@example.com",
+        password=generated_password,
+        is_active=True,
+    )
+    user.anonymize_account()
+    user.refresh_from_db()
+    assert user.nickname == "test_user"
+    assert user.is_active

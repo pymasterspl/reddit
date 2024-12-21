@@ -281,7 +281,6 @@ class User(AbstractUser):
                 self.is_active = False
                 self.nickname = f"deleted_user_{self.pk}"
                 self.email = f"deleted_user_{self.pk}@example.com"
-                self.username = None
                 self.password = ""
                 self.first_name = ""
                 self.last_name = ""
