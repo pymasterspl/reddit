@@ -13,6 +13,6 @@ class Command(BaseCommand):
             reactivate_until__lte=now()
         )
         for user in users:
-            user.anonymize()
+            user.anonymize_account()
             self.stdout.write(f"Anonymized user: {user.id}")
         self.stdout.write("Anonymization complete.")
