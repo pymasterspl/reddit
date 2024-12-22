@@ -4,6 +4,8 @@ from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, TemplateView
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import send_mail
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
@@ -141,11 +143,11 @@ class AccountDeleteView(LoginRequiredMixin, View):
     template_name = "users/delete_account.html"
     success_url = reverse_lazy("home")
 
-    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+    def get(self: "AccountDeleteView", request: HttpRequest) -> HttpResponse:
         form = ConfirmDeleteAccountForm(user=request.user)
         return render(request, self.template_name, {"form": form})
 
-    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+    def post(self: "AccountDeleteView", request: HttpRequest) -> HttpResponse:
         form = ConfirmDeleteAccountForm(user=request.user, data=request.POST)
         if form.is_valid():
             request.user.deactivate()
@@ -153,9 +155,11 @@ class AccountDeleteView(LoginRequiredMixin, View):
             messages.warning(request, "Your account has been deactivated. ")
             messages.success(
                 request,
-                f"You have {settings.ACCOUNT_EXPIRATION_TIME_IN_DAYS} days to reactivate it. After this time, your account will be permanently deleted. To reactivate you account, contact our support. Thank you for using our service! We hope to see you again soon! ",
+                f"You have {settings.ACCOUNT_EXPIRATION_TIME_IN_DAYS} days to reactivate it."
+                f"After this time, your account will be permanently deleted."
+                f"To reactivate you account, contact our support."
+                f"Thank you for using our service! We hope to see you again soon! ",
             )
             return redirect(self.success_url)
-        else:
-            messages.error(request, "Password confirmation failed.")
-            return render(request, self.template_name, {"form": form})
+        messages.error(request, "Password confirmation failed.")
+        return render(request, self.template_name, {"form": form})

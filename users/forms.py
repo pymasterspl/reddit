@@ -1,10 +1,12 @@
 from typing import ClassVar
+
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from rest_framework.fields import ImageField
+
 from .models import Profile, User, UserSettings
 
 
@@ -67,12 +69,13 @@ class ConfirmDeleteAccountForm(forms.Form):
         widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Confirm your password"}), label=""
     )
 
-    def __init__(self, user: User, *args, **kwargs) -> None:
+    def __init__(self: "ConfirmDeleteAccountForm", user: User, *args: str, **kwargs: str) -> None:
         super().__init__(*args, **kwargs)
         self.user = user
 
-    def clean_password(self) -> str:
+    def clean_password(self: "ConfirmDeleteAccountForm") -> str:
         password = self.cleaned_data.get("password")
         if not authenticate(username=self.user.email, password=password):
-            raise forms.ValidationError("Incorrect password.")
+            error_message = "Incorrect password."
+            raise forms.ValidationError(error_message)
         return password

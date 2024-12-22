@@ -7,9 +7,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.utils import IntegrityError
 from django.test import Client
 from django.urls import reverse_lazy
-from PIL import Image
 from django.utils import timezone
-from users.forms import UserProfileForm
+from PIL import Image
+
 from users.models import Profile, SocialLink, UserSettings
 
 User = get_user_model()

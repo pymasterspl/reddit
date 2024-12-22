@@ -1,4 +1,5 @@
 import io
+from contextlib import suppress
 from datetime import timedelta
 from pathlib import Path
 from typing import ClassVar
@@ -10,19 +11,17 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.db import models, transaction
 from django.core.validators import FileExtensionValidator
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Model
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from PIL import Image
 
-from .choices import GENDER_CHOICES, get_languages, get_locations
-from reddit.settings import TIME_EXPIRATION_IN_DAYS
-from .validators import validate_avatar_file, validate_banner_file
-
 from reddit.settings import ACCOUNT_EXPIRATION_TIME_IN_DAYS
+
+from .choices import GENDER_CHOICES, get_languages, get_locations
+from .validators import validate_avatar_file, validate_banner_file
 
 
 def user_avatar_path(_: Model, filename: str) -> Path:
@@ -268,13 +267,13 @@ class User(AbstractUser):
 
         return result
 
-    def deactivate(self) -> None:
+    def deactivate(self: "User") -> None:
         self.is_active = False
         self.deactivated_at = timezone.now()
         self.reactivate_until = timezone.now() + timedelta(days=ACCOUNT_EXPIRATION_TIME_IN_DAYS)
         self.save()
 
-    def anonymize_account(self) -> None:
+    def anonymize_account(self: "User") -> None:
         if not self.is_active and self.reactivate_until and self.reactivate_until <= timezone.now():
             with transaction.atomic():
                 self.is_active = False
@@ -290,11 +289,9 @@ class User(AbstractUser):
                 self.anonymize_related_models()
                 self.save()
 
-    def anonymize_related_models(self) -> None:
-        try:
+    def anonymize_related_models(self: "User") -> None:
+        with suppress(UserSettings.DoesNotExist):
             self.usersettings.delete()
-        except UserSettings.DoesNotExist:
-            pass
         try:
             profile = self.profile
         except Profile.DoesNotExist:

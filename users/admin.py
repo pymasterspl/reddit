@@ -10,8 +10,9 @@ from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import path, reverse
 from django.utils.encoding import force_bytes
+from django.utils.html import format_html
 from django.utils.http import urlsafe_base64_encode
-from django.utils.safestring import SafeString, mark_safe
+from django.utils.safestring import SafeString
 
 from users.models import Profile, User, UserSettings
 from users.tokens import account_activation_token
@@ -110,10 +111,10 @@ class CustomUserAdmin(DjangoUserAdmin):
         )
         return redirect("admin:users_user_changelist")
 
-    def reactivate_user_link(self, obj: User) -> SafeString | str:
+    def reactivate_user_link(self: "CustomUserAdmin", obj: User) -> SafeString | str:
         if not obj.is_active and obj.reactivate_until is not None:
             url = reverse(viewname="admin:reactivate_user", args=[obj.id])
-            return mark_safe(f'<a href="{url}">Reactivate</a>')
+            return format_html(f'<a href="{url}">Reactivate</a>')
         return "-"
 
     reactivate_user_link.short_description = "Reactivate Link"

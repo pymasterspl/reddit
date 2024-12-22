@@ -7,7 +7,7 @@ from users.models import User
 class Command(BaseCommand):
     help = "Anonymize inactive users"
 
-    def handle(self: "Command", *args: str, **kwargs: str) -> None:
+    def handle(self: "Command", *_args: str, **__options: str) -> None:
         users_to_anonymize = User.objects.filter(
             is_active=False,
             deactivated_at__isnull=False,

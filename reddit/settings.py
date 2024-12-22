@@ -14,6 +14,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from decouple import config
+from django.contrib.messages import constants as messages
 from django.urls import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -215,8 +216,6 @@ SOCIAL_AUTH_PIPELINE = [
     "social_core.pipeline.social_auth.load_extra_data",
     "social_core.pipeline.user.user_details",
 ]
-from django.contrib.messages import constants as messages
-
 MESSAGE_TAGS = {
     messages.DEBUG: "secondary",
     messages.INFO: "info",
