@@ -14,7 +14,7 @@ def test_confirm_password_form_valid(user: User) -> None:
 
 @pytest.mark.django_db()
 def test_confirm_password_form_invalid_password(user: User) -> None:
-    wrong_password = user.plain_password + "wrong"
+    wrong_password = f"{user.plain_password}wrong"
     form = ConfirmDeleteAccountForm(user, data={"password": wrong_password})
     assert not form.is_valid()
     assert form.errors["password"] == ["Incorrect password."]
