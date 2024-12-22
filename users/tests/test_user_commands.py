@@ -5,6 +5,7 @@ from django.utils import timezone
 
 User = get_user_model()
 
+
 @pytest.mark.django_db()
 def test_anonymize_inactive_users_command(generated_password: str) -> None:
     user_to_anonymize = User.objects.create(

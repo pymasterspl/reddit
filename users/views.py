@@ -137,7 +137,6 @@ class AccountSettingsView(LoginRequiredMixin, FormView):
         return kwargs
 
 
-
 class AccountDeleteView(LoginRequiredMixin, View):
     template_name = "users/delete_account.html"
     success_url = reverse_lazy("home")
@@ -152,7 +151,10 @@ class AccountDeleteView(LoginRequiredMixin, View):
             request.user.deactivate()
             logout(request)
             messages.warning(request, "Your account has been deactivated. ")
-            messages.success(request, f"You have {settings.ACCOUNT_EXPIRATION_TIME_IN_DAYS} days to reactivate it. After this time, your account will be permanently deleted. To reactivate you account, contact our support. Thank you for using our service! We hope to see you again soon! ")
+            messages.success(
+                request,
+                f"You have {settings.ACCOUNT_EXPIRATION_TIME_IN_DAYS} days to reactivate it. After this time, your account will be permanently deleted. To reactivate you account, contact our support. Thank you for using our service! We hope to see you again soon! ",
+            )
             return redirect(self.success_url)
         else:
             messages.error(request, "Password confirmation failed.")

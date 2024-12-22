@@ -64,8 +64,8 @@ class UserSettingsForm(forms.ModelForm):
 
 class ConfirmDeleteAccountForm(forms.Form):
     password = forms.CharField(
-        widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Confirm your password"}),
-        label="")
+        widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Confirm your password"}), label=""
+    )
 
     def __init__(self, user: User, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)

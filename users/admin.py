@@ -35,16 +35,16 @@ class ProfileAdmin(admin.StackedInline):
 class CustomUserAdmin(DjangoUserAdmin):
     inlines: ClassVar[list] = [UserSettingAdmin, ProfileAdmin]
     list_display: tuple[str] = (
-                                "nickname",
-                                "email",
-                                "is_staff",
-                                "is_online",
-                                "last_activity_ago",
-                                "is_active",
-                                "deactivated_at",
-                                "reactivate_until",
-                                "reactivate_user_link",
-                                )
+        "nickname",
+        "email",
+        "is_staff",
+        "is_online",
+        "last_activity_ago",
+        "is_active",
+        "deactivated_at",
+        "reactivate_until",
+        "reactivate_user_link",
+    )
     ordering: tuple[str] = ("email",)
     fieldsets: FieldsetsType = ()
     add_fieldsets: FieldsetsType = (
@@ -115,4 +115,5 @@ class CustomUserAdmin(DjangoUserAdmin):
             url = reverse(viewname="admin:reactivate_user", args=[obj.id])
             return mark_safe(f'<a href="{url}">Reactivate</a>')
         return "-"
+
     reactivate_user_link.short_description = "Reactivate Link"

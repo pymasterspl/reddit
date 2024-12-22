@@ -135,7 +135,6 @@ class Profile(models.Model):
         self._initial_avatar = self.__dict__.get("avatar")
         self._initial_banner = self.__dict__.get("banner")
 
-
     def nickname(self: "Profile") -> str:
         return self.user.nickname
 
@@ -312,6 +311,7 @@ class User(AbstractUser):
             profile.delete_banner()
             profile.save()
         SocialLink.objects.filter(profile__user=self).delete()
+
 
 class SocialLink(models.Model):
     name = models.CharField(max_length=150)

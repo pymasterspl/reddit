@@ -12,7 +12,7 @@ class Command(BaseCommand):
             is_active=False,
             deactivated_at__isnull=False,
             reactivate_until__isnull=False,
-            reactivate_until__lte=timezone.now()
+            reactivate_until__lte=timezone.now(),
         )
         for user in users_to_anonymize:
             user.anonymize_account()
