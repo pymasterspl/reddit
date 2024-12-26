@@ -1,18 +1,14 @@
 from typing import Any
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, TemplateView
-from django.contrib.sites.shortcuts import get_current_site
-from django.core.mail import send_mail
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
-from django.template.loader import render_to_string
-from django.urls import reverse, reverse_lazy
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.urls import reverse_lazy
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from django.views import View
 from django.views.generic import DetailView, FormView
 
@@ -21,6 +17,7 @@ from core.models import User
 from .forms import UserForm, UserProfileForm, UserRegistrationForm, UserSettingsForm
 from .models import Profile, UserSettings
 from .tokens import account_activation_token
+from .utils import user_creation
 
 
 class UserProfileView(LoginRequiredMixin, DetailView):
@@ -55,30 +52,7 @@ class UserRegistrationView(FormView):
         user = form.save(commit=False)
         user.is_active = False
         user.save()
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        token = account_activation_token.make_token(user)
-        protocol = "https" if self.request.is_secure() else "http"
-        current_site = get_current_site(self.request)
-        activation_link = reverse("activate-account", kwargs={"uidb64": uid, "token": token})
-        full_activation_link = f"{protocol}://{current_site.domain}{activation_link}"
-        send_mail(
-            "Confirm your registration",
-            f"Please click on the following link to confirm your registration " f"{activation_link}",
-            settings.EMAIL_HOST_USER,
-            [user.email],
-            fail_silently=False,
-            html_message=render_to_string(
-                "users/account_activation_email.html",
-                {
-                    "user": user,
-                    "activation_link": full_activation_link,
-                },
-            ),
-        )
-        messages.success(
-            self.request,
-            f"Account created for {user.email}! " f"Please confirm your email to activate " f"your account.",
-        )
+        user_creation(user, self.request)
         return super().form_valid(form)
 
 
