@@ -6,8 +6,6 @@ from rest_framework.exceptions import ErrorDetail
 User = get_user_model()
 
 
-
-
 @pytest.mark.django_db()
 def test_registration_form_valid_data(
     client: Client,

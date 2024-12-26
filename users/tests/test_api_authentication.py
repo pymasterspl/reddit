@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
 from rest_framework.exceptions import ErrorDetail
-from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 
 User = get_user_model()
 
@@ -57,12 +57,10 @@ def test_login_invalid_data_response_failed(
     assert "access" not in response.data
     assert "refresh" not in response.data
 
+
 @pytest.mark.django_db()
 def test_login_inactive_account_response_failed(
-    client: Client,
-    user: User,
-    login_url: str,
-    api_register_url: str
+    client: Client, user: User, login_url: str, api_register_url: str
 ) -> None:
     data: dict = {
         "email": "testuser@example.com",
@@ -71,7 +69,7 @@ def test_login_inactive_account_response_failed(
         "password2": "Pass2712!",
     }
     client.post(api_register_url, data)
-    response = client.post(login_url, {"email": data["email"], "password":  data["password"]})
+    response = client.post(login_url, {"email": data["email"], "password": data["password"]})
     assert response.status_code == 401
     assert "access" not in response.data
     assert "refresh" not in response.data

@@ -173,6 +173,7 @@ def create_communities(user: User) -> CreateCommunitiesFixture:
 def api_register_url() -> str:
     return reverse("api-user-registration")
 
+
 @pytest.fixture()
 def post(user: User, community: Community) -> Generator[Post, None, None]:
     return Post.objects.create(
