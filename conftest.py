@@ -4,6 +4,7 @@ from collections.abc import Callable, Generator
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.urls import reverse
 
 from core.models import Community, CommunityMember, Post
 
@@ -167,6 +168,10 @@ def create_communities(user: User) -> CreateCommunitiesFixture:
 
     return _create_communties
 
+
+@pytest.fixture()
+def api_register_url() -> str:
+    return reverse("api-user-registration")
 
 @pytest.fixture()
 def post(user: User, community: Community) -> Generator[Post, None, None]:

@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
 from rest_framework.exceptions import ErrorDetail
-from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 
 User = get_user_model()
 
@@ -53,6 +53,25 @@ def test_login_invalid_data_response_failed(
         "password": "12345",
     }
     response = client.post(login_url, data)
+    assert response.status_code == 401
+    assert "access" not in response.data
+    assert "refresh" not in response.data
+
+@pytest.mark.django_db()
+def test_login_inactive_account_response_failed(
+    client: Client,
+    user: User,
+    login_url: str,
+    api_register_url: str
+) -> None:
+    data: dict = {
+        "email": "testuser@example.com",
+        "nickname": "testuser",
+        "password": "Pass2712!",
+        "password2": "Pass2712!",
+    }
+    client.post(api_register_url, data)
+    response = client.post(login_url, {"email": data["email"], "password":  data["password"]})
     assert response.status_code == 401
     assert "access" not in response.data
     assert "refresh" not in response.data
@@ -111,3 +130,28 @@ def test_logout_unauthenticated_user_response_failed(
     response = client.post(logout_url, {"refresh": "123"})
     assert response.status_code == 401
     assert isinstance(response.data["detail"], ErrorDetail)
+
+
+@pytest.mark.django_db()
+def test_refresh_token_invalid_format_response_failed(
+    client: Client, user: User, login_url: str, token_refresh_url: str, user_credentials: dict[str, str]
+) -> None:
+    client.post(login_url, user_credentials)
+    response = client.post(token_refresh_url, {"refresh": "not.a.valid.jwt.format"})
+    assert response.status_code == 401
+    assert "access" not in response.data
+
+
+@pytest.mark.django_db()
+def test_refresh_token_revoked_response_failed(
+    client: Client, user: User, login_url: str, token_refresh_url: str, user_credentials: dict[str, str]
+) -> None:
+    login_response = client.post(login_url, user_credentials)
+    refresh_token = login_response.data["refresh"]
+
+    token = OutstandingToken.objects.get(token=refresh_token)
+    BlacklistedToken.objects.create(token=token)
+
+    response = client.post(token_refresh_url, {"refresh": refresh_token})
+    assert response.status_code == 401
+    assert "access" not in response.data

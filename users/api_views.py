@@ -1,7 +1,7 @@
 from typing import Any, ClassVar
 
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpRequest
+from requests import Request
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.exceptions import ValidationError
@@ -22,12 +22,9 @@ class UserAPIRegistration(CreateAPIView):
 
 
 class UserAPILogin(TokenObtainPairView):
-    def post(self: "UserAPILogin", request: HttpRequest, *args: tuple, **kwargs: dict[str, Any]) -> Response:
+    def post(self: "UserAPILogin", request: Request, *args: tuple, **kwargs: dict[str, Any]) -> Response:
         response = super().post(request, *args, **kwargs)
         user = authenticate(username=self.request.data["email"], password=self.request.data["password"])
-        if not user:
-            error_msg = "Incorrect credentials"
-            raise ValidationError(error_msg)
         login(request, user)
         return response
 
@@ -36,7 +33,7 @@ class UserAPILogout(TokenRefreshView):
     authentication_classes: ClassVar[list[str]] = [SessionAuthentication]
     permission_classes = (IsAuthenticated,)
 
-    def post(self: "UserAPILogout", request: HttpRequest, **kwargs: dict[str, Any]) -> Response:  # noqa: ARG002
+    def post(self: "UserAPILogout", request: Request, **kwargs: dict[str, Any]) -> Response:  # noqa: ARG002
         try:
             refresh_token = request.data["refresh"]
             token = RefreshToken(refresh_token)
