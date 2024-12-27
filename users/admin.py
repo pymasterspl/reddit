@@ -1,4 +1,3 @@
-from django.utils import timezone
 from typing import ClassVar
 
 from django.conf import settings
@@ -10,6 +9,7 @@ from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import path, reverse
+from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.html import format_html
 from django.utils.http import urlsafe_base64_encode

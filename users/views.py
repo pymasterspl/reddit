@@ -159,7 +159,7 @@ class AccountDeleteView(LoginRequiredMixin, View):
                 "After this time, your account will be permanently deleted. "
                 "To reactivate your account, contact our support. "
                 "Thank you for using our service! We hope to see you again soon!",
-                             )
+            )
             return redirect(self.success_url)
         messages.error(request, "Password confirmation failed.")
         return render(request, self.template_name, {"form": form})

@@ -14,7 +14,7 @@ def test_anonymize_inactive_users_command(user: User, inactive_user: User) -> No
     user_to_anonymize.refresh_from_db()
     active_user.refresh_from_db()
     assert user_to_anonymize.is_active is False
-    assert user_to_anonymize.reactivate_until is None
+    assert user_to_anonymize.anonymized_at
     assert user_to_anonymize.nickname.startswith("deleted_user_")
     assert active_user.is_active is True
     assert active_user.nickname == "test_user"

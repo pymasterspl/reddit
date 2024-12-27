@@ -61,8 +61,8 @@ def user(reusable_password: Callable[[], str]) -> User:
 def inactive_user(reusable_password: Callable[[], str]) -> User:
     password = reusable_password()
     return User.objects.create_user(
-        email="test_user@example.com",
-        nickname="test_user",
+        email="inactive_user@example.com",
+        nickname="inactive_user",
         password=password,
         is_active=False,
         deactivated_at=timezone.now(),

@@ -302,12 +302,11 @@ def test_anonymize_user_with_related_models_successfully(inactive_user: User) ->
 
 @pytest.mark.django_db()
 def test_cannot_anonymize_user_with_future_reactivate_date(inactive_user: User) -> None:
-    user = inactive_user
     future_date = timezone.now() + timezone.timedelta(days=7)
-    user.reactivate_until = future_date
-    user.save()
-    user.anonymize_account()
-    user.refresh_from_db()
-    assert user.nickname == "test_user"
-    assert user.email == "test_user@example.com"
-    assert user.reactivate_until == future_date
+    inactive_user.reactivate_until = future_date
+    inactive_user.save()
+    inactive_user.anonymize_account()
+    inactive_user.refresh_from_db()
+    assert inactive_user.nickname == "inactive_user"
+    assert inactive_user.email == "inactive_user@example.com"
+    assert inactive_user.reactivate_until == future_date
