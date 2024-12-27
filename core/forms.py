@@ -34,7 +34,7 @@ class PostForm(forms.ModelForm):
         widgets: ClassVar[dict[str, forms.Widget]] = {
             "community": forms.Select(attrs={"class": "form-select"}),
             "title": forms.TextInput(attrs={"class": "form-control"}),
-            "content": forms.Textarea(attrs={"class": "form-control", "maxlength": 1000}),
+            "content": forms.Textarea(attrs={"class": "form-control"}),
         }
 
     def __init__(self: "Post", *args: tuple, **kwargs: dict) -> None:

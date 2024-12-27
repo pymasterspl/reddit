@@ -1,3 +1,4 @@
+from datetime import timezone
 from typing import ClassVar
 
 from django.conf import settings
@@ -112,7 +113,7 @@ class CustomUserAdmin(DjangoUserAdmin):
         return redirect("admin:users_user_changelist")
 
     def reactivate_user_link(self: "CustomUserAdmin", obj: User) -> SafeString | str:
-        if not obj.is_active and obj.reactivate_until is not None:
+        if not obj.is_active and obj.reactivate_until and obj.reactivate_until > timezone.now():
             url = reverse(viewname="admin:reactivate_user", args=[obj.id])
             return format_html(f'<a href="{url}">Reactivate</a>')
         return "-"

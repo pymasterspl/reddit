@@ -265,13 +265,7 @@ def test_cascade_profile_sociallink_deletion(user: "User") -> None:
 
 
 @pytest.mark.django_db()
-def test_deactivate_user_sets_fields_correctly(generated_password: str) -> None:
-    user = User.objects.create(
-        nickname="test_user",
-        email="test@example.com",
-        password=generated_password,
-        is_active=True,
-    )
+def test_deactivate_user_sets_fields_correctly(user: User) -> None:
     user.deactivate()
     user.refresh_from_db()
     assert not user.is_active
@@ -280,32 +274,40 @@ def test_deactivate_user_sets_fields_correctly(generated_password: str) -> None:
 
 
 @pytest.mark.django_db()
-def test_anonymize_user_successfully(generated_password: str) -> None:
-    user = User.objects.create(
-        nickname="test_user",
-        email="test@example.com",
-        password=generated_password,
-        is_active=False,
-        deactivated_at=timezone.now(),
-        reactivate_until=timezone.now(),
-    )
-    user.anonymize_account()
-    user.refresh_from_db()
-    assert user.nickname.startswith("deleted_user_")
-    assert not user.is_active
-    assert user.email.startswith("deleted_user_")
-    assert user.reactivate_until is None
-
-
-@pytest.mark.django_db()
-def test_anonymize_active_user_does_not_work(generated_password: str) -> None:
-    user = User.objects.create(
-        nickname="test_user",
-        email="test@example.com",
-        password=generated_password,
-        is_active=True,
-    )
+def test_anonymize_active_user_does_not_work(user: User) -> None:
     user.anonymize_account()
     user.refresh_from_db()
     assert user.nickname == "test_user"
     assert user.is_active
+
+
+@pytest.mark.django_db()
+def test_anonymize_user_with_related_models_successfully(inactive_user: User) -> None:
+    user = inactive_user
+    settings, _ = UserSettings.objects.get_or_create(user=user)
+    profile, _ = Profile.objects.get_or_create(user=user)
+    social_link, _ = SocialLink.objects.get_or_create(profile=profile)
+    user.anonymize_account()
+    user.refresh_from_db()
+    assert user.nickname.startswith("deleted_user_")
+    assert user.reactivate_until is None
+    assert not user.is_active
+    with pytest.raises(UserSettings.DoesNotExist):
+        settings.refresh_from_db()
+    with pytest.raises(SocialLink.DoesNotExist):
+        social_link.refresh_from_db()
+    with pytest.raises(Profile.DoesNotExist):
+        profile.refresh_from_db()
+
+
+@pytest.mark.django_db()
+def test_cannot_anonymize_user_with_future_reactivate_date(inactive_user: User) -> None:
+    user = inactive_user
+    future_date = timezone.now() + timezone.timedelta(days=7)
+    user.reactivate_until = future_date
+    user.save()
+    user.anonymize_account()
+    user.refresh_from_db()
+    assert user.nickname == "test_user"
+    assert user.email == "test_user@example.com"
+    assert user.reactivate_until == future_date

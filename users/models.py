@@ -206,6 +206,7 @@ class User(AbstractUser):
     warnings = models.IntegerField(default=0, help_text="The number of warnings assigned to the user. Defaults to 0.")
     deactivated_at = models.DateTimeField(null=True, blank=True)
     reactivate_until = models.DateTimeField(null=True, blank=True)
+    anonymized_at = models.DateTimeField(null=True, blank=True)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: ClassVar[list[str]] = ["nickname"]
 
@@ -287,27 +288,16 @@ class User(AbstractUser):
                 self.can_create_post = False
                 self.reactivate_until = None
                 self.anonymize_related_models()
+                self.anonymized_at = timezone.now()
                 self.save()
 
     def anonymize_related_models(self: "User") -> None:
         with suppress(UserSettings.DoesNotExist):
             self.usersettings.delete()
-        try:
-            profile = self.profile
-        except Profile.DoesNotExist:
-            pass
-        else:
-            profile.bio = ""
-            profile.is_nsfw = False
-            profile.is_followable = False
-            profile.is_content_visible = False
-            profile.is_communities_visible = False
-            profile.gender = ""
-            profile.user = self
-            profile.delete_avatar()
-            profile.delete_banner()
-            profile.save()
-        SocialLink.objects.filter(profile__user=self).delete()
+        with suppress(Profile.DoesNotExist):
+            self.profile.delete_avatar()
+            self.profile.delete_banner()
+            self.profile.delete()
 
 
 class SocialLink(models.Model):

@@ -12,9 +12,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import json
 from datetime import timedelta
 from pathlib import Path
-
 from decouple import config
-from django.contrib.messages import constants as messages
+from django.contrib.messages import constants
 from django.urls import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -217,10 +216,10 @@ SOCIAL_AUTH_PIPELINE = [
     "social_core.pipeline.user.user_details",
 ]
 MESSAGE_TAGS = {
-    messages.DEBUG: "secondary",
-    messages.INFO: "info",
-    messages.SUCCESS: "success",
-    messages.WARNING: "warning",
-    messages.ERROR: "danger",
+    constants.DEBUG: "secondary",
+    constants.INFO: "info",
+    constants.SUCCESS: "success",
+    constants.WARNING: "warning",
+    constants.ERROR: "danger",
 }
 ACCOUNT_EXPIRATION_TIME_IN_DAYS = 30

@@ -156,9 +156,9 @@ class AccountDeleteView(LoginRequiredMixin, View):
             messages.success(
                 request,
                 f"You have {settings.ACCOUNT_EXPIRATION_TIME_IN_DAYS} days to reactivate it."
-                f"After this time, your account will be permanently deleted."
-                f"To reactivate you account, contact our support."
-                f"Thank you for using our service! We hope to see you again soon! ",
+                "After this time, your account will be permanently deleted."
+                "To reactivate your account, contact our support."
+                "Thank you for using our service! We hope to see you again soon! ",
             )
             return redirect(self.success_url)
         messages.error(request, "Password confirmation failed.")
