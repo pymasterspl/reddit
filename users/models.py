@@ -286,7 +286,6 @@ class User(AbstractUser):
                 self.is_staff = False
                 self.is_superuser = False
                 self.can_create_post = False
-                self.reactivate_until = None
                 self.anonymize_related_models()
                 self.anonymized_at = timezone.now()
                 self.save()

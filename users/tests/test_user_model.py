@@ -290,7 +290,7 @@ def test_anonymize_user_with_related_models_successfully(inactive_user: User) ->
     user.anonymize_account()
     user.refresh_from_db()
     assert user.nickname.startswith("deleted_user_")
-    assert user.reactivate_until is None
+    assert user.anonymized_at
     assert not user.is_active
     with pytest.raises(UserSettings.DoesNotExist):
         settings.refresh_from_db()

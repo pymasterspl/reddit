@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import json
 from datetime import timedelta
 from pathlib import Path
+
 from decouple import config
 from django.contrib.messages import constants
 from django.urls import reverse_lazy

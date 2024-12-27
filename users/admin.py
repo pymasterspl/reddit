@@ -1,4 +1,4 @@
-from datetime import timezone
+from django.utils import timezone
 from typing import ClassVar
 
 from django.conf import settings
@@ -93,7 +93,7 @@ class CustomUserAdmin(DjangoUserAdmin):
         full_activation_link = f"{protocol}://{current_site.domain}{activation_link}"
         send_mail(
             "Confirm account reactivation",
-            f"Please click on the following link to confirm account reactivation: {activation_link}",
+            f"Please click on the following link to confirm account reactivation: {full_activation_link}",
             settings.EMAIL_HOST_USER,
             [user.email],
             fail_silently=False,

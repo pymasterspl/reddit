@@ -21,7 +21,9 @@ def test_anonymize_inactive_users_command(user: User, inactive_user: User) -> No
 
 
 @pytest.mark.django_db()
-def test_anonymize_inactive_users_command_cannot_anonymize_user_with_future_reactivate_date(user: User, inactive_user: User) -> None:
+def test_anonymize_inactive_users_command_cannot_anonymize_user_with_future_reactivate_date(
+    user: User, inactive_user: User
+) -> None:
     active_user = user
     reactivate_until = timezone.now() + timezone.timedelta(days=1)
     inactive_user.reactivate_until = reactivate_until

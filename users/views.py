@@ -152,14 +152,14 @@ class AccountDeleteView(LoginRequiredMixin, View):
         if form.is_valid():
             request.user.deactivate()
             logout(request)
-            messages.warning(request, "Your account has been deactivated. ")
-            messages.success(
+            messages.warning(
                 request,
-                f"You have {settings.ACCOUNT_EXPIRATION_TIME_IN_DAYS} days to reactivate it."
-                "After this time, your account will be permanently deleted."
-                "To reactivate your account, contact our support."
-                "Thank you for using our service! We hope to see you again soon! ",
-            )
+                "Your account has been deactivated. "
+                f"You have {settings.ACCOUNT_EXPIRATION_TIME_IN_DAYS} days to reactivate it. "
+                "After this time, your account will be permanently deleted. "
+                "To reactivate your account, contact our support. "
+                "Thank you for using our service! We hope to see you again soon!",
+                             )
             return redirect(self.success_url)
         messages.error(request, "Password confirmation failed.")
         return render(request, self.template_name, {"form": form})
