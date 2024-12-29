@@ -3,10 +3,10 @@ from typing import Any, ClassVar
 from django.contrib.auth import authenticate, login, logout
 from requests import Request
 from rest_framework import status
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_simplejwt.authentication import JWTStatelessUserAuthentication
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -29,8 +29,8 @@ class UserAPILogin(TokenObtainPairView):
 
 
 class UserAPILogout(TokenRefreshView):
-    authentication_classes: ClassVar[list[str]] = [SessionAuthentication]
-    permission_classes = (IsAuthenticated,)
+    permission_classes: ClassVar[list] = [IsAuthenticated]
+    authentication_classes: ClassVar[list] = [JWTStatelessUserAuthentication]
 
     def post(self: "UserAPILogout", request: Request, **kwargs: dict[str, Any]) -> Response:  # noqa: ARG002
         try:
