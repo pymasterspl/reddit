@@ -123,9 +123,9 @@ class Profile(models.Model):
         return f"{self.user.nickname}"
 
     def save(self: "Profile", *args: any, **kwargs: dict) -> None:
-        if self.avatar != self._initial_avatar:
+        if self.avatar and self.avatar != self._initial_avatar:
             self.avatar = self.process_image(self.avatar, (32, 32))
-        if self.banner != self._initial_banner:
+        if self.banner and self.banner != self._initial_banner:
             self.banner = self.process_image(self.banner, (300, 100))
         super().save(*args, **kwargs)
 
@@ -170,16 +170,16 @@ class Profile(models.Model):
 
     def delete_avatar(self: "Profile") -> None:
         if self.avatar:
-            if default_storage.exists(self.avatar.path):
-                default_storage.delete(self.avatar.path)
+            if default_storage.exists(self.avatar.name):
+                default_storage.delete(self.avatar.name)
             self.avatar = None
             self.save()
 
     def delete_banner(self: "Profile") -> None:
         if self.banner:
-            if default_storage.exists(self.banner.path):
-                default_storage.delete(self.banner.path)
-            self.banner = settings.DEFAULT_BANNER_URL
+            if default_storage.exists(self.banner.name):
+                default_storage.delete(self.banner.name)
+            self.banner = None
             self.save()
 
 
@@ -275,28 +275,40 @@ class User(AbstractUser):
         self.save()
 
     def anonymize_account(self: "User") -> None:
-        if not self.is_active and self.reactivate_until and self.reactivate_until <= timezone.now():
+        if self.reactivate_until and self.reactivate_until <= timezone.now() and not self.anonymized_at:
             with transaction.atomic():
-                self.is_active = False
-                self.nickname = f"deleted_user_{self.pk}"
-                self.email = f"deleted_user_{self.pk}@example.com"
-                self.password = ""
-                self.first_name = ""
-                self.last_name = ""
-                self.is_staff = False
-                self.is_superuser = False
-                self.can_create_post = False
-                self.anonymize_related_models()
-                self.anonymized_at = timezone.now()
-                self.save()
+                self._extracted_from_anonymize_account()
+
+    def _extracted_from_anonymize_account(self: "User") -> None:
+        self.is_active = False
+        self.nickname = f"deleted_user_{self.pk}"
+        self.email = f"deleted_user_{self.pk}@example.com"
+        self.password = ""
+        self.first_name = ""
+        self.last_name = ""
+        self.is_staff = False
+        self.is_superuser = False
+        self.can_create_post = False
+        self.anonymize_related_models()
+        self.anonymized_at = timezone.now()
+        self.save()
 
     def anonymize_related_models(self: "User") -> None:
         with suppress(UserSettings.DoesNotExist):
             self.usersettings.delete()
+        with suppress(SocialLink.DoesNotExist):
+            self.profile.sociallink.all().delete()
         with suppress(Profile.DoesNotExist):
-            self.profile.delete_avatar()
-            self.profile.delete_banner()
-            self.profile.delete()
+            self._extracted_from_anonymize_related_models()
+
+    def _extracted_from_anonymize_related_models(self: "User") -> None:
+        self.profile.bio = ""
+        self.profile.is_followable = False
+        self.profile.is_content_visible = False
+        self.profile.is_communities_visible = False
+        self.profile.delete_avatar()
+        self.profile.delete_banner()
+        self.profile.save()
 
 
 class SocialLink(models.Model):

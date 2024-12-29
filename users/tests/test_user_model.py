@@ -1,8 +1,10 @@
 import io
+from unittest.mock import MagicMock, patch
 
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.utils import IntegrityError
 from django.test import Client
@@ -292,12 +294,13 @@ def test_anonymize_user_with_related_models_successfully(inactive_user: User) ->
     assert user.nickname.startswith("deleted_user_")
     assert user.anonymized_at
     assert not user.is_active
+    assert not user.profile.banner
+    assert user.profile.bio == ""
+    assert not user.profile.avatar
     with pytest.raises(UserSettings.DoesNotExist):
         settings.refresh_from_db()
     with pytest.raises(SocialLink.DoesNotExist):
         social_link.refresh_from_db()
-    with pytest.raises(Profile.DoesNotExist):
-        profile.refresh_from_db()
 
 
 @pytest.mark.django_db()
@@ -310,3 +313,45 @@ def test_cannot_anonymize_user_with_future_reactivate_date(inactive_user: User) 
     assert inactive_user.nickname == "inactive_user"
     assert inactive_user.email == "inactive_user@example.com"
     assert inactive_user.reactivate_until == future_date
+
+
+@pytest.mark.django_db()
+@patch("users.models.default_storage")
+def test_delete_avatar(mock_storage: MagicMock, user: User) -> None:
+    image = Image.new("RGB", (100, 100), color=(255, 0, 0))
+    image_file = io.BytesIO()
+    image.save(image_file, format="JPEG")
+    image_file.seek(0)
+    profile = user.profile
+    profile.avatar = ContentFile(image_file.read(), "test_avatar.jpg")
+    profile.save()
+    assert profile.avatar.name.startswith("users_avatars/test_avatar")
+    mock_storage.exists.return_value = True
+    mock_storage.delete.return_value = None
+    avatar_name = profile.avatar.name
+    profile.delete_avatar()
+    mock_storage.exists.assert_called_once_with(avatar_name)
+    mock_storage.delete.assert_called_once_with(avatar_name)
+    profile.refresh_from_db()
+    assert not profile.avatar
+
+
+@pytest.mark.django_db()
+@patch("users.models.default_storage")
+def test_delete_banner(mock_storage: MagicMock, user: User) -> None:
+    image = Image.new("RGB", (100, 100), color=(255, 0, 0))
+    image_file = io.BytesIO()
+    image.save(image_file, format="JPEG")
+    image_file.seek(0)
+    profile = user.profile
+    profile.banner = ContentFile(image_file.read(), "test_banner.jpg")
+    profile.save()
+    assert profile.banner.name.startswith("users_banners/test_banner")
+    mock_storage.exists.return_value = True
+    mock_storage.delete.return_value = None
+    banner_name = profile.banner.name
+    profile.delete_banner()
+    mock_storage.exists.assert_called_once_with(banner_name)
+    mock_storage.delete.assert_called_once_with(banner_name)
+    profile.refresh_from_db()
+    assert not profile.banner
