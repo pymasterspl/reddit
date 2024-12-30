@@ -301,7 +301,7 @@ class User(AbstractUser):
         with suppress(Profile.DoesNotExist):
             self._extracted_from_anonymize_related_models()
 
-    def _extracted_from_anonymize_related_models(self: "User") -> None:
+    def _anonymize_profile(self: "User") -> None:
         self.profile.bio = ""
         self.profile.is_followable = False
         self.profile.is_content_visible = False
