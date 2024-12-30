@@ -277,6 +277,14 @@ More at:
 https://docs.astral.sh/ruff/linter/
 https://docs.astral.sh/ruff/formatter/
 
+### Removing Expired Tokens in Django
+
+To remove old, expired tokens that have been blacklisted, use the following management command:
+
+```bash
+python manage.py flushexpiredtokens
+```
+
 ### Usage with Docker 🐳
 For setup and running with Docker, refer to the [Docker configuration instructions](DOCKER.md).
 

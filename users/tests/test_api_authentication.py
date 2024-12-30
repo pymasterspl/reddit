@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
 from rest_framework.exceptions import ErrorDetail
+from rest_framework.test import APIClient
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 
 User = get_user_model()
@@ -29,6 +30,18 @@ def user_credentials(user: User) -> dict[str, str]:
         "email": user.email,
         "password": user.plain_password,
     }
+
+
+@pytest.fixture()
+def authenticated_client(
+    user: User, user_credentials: dict[str, str], api_login_url: str
+) -> tuple[APIClient, str, str]:
+    client = APIClient()
+    login_response = client.post(api_login_url, user_credentials)
+    access_token = login_response.data["access"]
+    refresh_token = login_response.data["refresh"]
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+    return client, access_token, refresh_token
 
 
 @pytest.mark.django_db()
@@ -77,11 +90,9 @@ def test_api_login_inactive_account_response_failed(
 
 @pytest.mark.django_db()
 def test_refresh_token_valid_data_response_success(
-    client: Client, user: User, api_login_url: str, token_refresh_url: str, user_credentials: dict[str, str]
+    authenticated_client: tuple[APIClient, str, str], token_refresh_url: str
 ) -> None:
-    response = client.post(api_login_url, user_credentials)
-    access_token = response.data["access"]
-    refresh_token = response.data["refresh"]
+    client, access_token, refresh_token = authenticated_client
     response = client.post(token_refresh_url, {"refresh": refresh_token})
     assert response.status_code == 200
     assert "access" in response.data
@@ -90,9 +101,9 @@ def test_refresh_token_valid_data_response_success(
 
 @pytest.mark.django_db()
 def test_refresh_token_invalid_data_response_failed(
-    client: Client, user: User, api_login_url: str, token_refresh_url: str, user_credentials: dict[str, str]
+    authenticated_client: tuple[APIClient, str, str], token_refresh_url: str
 ) -> None:
-    client.post(api_login_url, user_credentials)
+    client, _, _ = authenticated_client
     response = client.post(token_refresh_url, {"refresh": "123"})
     assert response.status_code == 401
     assert "access" not in response.data
@@ -101,35 +112,29 @@ def test_refresh_token_invalid_data_response_failed(
 
 @pytest.mark.django_db()
 def test_api_logout_valid_data_response_success(
-    client: Client, user: User, api_login_url: str, api_logout_url: str, user_credentials: dict[str, str]
+    authenticated_client: tuple[APIClient, str, str], api_logout_url: str
 ) -> None:
-    login_response = client.post(api_login_url, user_credentials)
-    refresh_token = login_response.data["refresh"]
-    access_token = login_response.data["access"]
-    headers = {"HTTP_AUTHORIZATION": f"Bearer {access_token}"}
-    response = client.post(api_logout_url, {"refresh": refresh_token}, **headers)
+    client, _, refresh_token = authenticated_client
+    response = client.post(api_logout_url, {"refresh": refresh_token})
     assert response.status_code == 202
-    assert BlacklistedToken.objects.all().first().token.token == refresh_token
+    assert BlacklistedToken.objects.filter(token__token=refresh_token).exists()
     assert response.data["message"] == "Logged out successfully"
 
 
 @pytest.mark.django_db()
 def test_api_logout_invalid_data_response_failed(
-    client: Client, user: User, api_login_url: str, api_logout_url: str, user_credentials: dict[str, str]
+    authenticated_client: tuple[APIClient, str, str], api_logout_url: str
 ) -> None:
-    login_response = client.post(api_login_url, user_credentials)
-    access_token = login_response.data["access"]
-    headers = {"HTTP_AUTHORIZATION": f"Bearer {access_token}"}
-    response = client.post(api_logout_url, {"refresh": "123"}, **headers)
+    client, _, _ = authenticated_client
+    response = client.post(api_logout_url, {"refresh": "123"})
     assert response.status_code == 400
     assert response.data["message"] == "Token is invalid or expired"
 
 
 @pytest.mark.django_db()
 def test_api_logout_unauthenticated_user_response_failed(
-    client: Client, user: User, api_login_url: str, api_logout_url: str, user_credentials: dict[str, str]
+    client: Client, user_credentials: tuple[APIClient, str, str], api_logout_url: str
 ) -> None:
-    client.post(api_login_url, user_credentials)
     response = client.post(api_logout_url, {"refresh": "123"})
     assert response.status_code == 401
     assert isinstance(response.data["detail"], ErrorDetail)
@@ -137,9 +142,9 @@ def test_api_logout_unauthenticated_user_response_failed(
 
 @pytest.mark.django_db()
 def test_refresh_token_invalid_format_response_failed(
-    client: Client, user: User, api_login_url: str, token_refresh_url: str, user_credentials: dict[str, str]
+    authenticated_client: tuple[APIClient, str, str], token_refresh_url: str
 ) -> None:
-    client.post(api_login_url, user_credentials)
+    client, _, _ = authenticated_client
     response = client.post(token_refresh_url, {"refresh": "not.a.valid.jwt.format"})
     assert response.status_code == 401
     assert "access" not in response.data
@@ -147,14 +152,12 @@ def test_refresh_token_invalid_format_response_failed(
 
 @pytest.mark.django_db()
 def test_refresh_token_revoked_response_failed(
-    client: Client, user: User, api_login_url: str, token_refresh_url: str, user_credentials: dict[str, str]
+    authenticated_client: tuple[APIClient, str, str], token_refresh_url: str
 ) -> None:
-    login_response = client.post(api_login_url, user_credentials)
-    refresh_token = login_response.data["refresh"]
-
+    client, _, refresh_token = authenticated_client
     token = OutstandingToken.objects.get(token=refresh_token)
     BlacklistedToken.objects.create(token=token)
-
     response = client.post(token_refresh_url, {"refresh": refresh_token})
     assert response.status_code == 401
+    assert "access" not in response.data
     assert "access" not in response.data
