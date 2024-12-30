@@ -299,7 +299,7 @@ class User(AbstractUser):
         with suppress(SocialLink.DoesNotExist):
             self.profile.sociallink.all().delete()
         with suppress(Profile.DoesNotExist):
-            self._extracted_from_anonymize_related_models()
+            self. _anonymize_profile()
 
     def _anonymize_profile(self: "User") -> None:
         self.profile.bio = ""
