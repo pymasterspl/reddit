@@ -119,3 +119,9 @@ class CustomUserAdmin(DjangoUserAdmin):
         return "-"
 
     reactivate_user_link.short_description = "Reactivate Link"
+
+    def change_view(self, request: HttpRequest, object_id: str, form_url: str = "", extra_context: dict = None):
+        if extra_context is None:
+            extra_context = {}
+        extra_context['show_reactivate_account'] = True
+        return super().change_view(request, object_id, form_url, extra_context)

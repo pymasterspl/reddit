@@ -1,0 +1,7 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block submit-row %}
+{{ block.super }}
+{% if show_reactivate_account %}<input type="submit" value="{% translate 'Reactivate account' %}" name="_reactivate">{% endif %}
+{% endblock %}

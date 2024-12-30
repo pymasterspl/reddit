@@ -277,9 +277,9 @@ class User(AbstractUser):
     def anonymize_account(self: "User") -> None:
         if self.reactivate_until and self.reactivate_until <= timezone.now() and not self.anonymized_at:
             with transaction.atomic():
-                self._extracted_from_anonymize_account()
+                self._anonymize_account()
 
-    def _extracted_from_anonymize_account(self: "User") -> None:
+    def _anonymize_account(self: "User") -> None:
         self.is_active = False
         self.nickname = f"deleted_user_{self.pk}"
         self.email = f"deleted_user_{self.pk}@example.com"
