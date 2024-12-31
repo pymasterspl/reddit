@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 import json
+from datetime import timedelta
 from pathlib import Path
 
 from decouple import config
@@ -44,6 +45,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "crispy_forms",
     "crispy_bootstrap5",
     "django_timesince",
@@ -119,6 +122,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_yasg.openapi.AutoSchema",
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTStatelessUserAuthentication",),
 }
 
 
@@ -164,6 +170,13 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 
 LAST_ACTIVITY_ONLINE_LIMIT_MINUTES = 15
 
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "BLACKLIST_AFTER_ROTATION": True,
+    "ROTATE_REFRESH_TOKENS": True,
+}
+
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = config("EMAIL_HOST", default="smtp.gmail.com")
 EMAIL_PORT = config("EMAIL_PORT", default=587)
@@ -182,7 +195,6 @@ SOCIAL_AUTH_USER_FIELDS = ["email", "nickname", "password"]
 LIMIT_WARNINGS = 5
 LOGIN_URL = reverse_lazy("login")
 LOGIN_REDIRECT_URL = "/"
-REST_FRAMEWORK = {"DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination", "PAGE_SIZE": 10}
 DEFAULT_AVATAR_URL = "/media/users_avatars/default.png"
 DEFAULT_BANNER_URL = "/media/users_banners/default_banner.jpg"
 
