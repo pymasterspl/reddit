@@ -296,8 +296,6 @@ class User(AbstractUser):
     def anonymize_related_models(self: "User") -> None:
         with suppress(UserSettings.DoesNotExist):
             self.usersettings.delete()
-        with suppress(SocialLink.DoesNotExist):
-            self.profile.sociallink.all().delete()
         with suppress(Profile.DoesNotExist):
             self._anonymize_profile()
 
@@ -308,6 +306,7 @@ class User(AbstractUser):
         self.profile.is_communities_visible = False
         self.profile.delete_avatar()
         self.profile.delete_banner()
+        self.profile.sociallink.all().delete()
         self.profile.save()
 
 
