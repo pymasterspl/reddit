@@ -67,6 +67,7 @@ def inactive_user(reusable_password: Callable[[], str]) -> User:
         is_active=False,
         deactivated_at=timezone.now(),
         reactivate_until=timezone.now(),
+        anonymized_at=None,
     )
 
 

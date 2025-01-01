@@ -276,7 +276,7 @@ def test_deactivate_user_sets_fields_correctly(user: User) -> None:
 
 
 @pytest.mark.django_db()
-def test_anonymize_active_user_does_not_work(user: User) -> None:
+def test_cant_anonymize_active_user(user: User) -> None:
     user.anonymize_account()
     user.refresh_from_db()
     assert user.nickname == "test_user"
