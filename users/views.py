@@ -1,26 +1,21 @@
 from typing import Any
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, TemplateView
-from django.contrib.sites.shortcuts import get_current_site
-from django.core.mail import send_mail
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
-from django.template.base import kwarg_re
-from django.template.loader import render_to_string
-from django.urls import reverse, reverse_lazy
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views import View
 from django.views.generic import DetailView, FormView
 
 from core.models import User
+
 from .forms import ConfirmDeleteAccountForm, UserForm, UserProfileForm, UserRegistrationForm, UserSettingsForm
 from .models import Profile, UserSettings
 from .tokens import account_activation_token

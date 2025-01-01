@@ -25,6 +25,7 @@ pytest-xdist = "^3.6.1"
 social-auth-app-django = "5.4.1"
 djangorestframework-simplejwt = "^5.3.1"
 drf-yasg = "^1.21.8"
+rest-framework-simplejwt = "^0.0.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
