@@ -14,6 +14,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from decouple import config
+from django.contrib.messages import constants
 from django.urls import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -195,6 +196,10 @@ SOCIAL_AUTH_USER_FIELDS = ["email", "nickname", "password"]
 LIMIT_WARNINGS = 5
 LOGIN_URL = reverse_lazy("login")
 LOGIN_REDIRECT_URL = "/"
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+}
 DEFAULT_AVATAR_URL = "/media/users_avatars/default.png"
 DEFAULT_BANNER_URL = "/media/users_banners/default_banner.jpg"
 
@@ -211,3 +216,11 @@ SOCIAL_AUTH_PIPELINE = [
     "social_core.pipeline.social_auth.load_extra_data",
     "social_core.pipeline.user.user_details",
 ]
+MESSAGE_TAGS = {
+    constants.DEBUG: "secondary",
+    constants.INFO: "info",
+    constants.SUCCESS: "success",
+    constants.WARNING: "warning",
+    constants.ERROR: "danger",
+}
+ACCOUNT_EXPIRATION_TIME_IN_DAYS = 30

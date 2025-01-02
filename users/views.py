@@ -1,6 +1,8 @@
 from typing import Any
 
+from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, TemplateView
 from django.db import transaction
@@ -14,7 +16,7 @@ from django.views.generic import DetailView, FormView
 
 from core.models import User
 
-from .forms import UserForm, UserProfileForm, UserRegistrationForm, UserSettingsForm
+from .forms import ConfirmDeleteAccountForm, UserForm, UserProfileForm, UserRegistrationForm, UserSettingsForm
 from .models import Profile, UserSettings
 from .tokens import account_activation_token
 from .utils import user_creation
@@ -71,6 +73,8 @@ class ActivateUser(View):
             user = User.objects.get(pk=uid, is_active=False)
             if account_activation_token.check_token(user, token):
                 user.is_active = True
+                user.deactivated_at = None
+                user.reactivate_until = None
                 user.save()
                 messages.success(request, "Your account has been activated, you can now login!")
 
@@ -128,3 +132,29 @@ class AccountSettingsView(LoginRequiredMixin, FormView):
         kwargs = super().get_form_kwargs()
         kwargs["instance"] = self.request.user.usersettings
         return kwargs
+
+
+class AccountDeleteView(LoginRequiredMixin, View):
+    template_name = "users/delete_account.html"
+    success_url = reverse_lazy("home")
+
+    def get(self: "AccountDeleteView", request: HttpRequest) -> HttpResponse:
+        form = ConfirmDeleteAccountForm(user=request.user)
+        return render(request, self.template_name, {"form": form})
+
+    def post(self: "AccountDeleteView", request: HttpRequest) -> HttpResponse:
+        form = ConfirmDeleteAccountForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            request.user.deactivate()
+            logout(request)
+            messages.warning(
+                request,
+                "Your account has been deactivated. "
+                f"You have {settings.ACCOUNT_EXPIRATION_TIME_IN_DAYS} days to reactivate it. "
+                "After this time, your account will be permanently deleted. "
+                "To reactivate your account, contact our support. "
+                "Thank you for using our service! We hope to see you again soon!",
+            )
+            return redirect(self.success_url)
+        messages.error(request, "Password confirmation failed.")
+        return render(request, self.template_name, {"form": form})

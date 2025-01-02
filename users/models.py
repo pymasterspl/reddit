@@ -1,4 +1,5 @@
 import io
+from contextlib import suppress
 from datetime import timedelta
 from pathlib import Path
 from typing import ClassVar
@@ -9,12 +10,15 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.core.validators import FileExtensionValidator
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Model
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from PIL import Image
+
+from reddit.settings import ACCOUNT_EXPIRATION_TIME_IN_DAYS
 
 from .choices import GENDER_CHOICES, get_languages, get_locations
 from .validators import validate_avatar_file, validate_banner_file
@@ -66,7 +70,7 @@ class UserManager(BaseUserManager):
 
 class UserSettings(models.Model):
     content_lang = models.CharField(max_length=2, choices=get_languages, default="en")
-    user = models.OneToOneField("User", on_delete=models.CASCADE, null=False)  # default name usessetigns
+    user = models.OneToOneField("User", on_delete=models.CASCADE, null=False)  # default name usersettings
     location = models.CharField(max_length=2, choices=get_locations, default="PL")
 
     is_beta = models.BooleanField(default=False)
@@ -119,9 +123,9 @@ class Profile(models.Model):
         return f"{self.user.nickname}"
 
     def save(self: "Profile", *args: any, **kwargs: dict) -> None:
-        if self.avatar != self._initial_avatar:
+        if self.avatar and self.avatar != self._initial_avatar:
             self.avatar = self.process_image(self.avatar, (32, 32))
-        if self.banner != self._initial_banner:
+        if self.banner and self.banner != self._initial_banner:
             self.banner = self.process_image(self.banner, (300, 100))
         super().save(*args, **kwargs)
 
@@ -164,6 +168,20 @@ class Profile(models.Model):
                 return settings.DEFAULT_BANNER_URL
         return settings.DEFAULT_BANNER_URL
 
+    def delete_avatar(self: "Profile") -> None:
+        if self.avatar:
+            if default_storage.exists(self.avatar.name):
+                default_storage.delete(self.avatar.name)
+            self.avatar = None
+            self.save()
+
+    def delete_banner(self: "Profile") -> None:
+        if self.banner:
+            if default_storage.exists(self.banner.name):
+                default_storage.delete(self.banner.name)
+            self.banner = None
+            self.save()
+
 
 class User(AbstractUser):
     nickname_validator = UnicodeUsernameValidator()
@@ -186,6 +204,9 @@ class User(AbstractUser):
         default=True, help_text="Indicates whether the user can create posts. Defaults to True."
     )
     warnings = models.IntegerField(default=0, help_text="The number of warnings assigned to the user. Defaults to 0.")
+    deactivated_at = models.DateTimeField(null=True, blank=True)
+    reactivate_until = models.DateTimeField(null=True, blank=True)
+    anonymized_at = models.DateTimeField(null=True, blank=True)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: ClassVar[list[str]] = ["nickname"]
 
@@ -246,6 +267,47 @@ class User(AbstractUser):
             result = f"{delta.days} days ago"
 
         return result
+
+    def deactivate(self: "User") -> None:
+        self.is_active = False
+        self.deactivated_at = timezone.now()
+        self.reactivate_until = timezone.now() + timedelta(days=ACCOUNT_EXPIRATION_TIME_IN_DAYS)
+        self.save()
+
+    def anonymize_account(self: "User") -> None:
+        if self.reactivate_until and self.reactivate_until <= timezone.now() and not self.anonymized_at:
+            with transaction.atomic():
+                self._anonymize_account()
+
+    def _anonymize_account(self: "User") -> None:
+        self.is_active = False
+        self.nickname = f"deleted_user_{self.pk}"
+        self.email = f"deleted_user_{self.pk}@example.com"
+        self.password = ""
+        self.first_name = ""
+        self.last_name = ""
+        self.is_staff = False
+        self.is_superuser = False
+        self.can_create_post = False
+        self.anonymize_related_models()
+        self.anonymized_at = timezone.now()
+        self.save()
+
+    def anonymize_related_models(self: "User") -> None:
+        with suppress(UserSettings.DoesNotExist):
+            self.usersettings.delete()
+        with suppress(Profile.DoesNotExist):
+            self._anonymize_profile()
+
+    def _anonymize_profile(self: "User") -> None:
+        self.profile.bio = ""
+        self.profile.is_followable = False
+        self.profile.is_content_visible = False
+        self.profile.is_communities_visible = False
+        self.profile.delete_avatar()
+        self.profile.delete_banner()
+        self.profile.sociallink.all().delete()
+        self.profile.save()
 
 
 class SocialLink(models.Model):

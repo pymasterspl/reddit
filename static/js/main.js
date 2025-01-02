@@ -7,18 +7,20 @@ function updateCharCount(textField, charCountElement) {
 
 document.addEventListener("DOMContentLoaded", function() {
     const textFields = document.querySelectorAll("input[type='text'], textarea");
-
     textFields.forEach(function(textField) {
-        const charCountElement = document.createElement("p");
-        charCountElement.className = "form-text text-light-emphasis";
-        textField.parentNode.appendChild(charCountElement);
+        const maxChars = textField.maxLength;
+        if (!isNaN(maxChars) && maxChars > 0){
+            const charCountElement = document.createElement("p");
+            charCountElement.className = "form-text text-light-emphasis";
+            textField.parentNode.appendChild(charCountElement);
 
-        // Initialize the character count display
-        updateCharCount(textField, charCountElement);
-
-        // Add event listener to update count on input
-        textField.addEventListener("input", function() {
+            // Initialize the character count display
             updateCharCount(textField, charCountElement);
-        });
+
+            // Add event listener to update count on input
+            textField.addEventListener("input", function() {
+                updateCharCount(textField, charCountElement);
+            });
+        };
     });
 });
