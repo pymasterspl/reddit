@@ -3,11 +3,23 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from .api_views import UserAPILogin, UserAPILogout, UserAPIRegistration
+from .api_views import (
+    ProfileAPIView,
+    UserAPILogin,
+    UserAPILogout,
+    UserAPIRegistration,
+    UserRetrieveAPIView,
+    UserSettingsAPIView,
+    UsersListAPIView,
+)
 
 urlpatterns = [
     path("register/", UserAPIRegistration.as_view(), name="api-user-registration"),
     path("login/", UserAPILogin.as_view(), name="api-user-login"),
     path("logout/", UserAPILogout.as_view(), name="api-user-logout"),
     path("token-refresh/", TokenRefreshView.as_view(), name="api-token-refresh"),
+    path("", UsersListAPIView.as_view(), name="api-users-list"),
+    path("<str:nickname>/", UserRetrieveAPIView.as_view(), name="api-user"),
+    path("<str:nickname>/profile/", ProfileAPIView.as_view(), name="api-user-profile"),
+    path("<str:nickname>/settings/", UserSettingsAPIView.as_view(), name="api-user-settings"),
 ]

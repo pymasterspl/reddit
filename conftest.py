@@ -6,6 +6,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
+from rest_framework.test import APIClient
 
 from core.models import Community, CommunityMember, Post
 
@@ -218,3 +219,36 @@ def comment(user: User, post: Post) -> Generator[Post, None, None]:
         content="This is a test comment",
         parent=post,
     )
+
+
+@pytest.fixture()
+def api_login_url() -> str:
+    return reverse("api-user-login")
+
+
+@pytest.fixture()
+def api_logout_url() -> str:
+    return reverse("api-user-logout")
+
+
+@pytest.fixture()
+def token_refresh_url() -> str:
+    return reverse("api-token-refresh")
+
+
+@pytest.fixture()
+def user_credentials(user: User) -> dict[str, str]:
+    return {
+        "email": user.email,
+        "password": user.plain_password,
+    }
+
+
+@pytest.fixture()
+def authenticated_client(user_credentials: dict[str, str], api_login_url: str) -> tuple[APIClient, str, str]:
+    client = APIClient()
+    login_response = client.post(api_login_url, user_credentials)
+    access_token = login_response.data["access"]
+    refresh_token = login_response.data["refresh"]
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+    return client, access_token, refresh_token
