@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
@@ -12,7 +13,7 @@ class Command(BaseCommand):
             is_active=False,
             deactivated_at__isnull=False,
             reactivate_until__isnull=False,
-            reactivate_until__lte=timezone.now(),
+            reactivate_until__lte=timezone.now() - timezone.timedelta(seconds=settings.PASSWORD_RESET_TIMEOUT),
             anonymized_at__isnull=True,
         )
         for user in users_to_anonymize:
