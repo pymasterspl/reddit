@@ -5,7 +5,6 @@ from collections.abc import Callable, Generator
 import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-from django.utils import timezone
 
 from core.models import Community, CommunityMember, Post
 
@@ -55,20 +54,6 @@ def user(reusable_password: Callable[[], str]) -> User:
     user = User.objects.create_user(email="test@example.com", nickname="test_user", password=password)
     user.plain_password = password
     return user
-
-
-@pytest.fixture()
-def inactive_user(reusable_password: Callable[[], str]) -> User:
-    password = reusable_password()
-    return User.objects.create_user(
-        email="inactive_user@example.com",
-        nickname="inactive_user",
-        password=password,
-        is_active=False,
-        deactivated_at=timezone.now(),
-        reactivate_until=timezone.now(),
-        anonymized_at=None,
-    )
 
 
 @pytest.fixture()

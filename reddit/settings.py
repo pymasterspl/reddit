@@ -224,3 +224,4 @@ MESSAGE_TAGS = {
     constants.ERROR: "danger",
 }
 ACCOUNT_EXPIRATION_TIME_IN_DAYS = 30
+PASSWORD_RESET_TIMEOUT = 2 * 24 * 60 * 60  # 2 days
