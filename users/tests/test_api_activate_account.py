@@ -79,7 +79,7 @@ def test_api_invalid_token_view_response_failed(client: Client) -> None:
     user.save()
 
     uid = urlsafe_base64_encode(force_bytes(user.pk))
-    token = account_activation_token.make_token(user) + "123"
+    token = f"{account_activation_token.make_token(user)}123"
 
     activation_url = reverse("api-activate-account", kwargs={"uidb64": uid, "token": token})
     response = client.get(activation_url)

@@ -2,7 +2,7 @@
 name = "reddit"
 version = "0.1.0"
 description = ""
-authors = ["pymasters.pl"]
+authors = [{name="pymasters.pl"}]
 license = "MIT"
 readme = "README.md"
 
