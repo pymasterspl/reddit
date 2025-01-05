@@ -2,33 +2,34 @@
 name = "reddit"
 version = "0.1.0"
 description = ""
-authors = [{name="pymasters.pl"}]
+authors = [{ name="pymasters.pl" }]
 license = "MIT"
 readme = "README.md"
-
-[project.dependencies]
-python = "^3.11"
-Django = "^5.0.4"
-python-decouple = "^3.8"
-pillow = "^10.3.0"
-django-crispy-forms = "^2.1"
-crispy-bootstrap5 = "^2024.2"
-django-timesince = "^2021.5.27"
-six = "^1.16.0"
-faker = "^25.9.1"
-pycountry = "^24.6.1"
-djangorestframework = "^3.15.2"
-social-auth-app-django = "5.4.1"
-djangorestframework-simplejwt = "^5.3.1"
-drf-yasg = "^1.21.8"
-
+requires-python = ">=3.11"
+dependencies = [
+  "Django>=5.0.4",
+  "python-decouple>=3.8",
+  "pillow>=10.3.0",
+  "django-crispy-forms>=2.1",
+  "crispy-bootstrap5>=2024.2",
+  "django-timesince>=2021.5.27",
+  "six>=1.16.0",
+  "faker>=25.9.1",
+  "pycountry>=24.6.1",
+  "djangorestframework>=3.15.2",
+  "social-auth-app-django==5.4.1",
+  "djangorestframework-simplejwt>=5.3.1",
+  "drf-yasg>=1.21.8"
+]
 
 [project.optional-dependencies]
-ruff = "^0.4.5"
-pytest = "^8.3.4"
-pytest-xdist = "^3.6.1"
-pytest-django = "^4.9.0"
-freezegun = "^1.5.1"
+dev = [
+  "ruff>=0.4.5",
+  "pytest>=8.3.4",
+  "pytest-xdist>=3.6.1",
+  "pytest-django>=4.9.0",
+  "freezegun>=1.5.1"
+]
 
 [build-system]
 requires = ["poetry-core>=1.5.0"]
@@ -37,13 +38,16 @@ build-backend = "poetry.core.masonry.api"
 [tool.ruff]
 exclude = ["scripts/", "manage.py", "asgi.py", "wsgi.py", "*/migrations/"]
 line-length = 120
-
 indent-width = 4
 target-version = "py311"
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = ["D104", "D100", "D103", "D211", "D213", "D101", "D102", "D105", "D106", "D107", "D203", "ISC001", "COM812"]
+ignore = [
+  "D104", "D100", "D103", "D211", "D213",
+  "D101", "D102", "D105", "D106", "D107",
+  "D203", "ISC001", "COM812"
+]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -56,10 +60,9 @@ line-ending = "auto"
 
 [tool.ruff.lint.per-file-ignores]
 "**/tests/**/*.py" = [
-    # at least this three should be fine in tests:
-    "S101", # asserts allowed in tests...
-    "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
-    "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
-    "RUF001", # Ruff had a problem with "’" in text: The two password fields didn’t match.
-    "PLR2004", # Ruff is pushing for constants instead of ints.
+  "S101",  # asserts allowed in tests...
+  "ARG",   # Unused function args -> fixtures, etc.
+  "FBT",   # Booleans as positional arguments in tests
+  "RUF001",
+  "PLR2004"
 ]
