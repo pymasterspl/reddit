@@ -1,11 +1,14 @@
 from typing import Any, ClassVar
 
 from django.contrib.auth import authenticate, login, logout
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from requests import Request
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTStatelessUserAuthentication
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -13,6 +16,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .models import User
 from .serializers import UserSerializer
+from .tokens import account_activation_token
 
 
 class UserAPIRegistration(CreateAPIView):
@@ -41,3 +45,28 @@ class UserAPILogout(TokenRefreshView):
             return Response(data={"message": "Logged out successfully"}, status=status.HTTP_202_ACCEPTED)
         except TokenError as e:
             return Response(data={"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ActivateAPIUser(APIView):
+    def get(self: "ActivateAPIUser", request: Request, uidb64: str, token: str) -> Response:  # noqa: ARG002
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid, is_active=False)
+            if account_activation_token.check_token(user, token):
+                user.is_active = True
+                user.deactivated_at = None
+                user.reactivate_until = None
+                user.save()
+                return Response(
+                    data={"message": "Your account has been activated, you can now login!"},
+                    status=status.HTTP_202_ACCEPTED,
+                )
+            return Response(
+                data={"message": "Invalid activation link or account already activated!"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except User.DoesNotExist:
+            return Response(
+                data={"message": "Invalid activation link or account already activated!"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )

@@ -12,12 +12,12 @@ from .models import User
 from .tokens import account_activation_token
 
 
-def user_creation(user: User, request: HttpRequest) -> User:
+def user_creation(user: User, url: str, request: HttpRequest) -> User:
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = account_activation_token.make_token(user)
     protocol = "https" if request.is_secure() else "http"
     current_site = get_current_site(request)
-    activation_link = reverse("activate-account", kwargs={"uidb64": uid, "token": token})
+    activation_link = reverse(url, kwargs={"uidb64": uid, "token": token})
     full_activation_link = f"{protocol}://{current_site.domain}{activation_link}"
     send_mail(
         "Confirm your registration",

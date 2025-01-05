@@ -54,7 +54,7 @@ class UserRegistrationView(FormView):
         user = form.save(commit=False)
         user.is_active = False
         user.save()
-        user_creation(user, self.request)
+        user_creation(user, "activate-account", self.request)
         return super().form_valid(form)
 
 
