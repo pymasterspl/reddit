@@ -98,7 +98,7 @@ git clone https://github.com/pymasterspl/reddit.git
 ```
 You need to have installed Poetry package. If you don't have, please install using this command:
 ```
-pip install poetry
+pip install poetry==1.7.1
 ```
 Navigate to reddit folder by command:
 ```
