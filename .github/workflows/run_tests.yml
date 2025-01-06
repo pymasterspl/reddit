@@ -60,7 +60,7 @@ jobs:
         # if: steps.cache-deps.cache-hit != 'true'
         run: |
           poetry config virtualenvs.in-project true
-          poetry install --no-interactionv
+          poetry install --no-interaction
 
       - name: Create .env file
         run: |
