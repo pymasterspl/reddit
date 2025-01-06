@@ -52,6 +52,12 @@ class ActivateAPIUser(APIView):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid, is_active=False)
+        except User.DoesNotExist:
+            return Response(
+                data={"message": "Invalid activation link or account already activated!"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        else:
             if account_activation_token.check_token(user, token):
                 user.is_active = True
                 user.deactivated_at = None
@@ -61,11 +67,6 @@ class ActivateAPIUser(APIView):
                     data={"message": "Your account has been activated, you can now login!"},
                     status=status.HTTP_202_ACCEPTED,
                 )
-            return Response(
-                data={"message": "Invalid activation link or account already activated!"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        except User.DoesNotExist:
             return Response(
                 data={"message": "Invalid activation link or account already activated!"},
                 status=status.HTTP_400_BAD_REQUEST,

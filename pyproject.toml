@@ -58,9 +58,10 @@ line-ending = "auto"
 
 [tool.ruff.lint.per-file-ignores]
 "**/tests/**/*.py" = [
-  "S101",  # asserts allowed in tests...
-  "ARG",   # Unused function args -> fixtures, etc.
-  "FBT",   # Booleans as positional arguments in tests
-  "RUF001",
-  "PLR2004"
+    # at least this three should be fine in tests:
+    "S101", # asserts allowed in tests...
+    "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
+    "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
+    "RUF001", # Ruff had a problem with "’" in text: The two password fields didn’t match.
+    "PLR2004", # Ruff is pushing for constants instead of ints.
 ]
