@@ -110,7 +110,7 @@ poetry config virtualenvs.in-project true
 ```
 Install virtual environment, using current dependencies:
 ```
-poetry install --with dev
+poetry install
 ```
 Copy file env-template to .env file using command:
 ```

@@ -33,7 +33,7 @@ jobs:
       - name: Install Poetry
         run: |
           python -m pip install --upgrade pip
-          pip install poetry
+          pip install poetry==1.7.1
 
       # Poetry still needs to be re-prepended to the PATH on each run, since
       # PATH does not persist between runs.
@@ -60,7 +60,7 @@ jobs:
         # if: steps.cache-deps.cache-hit != 'true'
         run: |
           poetry config virtualenvs.in-project true
-          poetry install --no-interaction --with dev
+          poetry install --no-interactionv
 
       - name: Create .env file
         run: |
