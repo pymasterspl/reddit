@@ -44,6 +44,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True, required=True, style={"input_type": "password"})
 
     class Meta:
+        model = User
         fields: typing.ClassVar[list] = ["nickname", "email", "password", "password2", "message"]
 
     def validate(self: "UserRegistrationSerializer", attrs: dict) -> dict:
