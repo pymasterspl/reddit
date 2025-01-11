@@ -16,8 +16,8 @@ class UserSerializer(BaseUserSerializer):
     user_bio = serializers.CharField(source="profile.bio", read_only=True)
     avatar = serializers.CharField(source="profile.avatar_url", read_only=True)
     banner = serializers.CharField(source="profile.banner", read_only=True)
-    post_karma = serializers.CharField(source="profile.post_karma", read_only=True)
-    comment_karma = serializers.CharField(source="profile.comment_karma", read_only=True)
+    post_karma = serializers.IntegerField(source="profile.post_karma", read_only=True)
+    comment_karma = serializers.IntegerField(source="profile.comment_karma", read_only=True)
 
     class Meta(BaseUserSerializer.Meta):
         fields: typing.ClassVar[list] = [
