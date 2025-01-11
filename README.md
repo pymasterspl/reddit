@@ -41,10 +41,13 @@ Good reading on working with code changes and pull request is https://google.git
        - you can join Pymasters at https://pymasters.pl/spolecznosc
    - Make changes and commit them. There should be only one reason to make a commit, eg. "Adding new fields to user model" should only contain changes related to those fields, nothing else. If there are other things - new commit is required.
    - Use pull request to add your work. Make pull request to `dev` branch.
-   - After creating pull request use "reviewers" option on far right of the screen to request review from "pymasters/reddit" team, or you can request review from certain team member directly by mentioning their name.
+      - **when pull request is created, and ready for review (branch up to date with `dev`, github actions passing) post a message on [#reddit](https://discord.com/channels/1035267230901997628/1221772410701873293) channel with link to pull request for review**
+   - When creating pull requests, "pymasters/reddit" team is added automatically as reviewers
+   - You can use "reviewers" option on far right of the screen to request review from certain team member directly by mentioning their name.
       ![alt text](readme-image.png)
    - One of the team members (or multiple) will perform code review and approve the pull request or request changes.
       - If changes are requested, all comments have to be in constructive and friendly manner, as shown in https://google.github.io/eng-practices/review/reviewer/comments.html
+      - **after all the requested changes are implemented and pull request is ready for another review, post a message with a link on [#reddit](https://discord.com/channels/1035267230901997628/1221772410701873293)**
    - It's a good thing to comment on the good parts of code with "Nice work" or something similar.
 5. As this is a learning project, pair programming is most welcome. Jump on Zoom or google meet and work together: https://www.youtube.com/watch?v=wu6BOT-eMgc&t=105s&ab_channel=devmentor.pl
 6. Code quality and automated tests will be run and required to pass before pull request can be merged. 
@@ -98,7 +101,7 @@ git clone https://github.com/pymasterspl/reddit.git
 ```
 You need to have installed Poetry package. If you don't have, please install using this command:
 ```
-pip install poetry
+pip install poetry==1.7.1
 ```
 Navigate to reddit folder by command:
 ```

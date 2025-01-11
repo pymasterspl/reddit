@@ -9,11 +9,11 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Cancel Previous Runs
-        if: "!endsWith(github.ref, '/master') && !endsWith(github.ref, '/dev')"
+        if: >-
+          !contains(github.ref, '/master') && !contains(github.ref, '/dev')
         uses: styfle/cancel-workflow-action@0.11.0
         with:
-          access_token: ${{ github.token }}
-
+          access_token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/checkout@v3.2.0
 
       - name: Set up Python
@@ -33,7 +33,7 @@ jobs:
       - name: Install Poetry
         run: |
           python -m pip install --upgrade pip
-          pip install poetry
+          pip install poetry==1.7.1
 
       # Poetry still needs to be re-prepended to the PATH on each run, since
       # PATH does not persist between runs.

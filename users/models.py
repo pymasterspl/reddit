@@ -275,9 +275,11 @@ class User(AbstractUser):
         self.save()
 
     def anonymize_account(self: "User") -> None:
-        if self.reactivate_until and self.reactivate_until <= timezone.now() and not self.anonymized_at:
-            with transaction.atomic():
-                self._anonymize_account()
+        if self.reactivate_until:
+            reactivate_until = self.reactivate_until + timedelta(seconds=settings.PASSWORD_RESET_TIMEOUT)
+            if reactivate_until <= timezone.now() and not self.anonymized_at:
+                with transaction.atomic():
+                    self._anonymize_account()
 
     def _anonymize_account(self: "User") -> None:
         self.is_active = False

@@ -59,7 +59,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.set_password(validated_data["password"])
         user.save()
         request = self.context.get("request")
-        user_creation(user, request)
+        user_creation(user, "api-activate-account", request)
         return user
 
     def get_message(self: "UserRegistrationSerializer", obj: User) -> str:

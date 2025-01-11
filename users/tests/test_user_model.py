@@ -2,6 +2,7 @@ import io
 from unittest.mock import MagicMock, patch
 
 import pytest
+from django.conf import LazySettings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
@@ -10,6 +11,7 @@ from django.db.utils import IntegrityError
 from django.test import Client
 from django.urls import reverse_lazy
 from django.utils import timezone
+from freezegun import freeze_time
 from PIL import Image
 
 from users.models import Profile, SocialLink, UserSettings
@@ -271,7 +273,7 @@ def test_deactivate_user_sets_fields_correctly(user: User) -> None:
     user.deactivate()
     user.refresh_from_db()
     assert not user.is_active
-    assert user.deactivated_at is not None
+    assert user.deactivated_at
     assert user.reactivate_until > timezone.now()
 
 
@@ -283,9 +285,11 @@ def test_cant_anonymize_active_user(user: User) -> None:
     assert user.is_active
 
 
+@freeze_time("2025-01-01 12:00:00")
 @pytest.mark.django_db()
-def test_anonymize_user_with_related_models_successfully(inactive_user: User) -> None:
-    user = inactive_user
+def test_anonymize_user_with_related_models_successfully(user: User, settings: LazySettings) -> None:
+    user.reactivate_until = timezone.now() - timezone.timedelta(seconds=settings.PASSWORD_RESET_TIMEOUT + 1)
+    user.save()
     settings, _ = UserSettings.objects.get_or_create(user=user)
     profile, _ = Profile.objects.get_or_create(user=user)
     social_link, _ = SocialLink.objects.get_or_create(profile=profile)
@@ -303,16 +307,34 @@ def test_anonymize_user_with_related_models_successfully(inactive_user: User) ->
         social_link.refresh_from_db()
 
 
+@freeze_time("2025-01-01 12:00:00")
 @pytest.mark.django_db()
-def test_cannot_anonymize_user_with_future_reactivate_date(inactive_user: User) -> None:
-    future_date = timezone.now() + timezone.timedelta(days=7)
-    inactive_user.reactivate_until = future_date
-    inactive_user.save()
-    inactive_user.anonymize_account()
-    inactive_user.refresh_from_db()
-    assert inactive_user.nickname == "inactive_user"
-    assert inactive_user.email == "inactive_user@example.com"
-    assert inactive_user.reactivate_until == future_date
+def test_can_anonymize_user_after_reactivate_date_plus_password_reset_timeout(
+    user: User, settings: LazySettings
+) -> None:
+    expired_date = timezone.now() - timezone.timedelta(seconds=settings.PASSWORD_RESET_TIMEOUT)
+    user.reactivate_until = expired_date
+    user.save()
+    user.anonymize_account()
+    user.refresh_from_db()
+    assert user.nickname.startswith("deleted_user_")
+    assert user.email.startswith("deleted_user_")
+    assert user.reactivate_until == expired_date
+
+
+@freeze_time("2025-01-01 12:00:00")
+@pytest.mark.django_db()
+def test_cannot_anonymize_user_before_reactivate_date_plus_password_reset_timeout(
+    user: User, settings: LazySettings
+) -> None:
+    valid_date = timezone.now() - timezone.timedelta(seconds=settings.PASSWORD_RESET_TIMEOUT - 1)
+    user.reactivate_until = valid_date
+    user.save()
+    user.anonymize_account()
+    user.refresh_from_db()
+    assert user.nickname == "test_user"
+    assert user.email == "test@example.com"
+    assert user.reactivate_until == valid_date
 
 
 @pytest.mark.django_db()
