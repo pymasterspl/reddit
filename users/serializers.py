@@ -8,9 +8,23 @@ from .utils import user_creation
 
 
 class UserSerializer(serializers.ModelSerializer):
+    user_bio = serializers.CharField(source="profile.bio", read_only=True)
+    avatar = serializers.CharField(source="profile.avatar_url", read_only=True)
+    banner = serializers.CharField(source="profile.banner", read_only=True)
+    post_karma = serializers.CharField(source="profile.post_karma", read_only=True)
+    comment_karma = serializers.CharField(source="profile.comment_karma", read_only=True)
+
     class Meta:
         model = User
-        fields = "__all__"
+        fields: typing.ClassVar[list] = [
+            "nickname",
+            "email",
+            "avatar",
+            "user_bio",
+            "banner",
+            "post_karma",
+            "comment_karma",
+        ]
 
 
 class ProfileSerializer(serializers.ModelSerializer):

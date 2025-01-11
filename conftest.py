@@ -55,6 +55,7 @@ def user(reusable_password: Callable[[], str]) -> User:
     password = reusable_password()
     user = User.objects.create_user(email="test@example.com", nickname="test_user", password=password)
     user.plain_password = password
+    user.nickname = "test_user"
     return user
 
 

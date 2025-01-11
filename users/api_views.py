@@ -3,7 +3,7 @@ from typing import Any, ClassVar
 from django.contrib.auth import authenticate, login, logout
 from requests import Request
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
+from rest_framework.generics import CreateAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTStatelessUserAuthentication
@@ -15,46 +15,34 @@ from .models import Profile, User, UserSettings
 from .serializers import ProfileSerializer, UserRegistrationSerializer, UserSerializer, UserSettingsSerializer
 
 
+class JWTAuthenticatedView:
+    permission_classes: ClassVar[list] = [IsAuthenticated]
+    authentication_classes: ClassVar[list] = [JWTStatelessUserAuthentication]
+
+
 class UserAPIRegistration(CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
 
 
-class UsersListAPIView(ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes: ClassVar[list] = [IsAuthenticated]
-    authentication_classes: ClassVar[list] = [JWTStatelessUserAuthentication]
-
-
-class UserRetrieveAPIView(RetrieveAPIView):
+class UserRetrieveAPIView(JWTAuthenticatedView, RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = "nickname"
-    permission_classes: ClassVar[list] = [IsAuthenticated]
-    authentication_classes: ClassVar[list] = [JWTStatelessUserAuthentication]
 
 
-class ProfileAPIView(RetrieveAPIView, UpdateAPIView):
-    queryset = Profile.objects.all()
+class ProfileAPIView(JWTAuthenticatedView, RetrieveAPIView, UpdateAPIView):
     serializer_class = ProfileSerializer
-    permission_classes: ClassVar[list] = [IsAuthenticated]
-    authentication_classes: ClassVar[list] = [JWTStatelessUserAuthentication]
-
-    def get_object(self: "ProfileAPIView") -> Profile:
-        nickname = self.kwargs.get("nickname")
-        return Profile.objects.select_related("user").get(user__nickname=nickname)
-
-
-class UserSettingsAPIView(RetrieveAPIView, UpdateAPIView):
-    queryset = UserSettings.objects.all()
-    serializer_class = UserSettingsSerializer
-    permission_classes: ClassVar[list] = [IsAuthenticated]
-    authentication_classes: ClassVar[list] = [JWTStatelessUserAuthentication]
 
     def get_object(self: "UserSettingsAPIView") -> UserSettings:
-        nickname = self.kwargs.get("nickname")
-        return UserSettings.objects.select_related("user").get(user__nickname=nickname)
+        return Profile.objects.select_related("user").get(user__id=self.request.user.id)
+
+
+class UserSettingsAPIView(JWTAuthenticatedView, RetrieveAPIView, UpdateAPIView):
+    serializer_class = UserSettingsSerializer
+
+    def get_object(self: "UserSettingsAPIView") -> UserSettings:
+        return UserSettings.objects.select_related("user").get(user__id=self.request.user.id)
 
 
 class UserAPILogin(TokenObtainPairView):
@@ -65,10 +53,7 @@ class UserAPILogin(TokenObtainPairView):
         return response
 
 
-class UserAPILogout(TokenRefreshView):
-    permission_classes: ClassVar[list] = [IsAuthenticated]
-    authentication_classes: ClassVar[list] = [JWTStatelessUserAuthentication]
-
+class UserAPILogout(JWTAuthenticatedView, TokenRefreshView):
     def post(self: "UserAPILogout", request: Request, **kwargs: dict[str, Any]) -> Response:  # noqa: ARG002
         try:
             refresh_token = request.data["refresh"]

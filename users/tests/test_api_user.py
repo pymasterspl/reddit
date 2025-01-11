@@ -14,18 +14,13 @@ def api_user_url(user: User) -> str:
 
 
 @pytest.fixture()
-def api_user_profile_url(user: User) -> str:
-    return reverse("api-user-profile", kwargs={"nickname": user.nickname})
+def api_user_profile_url() -> str:
+    return reverse("api-user-profile")
 
 
 @pytest.fixture()
-def api_user_settings_url(user: User) -> str:
-    return reverse("api-user-settings", kwargs={"nickname": user.nickname})
-
-
-@pytest.fixture()
-def api_user_list_url() -> str:
-    return reverse("api-users-list")
+def api_user_settings_url() -> str:
+    return reverse("api-user-settings")
 
 
 @pytest.mark.django_db()
@@ -53,7 +48,7 @@ def test_api_user_invalid_nickname_response_failed(
 def test_api_user_unauthenticated_user_response_failed(
     client: Client, user_credentials: tuple[APIClient, str, str], api_user_url: str
 ) -> None:
-    response = client.post(api_user_url)
+    response = client.get(api_user_url)
     assert response.status_code == 401
     assert isinstance(response.data["detail"], ErrorDetail)
 
@@ -159,31 +154,5 @@ def test_api_user_settings_unauthenticated_user_response_failed(
     client: Client, user_credentials: tuple[APIClient, str, str], api_user_settings_url: str
 ) -> None:
     response = client.post(api_user_settings_url)
-    assert response.status_code == 401
-    assert isinstance(response.data["detail"], ErrorDetail)
-
-
-@pytest.mark.django_db()
-def test_api_user_list_valid_data_response_success(
-    authenticated_client: tuple[APIClient, str, str], api_user_list_url: str, api_register_url: str
-) -> None:
-    client, _, _ = authenticated_client
-    data: dict = {
-        "email": "testuser@example.com",
-        "nickname": "testuser",
-        "password": "Pass2712!",
-        "password2": "Pass2712!",
-    }
-    client.post(api_register_url, data)
-    response = client.get(api_user_list_url)
-    assert response.status_code == 200
-    assert len(response.data["results"]) == 2
-
-
-@pytest.mark.django_db()
-def test_api_user_list_unauthenticated_user_response_failed(
-    client: Client, user_credentials: tuple[APIClient, str, str], api_user_url: str
-) -> None:
-    response = client.post(api_user_url)
     assert response.status_code == 401
     assert isinstance(response.data["detail"], ErrorDetail)
