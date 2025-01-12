@@ -1,28 +1,81 @@
 import typing
 
-from django.db.models import Model
 from rest_framework import serializers
 
-from .models import User
+from .models import Profile, User, UserSettings
 from .utils import user_creation
 
 
 class UserSerializer(serializers.ModelSerializer):
+    user_bio = serializers.CharField(source="profile.bio", read_only=True)
+    avatar = serializers.CharField(source="profile.avatar_url", read_only=True)
+    banner = serializers.CharField(source="profile.banner", read_only=True)
+    post_karma = serializers.IntegerField(source="profile.post_karma", read_only=True)
+    comment_karma = serializers.IntegerField(source="profile.comment_karma", read_only=True)
+
+    class Meta:
+        model = User
+        fields: typing.ClassVar[list] = [
+            "nickname",
+            "email",
+            "avatar",
+            "user_bio",
+            "banner",
+            "post_karma",
+            "comment_karma",
+        ]
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields: typing.ClassVar[list] = [
+            "id",
+            "bio",
+            "is_nsfw",
+            "is_followable",
+            "is_content_visible",
+            "is_communities_visible",
+            "comment_karma",
+            "post_karma",
+            "gold_awards",
+            "gender",
+            "avatar",
+            "banner",
+            "user_id",
+        ]
+
+
+class UserSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserSettings
+        fields: typing.ClassVar[list] = [
+            "id",
+            "content_lang",
+            "location",
+            "is_beta",
+            "revert_to_old_reddit",
+            "is_over_18",
+            "user_id",
+        ]
+
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
     message = serializers.SerializerMethodField(read_only=True)
     password = serializers.CharField(write_only=True, required=True, style={"input_type": "password"})
     password2 = serializers.CharField(write_only=True, required=True, style={"input_type": "password"})
 
     class Meta:
-        model: Model = User
+        model = User
         fields: typing.ClassVar[list] = ["nickname", "email", "password", "password2", "message"]
 
-    def validate(self: "UserSerializer", attrs: dict) -> dict:
+    def validate(self: "UserRegistrationSerializer", attrs: dict) -> dict:
         if attrs["password"] != attrs["password2"]:
             msg = {"password": "Passwords are not the same", "password2": "Passwords are not the same"}
             raise serializers.ValidationError(msg)
         return attrs
 
-    def create(self: "UserSerializer", validated_data: dict) -> User:
+    def create(self: "UserRegistrationSerializer", validated_data: dict) -> User:
         user = User.objects.create(nickname=validated_data["nickname"], email=validated_data["email"], is_active=False)
         user.set_password(validated_data["password"])
         user.save()
@@ -30,5 +83,5 @@ class UserSerializer(serializers.ModelSerializer):
         user_creation(user, "api-activate-account", request)
         return user
 
-    def get_message(self: "UserSerializer", obj: User) -> str:
-        return f"Account created for {obj}! " f"Please confirm your email to activate " f"your account."
+    def get_message(self: "UserRegistrationSerializer", obj: User) -> str:
+        return f"Account created for {obj}! Please confirm your email to activate your account."

@@ -1,47 +1,11 @@
 import pytest
 from django.contrib.auth import get_user_model
 from django.test import Client
-from django.urls import reverse
 from rest_framework.exceptions import ErrorDetail
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 
 User = get_user_model()
-
-
-@pytest.fixture()
-def api_login_url() -> str:
-    return reverse("api-user-login")
-
-
-@pytest.fixture()
-def api_logout_url() -> str:
-    return reverse("api-user-logout")
-
-
-@pytest.fixture()
-def token_refresh_url() -> str:
-    return reverse("api-token-refresh")
-
-
-@pytest.fixture()
-def user_credentials(user: User) -> dict[str, str]:
-    return {
-        "email": user.email,
-        "password": user.plain_password,
-    }
-
-
-@pytest.fixture()
-def authenticated_client(
-    user: User, user_credentials: dict[str, str], api_login_url: str
-) -> tuple[APIClient, str, str]:
-    client = APIClient()
-    login_response = client.post(api_login_url, user_credentials)
-    access_token = login_response.data["access"]
-    refresh_token = login_response.data["refresh"]
-    client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
-    return client, access_token, refresh_token
 
 
 @pytest.mark.django_db()
@@ -133,9 +97,10 @@ def test_api_logout_invalid_data_response_failed(
 
 @pytest.mark.django_db()
 def test_api_logout_unauthenticated_user_response_failed(
-    client: Client, user_credentials: tuple[APIClient, str, str], api_logout_url: str
+    client: Client, authenticated_client: tuple[APIClient, str, str], api_logout_url: str
 ) -> None:
-    response = client.post(api_logout_url, {"refresh": "123"})
+    _, _, refresh_token = authenticated_client
+    response = client.post(api_logout_url, {"refresh": refresh_token})
     assert response.status_code == 401
     assert isinstance(response.data["detail"], ErrorDetail)
 
