@@ -24,7 +24,7 @@ def api_user_settings_url() -> str:
 
 
 @pytest.mark.django_db()
-def test_api_user_valid_data_response_success(
+def test_get_api_user_valid_data_response_success(
     authenticated_client: tuple[APIClient, str, str],
     api_user_url: str,
 ) -> None:
@@ -36,7 +36,7 @@ def test_api_user_valid_data_response_success(
 
 
 @pytest.mark.django_db()
-def test_api_user_invalid_nickname_response_failed(
+def test_get_api_user_invalid_nickname_response_failed(
     authenticated_client: tuple[APIClient, str, str],
 ) -> None:
     client, _, _ = authenticated_client
@@ -45,7 +45,7 @@ def test_api_user_invalid_nickname_response_failed(
 
 
 @pytest.mark.django_db()
-def test_api_user_unauthenticated_user_response_failed(
+def test_get_api_user_unauthenticated_user_response_failed(
     client: Client, user_credentials: tuple[APIClient, str, str], api_user_url: str
 ) -> None:
     response = client.get(api_user_url)
@@ -54,26 +54,26 @@ def test_api_user_unauthenticated_user_response_failed(
 
 
 @pytest.mark.django_db()
-def test_api_user_profile_valid_data_response_success(
+def test_get_api_user_profile_valid_data_response_success(
     authenticated_client: tuple[APIClient, str, str], api_user_profile_url: str, user: User
 ) -> None:
     client, _, _ = authenticated_client
     response = client.get(api_user_profile_url)
     assert response.status_code == 200
     assert response.data == {
-        "id": user.profile.id,
-        "bio": user.profile.bio,
-        "is_nsfw": user.profile.is_nsfw,
-        "is_followable": user.profile.is_followable,
-        "is_content_visible": user.profile.is_content_visible,
-        "is_communities_visible": user.profile.is_communities_visible,
-        "comment_karma": user.profile.comment_karma,
-        "post_karma": user.profile.post_karma,
-        "gold_awards": user.profile.gold_awards,
-        "gender": user.profile.gender,
-        "avatar": user.profile.avatar,
-        "banner": user.profile.banner,
-        "user": user.id,
+        "id": 1,
+        "bio": "",
+        "is_nsfw": False,
+        "is_followable": True,
+        "is_content_visible": True,
+        "is_communities_visible": True,
+        "comment_karma": 0,
+        "post_karma": 0,
+        "gold_awards": 0,
+        "gender": "",
+        "avatar": None,
+        "banner": None,
+        "user_id": 1,
     }
 
 
@@ -86,19 +86,19 @@ def test_patch_api_user_profile_valid_data_response_success(
     response = client.patch(api_user_profile_url, data=data)
     assert response.status_code == 200
     assert response.data == {
-        "id": user.profile.id,
-        "bio": user.profile.bio,
-        "is_nsfw": user.profile.is_nsfw,
-        "is_followable": not user.profile.is_followable,
-        "is_content_visible": user.profile.is_content_visible,
-        "is_communities_visible": user.profile.is_communities_visible,
-        "comment_karma": user.profile.comment_karma,
-        "post_karma": user.profile.post_karma,
-        "gold_awards": user.profile.gold_awards,
-        "gender": user.profile.gender,
-        "avatar": user.profile.avatar,
-        "banner": user.profile.banner,
-        "user": user.id,
+        "id": 1,
+        "bio": "",
+        "is_nsfw": False,
+        "is_followable": False,
+        "is_content_visible": True,
+        "is_communities_visible": True,
+        "comment_karma": 0,
+        "post_karma": 0,
+        "gold_awards": 0,
+        "gender": "",
+        "avatar": None,
+        "banner": None,
+        "user_id": 1,
     }
 
 
@@ -113,7 +113,7 @@ def test_patch_api_user_profile_invalid_data_response_failed(
 
 
 @pytest.mark.django_db()
-def test_api_user_profile_unauthenticated_user_response_failed(
+def test_get_api_user_profile_unauthenticated_user_response_failed(
     client: Client, user_credentials: tuple[APIClient, str, str], api_user_profile_url: str
 ) -> None:
     response = client.get(api_user_profile_url)
@@ -122,20 +122,20 @@ def test_api_user_profile_unauthenticated_user_response_failed(
 
 
 @pytest.mark.django_db()
-def test_api_user_settings_valid_data_response_success(
+def test_get_api_user_settings_valid_data_response_success(
     authenticated_client: tuple[APIClient, str, str], api_user_settings_url: str, user: User
 ) -> None:
     client, _, _ = authenticated_client
     response = client.get(api_user_settings_url)
     assert response.status_code == 200
     assert response.data == {
-        "id": user.usersettings.id,
-        "content_lang": user.usersettings.content_lang,
-        "location": user.usersettings.location,
-        "is_beta": user.usersettings.is_beta,
-        "revert_to_old_reddit": user.usersettings.revert_to_old_reddit,
-        "is_over_18": user.usersettings.is_over_18,
-        "user": user.id,
+        "id": 1,
+        "content_lang": "en",
+        "location": "PL",
+        "is_beta": False,
+        "revert_to_old_reddit": False,
+        "is_over_18": False,
+        "user_id": 1,
     }
 
 
@@ -144,18 +144,18 @@ def test_patch_api_user_settings_valid_data_response_success(
     authenticated_client: tuple[APIClient, str, str], api_user_settings_url: str, user: User
 ) -> None:
     client, _, _ = authenticated_client
-    data = {"is_beta": not user.usersettings.is_beta}
+    data = {"is_beta": True}
     response = client.patch(api_user_settings_url, data=data)
     assert response.status_code == 200
-    assert response.data["is_beta"]
+    assert response.data["is_beta"] != user.usersettings.is_beta
     assert response.data == {
-        "id": user.usersettings.id,
-        "content_lang": user.usersettings.content_lang,
-        "location": user.usersettings.location,
-        "is_beta": not user.usersettings.is_beta,
-        "revert_to_old_reddit": user.usersettings.revert_to_old_reddit,
-        "is_over_18": user.usersettings.is_over_18,
-        "user": user.id,
+        "id": 1,
+        "content_lang": "en",
+        "location": "PL",
+        "is_beta": True,
+        "revert_to_old_reddit": False,
+        "is_over_18": False,
+        "user_id": 1,
     }
 
 
@@ -167,10 +167,12 @@ def test_patch_api_user_settings_invalid_data_response_failed(
     data = {"is_beta": "TEST"}
     response = client.patch(api_user_settings_url, data=data)
     assert response.status_code == 400
+    assert len(response.data) == 1
+    assert response.data["is_beta"][0] == ErrorDetail(string="Must be a valid boolean.", code="invalid")
 
 
 @pytest.mark.django_db()
-def test_api_user_settings_unauthenticated_user_response_failed(
+def test_get_api_user_settings_unauthenticated_user_response_failed(
     client: Client, user_credentials: tuple[APIClient, str, str], api_user_settings_url: str
 ) -> None:
     response = client.get(api_user_settings_url)
@@ -179,44 +181,13 @@ def test_api_user_settings_unauthenticated_user_response_failed(
 
 
 @pytest.mark.django_db()
-def test_patch_api_user_settings_is_beta_response_success(
+def test_patch_api_user_settings_response_success(
     authenticated_client: tuple[APIClient, str, str], api_user_settings_url: str, user: User
 ) -> None:
     client, _, _ = authenticated_client
-    data = {"is_beta": not user.usersettings.is_beta}
+    data = {"content_lang": "es", "is_over_18": True, "revert_to_old_reddit": True}
     response = client.patch(api_user_settings_url, data=data)
     assert response.status_code == 200
-    assert response.data["is_beta"] == (not user.usersettings.is_beta)
-
-
-@pytest.mark.django_db()
-def test_patch_api_user_settings_content_lang_response_success(
-    authenticated_client: tuple[APIClient, str, str], api_user_settings_url: str, user: User
-) -> None:
-    client, _, _ = authenticated_client
-    data = {"content_lang": "es"}
-    response = client.patch(api_user_settings_url, data=data)
-    assert response.status_code == 200
-    assert response.data["content_lang"] == "es"
-
-
-@pytest.mark.django_db()
-def test_patch_api_user_settings_is_over_18_response_success(
-    authenticated_client: tuple[APIClient, str, str], api_user_settings_url: str, user: User
-) -> None:
-    client, _, _ = authenticated_client
-    data = {"is_over_18": not user.usersettings.is_over_18}
-    response = client.patch(api_user_settings_url, data=data)
-    assert response.status_code == 200
-    assert response.data["is_over_18"] == (not user.usersettings.is_over_18)
-
-
-@pytest.mark.django_db()
-def test_patch_api_user_settings_revert_to_old_reddit_response_success(
-    authenticated_client: tuple[APIClient, str, str], api_user_settings_url: str, user: User
-) -> None:
-    client, _, _ = authenticated_client
-    data = {"revert_to_old_reddit": not user.usersettings.revert_to_old_reddit}
-    response = client.patch(api_user_settings_url, data=data)
-    assert response.status_code == 200
-    assert response.data["revert_to_old_reddit"] == (not user.usersettings.revert_to_old_reddit)
+    assert response.data["content_lang"] != user.usersettings.content_lang
+    assert response.data["is_over_18"] != user.usersettings.is_over_18
+    assert response.data["revert_to_old_reddit"] != user.usersettings.revert_to_old_reddit

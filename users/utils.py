@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.http import HttpRequest
@@ -5,11 +7,16 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+from rest_framework.permissions import IsAuthenticated
 
 from reddit import settings
 
 from .models import User
 from .tokens import account_activation_token
+
+
+class AuthenticatedView:
+    permission_classes: ClassVar[list] = [IsAuthenticated]
 
 
 def user_creation(user: User, url: str, request: HttpRequest) -> User:

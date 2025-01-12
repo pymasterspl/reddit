@@ -29,13 +29,35 @@ class UserSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = "__all__"
+        fields: typing.ClassVar[list] = [
+            "id",
+            "bio",
+            "is_nsfw",
+            "is_followable",
+            "is_content_visible",
+            "is_communities_visible",
+            "comment_karma",
+            "post_karma",
+            "gold_awards",
+            "gender",
+            "avatar",
+            "banner",
+            "user_id",
+        ]
 
 
 class UserSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserSettings
-        fields = "__all__"
+        fields: typing.ClassVar[list] = [
+            "id",
+            "content_lang",
+            "location",
+            "is_beta",
+            "revert_to_old_reddit",
+            "is_over_18",
+            "user_id",
+        ]
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -62,4 +84,4 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
     def get_message(self: "UserRegistrationSerializer", obj: User) -> str:
-        return f"Account created for {obj}! " f"Please confirm your email to activate " f"your account."
+        return f"Account created for {obj}! Please confirm your email to activate your account."

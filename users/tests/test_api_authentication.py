@@ -97,9 +97,10 @@ def test_api_logout_invalid_data_response_failed(
 
 @pytest.mark.django_db()
 def test_api_logout_unauthenticated_user_response_failed(
-    client: Client, user_credentials: tuple[APIClient, str, str], api_logout_url: str
+    client: Client, authenticated_client: tuple[APIClient, str, str], api_logout_url: str
 ) -> None:
-    response = client.post(api_logout_url, {"refresh": "123"})
+    _, _, refresh_token = authenticated_client
+    response = client.post(api_logout_url, {"refresh": refresh_token})
     assert response.status_code == 401
     assert isinstance(response.data["detail"], ErrorDetail)
 
