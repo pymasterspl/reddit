@@ -36,6 +36,20 @@ class PostListView(ListView):
     def get_queryset(self: "PostListView") -> models.QuerySet:
         return Post.objects.filter(parent=None, is_active=True)
 
+class SavedPostListView(LoginRequiredMixin, ListView):
+    template_name = "core/post-list-saved.html"
+    context_object_name = "posts"
+
+    def get_queryset(self: "PostListView") -> list[Post]:
+        posts = Post.objects.all()
+        list_posts  = []
+        for post in posts:
+            if post.is_saved(user=self.request.user):
+                list_posts.append(post)
+        return list_posts
+
+
+
 
 @method_decorator(login_required, name="post")
 class PostDetailView(DetailView):

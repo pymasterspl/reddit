@@ -24,7 +24,7 @@ from .utils import user_creation
 
 class UserProfileView(LoginRequiredMixin, DetailView):
     model = User
-    template_name = "users/profile.html"
+    template_name = "users/profile_overview.html"
     context_object_name = "user"
     login_url = "login"
 

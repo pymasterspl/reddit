@@ -1,36 +1,32 @@
 {% extends "base.html" %}
 {% load static %}
+
 {% block content %}
-    <div class="banner">
-        <img src="{{ user.profile.banner_url }}" alt="Profile Banner" class="img-fluid" style="width: 100%; max-height: 100px; object-fit: cover;">
-    </div>
-    <div class="container mt-3">
-        <h2>User Profile</h2>
-        <div class="row">
-            <div class="col-md-4">
-                <img src="{{ user.profile.avatar_url  }}" class="img-thumbnail" alt="User Avatar">
-            </div>
-            <div class="col-md-8">
-                <p><strong>Nickname:</strong> {{ user.nickname }} </p>
-                <p><strong>Email:</strong> {{ user.email }} </p>
-                <p>
-                    <strong>Post karma:</strong>
-                    <span class="{% if user.profile.post_karma < 0 %}text-danger{% else %}text-success{% endif %} fw-bold">
-                      {{ user.profile.post_karma }}
-                    </span>
-                    <strong>Comment karma:</strong>
-                    <span class="{% if user.profile.comment_karma < 0 %}text-danger{% else %}text-success{% endif %} fw-bold">
-                      {{ user.profile.comment_karma }}
-                    </span>
-                </p>
-                <p>
-                    Awards(gold={{user.profile.gold_awards}}):
-                    {% for award in user.awards_received.all %}
-                        <img src="{% static 'core/icons/' %}{{ award.choice }}.png" alt="{{ option.label }}" width="30" height="30">
-                    {% endfor %}
-                </p>
-                <a href="{% url 'account_settings' %}" class="btn btn-primary">Edit Profile</a>
-            </div>
-        </div>
-    </div>
-{% endblock %}
+<ul class="nav nav-pills mb-3 justify-content-center custom-nav-pills">
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'profile' %}">Overview</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">Posts</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">Comments</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'saved_posts' %}">Saved</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">Hidden</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">Upvoted</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">Downvoted</a>
+    </li>
+</ul>
+    {% block content_profile %}
+{% endblock content_profile %}
+{% endblock content %}
+
+
