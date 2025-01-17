@@ -3,6 +3,7 @@ from typing import Any
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, TemplateView
 from django.core.mail import send_mail
@@ -19,7 +20,6 @@ from core.models import User
 
 from .forms import (
     ConfirmDeleteAccountForm,
-    CustomPasswordChangeForm,
     UserForm,
     UserProfileForm,
     UserRegistrationForm,
@@ -171,9 +171,9 @@ class AccountDeleteView(LoginRequiredMixin, View):
 class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
     template_name = "users/password_change.html"
     success_url = reverse_lazy("account_settings")
-    form_class = CustomPasswordChangeForm
+    form_class = PasswordChangeForm
 
-    def form_valid(self: "CustomPasswordChangeView", form: "CustomPasswordChangeForm") -> HttpResponse:
+    def form_valid(self: "CustomPasswordChangeView", form: "PasswordChangeForm") -> HttpResponse:
         user = self.request.user
         send_mail(
             "Password change",

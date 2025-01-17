@@ -2,7 +2,7 @@ from typing import ClassVar
 
 from django import forms
 from django.contrib.auth import authenticate
-from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
+from django.contrib.auth.forms import UserCreationForm
 
 from .models import Profile, User, UserSettings
 
@@ -61,7 +61,3 @@ class ConfirmDeleteAccountForm(forms.Form):
             error_message = "Incorrect password."
             raise forms.ValidationError(error_message)
         return password
-
-
-class CustomPasswordChangeForm(PasswordChangeForm):
-    pass
