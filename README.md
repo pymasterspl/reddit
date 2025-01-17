@@ -30,6 +30,7 @@ Good reading on working with code changes and pull request is https://google.git
         - when task is created in Kanban Backlog the status is "BACKLOG"
         - when task is created in Kanban Board, or moved to Kanban Board from Kanban Backlog, status is set to "TO DO". 
         - when work is started, task is moved into "IN PROGRESS", and stays in this state until **pull request is merged to dev**
+        - **when creating pull request put link to ClickUp task in the first line of pull request**
         - after pull request is merged, status of the task is changed to "READY FOR QA"
         - after QA is done, the person who is performing QA is setting the task as "DONE". 
             - if issues are found the task is moved back to "TO DO" with comments or new task is created to address those issues.
@@ -41,6 +42,7 @@ Good reading on working with code changes and pull request is https://google.git
        - you can join Pymasters at https://pymasters.pl/spolecznosc
    - Make changes and commit them. There should be only one reason to make a commit, eg. "Adding new fields to user model" should only contain changes related to those fields, nothing else. If there are other things - new commit is required.
    - Use pull request to add your work. Make pull request to `dev` branch.
+      - **when creating pull request put link to ClickUp task in the first line of pull request**
       - **when pull request is created, and ready for review (branch up to date with `dev`, github actions passing) post a message on [#reddit](https://discord.com/channels/1035267230901997628/1221772410701873293) channel with link to pull request for review**
    - When creating pull requests, "pymasters/reddit" team is added automatically as reviewers
    - You can use "reviewers" option on far right of the screen to request review from certain team member directly by mentioning their name.
