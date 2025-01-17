@@ -7,6 +7,7 @@ from .views import (
     AccountSettingsView,
     ActivateUser,
     CustomLogoutView,
+    CustomPasswordChangeView,
     HomeView,
     LoginUserView,
     ProfileSettingsView,
@@ -46,4 +47,5 @@ urlpatterns = [
         name="password_reset_complete",
     ),
     path("google/", include("social_django.urls", namespace="social")),
+    path("profile/edit/password/", CustomPasswordChangeView.as_view(), name="password_change"),
 ]
