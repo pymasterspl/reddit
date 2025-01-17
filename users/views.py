@@ -167,6 +167,7 @@ class AccountDeleteView(LoginRequiredMixin, View):
         messages.error(request, "Password confirmation failed.")
         return render(request, self.template_name, {"form": form})
 
+
 class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
     template_name = "users/password_change.html"
     success_url = reverse_lazy("account_settings")

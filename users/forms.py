@@ -62,5 +62,6 @@ class ConfirmDeleteAccountForm(forms.Form):
             raise forms.ValidationError(error_message)
         return password
 
+
 class CustomPasswordChangeForm(PasswordChangeForm):
     pass
