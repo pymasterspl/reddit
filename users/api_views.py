@@ -1,27 +1,46 @@
-from typing import Any, ClassVar
+from typing import Any
 
 from django.contrib.auth import authenticate, login, logout
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from requests import Request
 from rest_framework import status
-from rest_framework.generics import CreateAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import CreateAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.authentication import JWTStatelessUserAuthentication
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .models import User
-from .serializers import UserSerializer
+from .models import Profile, User, UserSettings
+from .serializers import ProfileSerializer, UserRegistrationSerializer, UserSerializer, UserSettingsSerializer
 from .tokens import account_activation_token
+from .utils import AuthenticatedView
 
 
 class UserAPIRegistration(CreateAPIView):
     queryset = User.objects.all()
+    serializer_class = UserRegistrationSerializer
+
+
+class UserRetrieveAPIView(AuthenticatedView, RetrieveAPIView):
+    queryset = User.objects.all()
     serializer_class = UserSerializer
+    lookup_field = "nickname"
+
+
+class CurrentUserProfileAPIView(AuthenticatedView, RetrieveAPIView, UpdateAPIView):
+    serializer_class = ProfileSerializer
+
+    def get_object(self: "CurrentUserProfileAPIView") -> UserSettings:
+        return Profile.objects.select_related("user").get(user__id=self.request.user.id)
+
+
+class CurrentUserSettingsAPIView(AuthenticatedView, RetrieveAPIView, UpdateAPIView):
+    serializer_class = UserSettingsSerializer
+
+    def get_object(self: "CurrentUserSettingsAPIView") -> UserSettings:
+        return UserSettings.objects.select_related("user").get(user__id=self.request.user.id)
 
 
 class UserAPILogin(TokenObtainPairView):
@@ -32,10 +51,7 @@ class UserAPILogin(TokenObtainPairView):
         return response
 
 
-class UserAPILogout(TokenRefreshView):
-    permission_classes: ClassVar[list] = [IsAuthenticated]
-    authentication_classes: ClassVar[list] = [JWTStatelessUserAuthentication]
-
+class UserAPILogout(AuthenticatedView, APIView):
     def post(self: "UserAPILogout", request: Request, **kwargs: dict[str, Any]) -> Response:  # noqa: ARG002
         try:
             refresh_token = request.data["refresh"]

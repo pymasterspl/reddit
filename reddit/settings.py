@@ -196,10 +196,6 @@ SOCIAL_AUTH_USER_FIELDS = ["email", "nickname", "password"]
 LIMIT_WARNINGS = 5
 LOGIN_URL = reverse_lazy("login")
 LOGIN_REDIRECT_URL = "/"
-REST_FRAMEWORK = {
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 10,
-}
 DEFAULT_AVATAR_URL = "/media/users_avatars/default.png"
 DEFAULT_BANNER_URL = "/media/users_banners/default_banner.jpg"
 
