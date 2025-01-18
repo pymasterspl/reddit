@@ -2,7 +2,8 @@ from django.contrib.auth import views as auth_views
 from django.urls import include, path
 from django.views.generic import TemplateView
 
-from core.views import SavedPostListView
+from core.profile_urls import profile_urlpatterns
+
 from .views import (
     AccountDeleteView,
     AccountSettingsView,
@@ -17,10 +18,10 @@ from .views import (
 
 urlpatterns = [
     path("profile/", UserProfileView.as_view(), name="profile"),
-    path("profile/saved-post-list/", SavedPostListView.as_view(), name="saved_posts"),
     path("profile/edit/profile/", ProfileSettingsView.as_view(), name="profile_settings"),
     path("profile/edit/account/", AccountSettingsView.as_view(), name="account_settings"),
     path("profile/delete-account", AccountDeleteView.as_view(), name="delete_account"),
+    *profile_urlpatterns,
     path("", HomeView.as_view(), name="home"),
     path("login/", LoginUserView.as_view(), name="login"),
     path("logout-confirmation/", TemplateView.as_view(template_name="users/logout.html"), name="logout_confirmation"),

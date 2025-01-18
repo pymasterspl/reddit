@@ -8,7 +8,6 @@
 {% block content_profile %}
 <div class="container">
     <div class="mx-auto col-10 col-md-8 col-lg-8 mt-lg-3">
-        <a href="{% url 'admin:core_post_add' %}" class="admin-link mb-3X">Add New Post</a>
         {% for post in posts %}
         <div id="post-{{ post.id }}" class="card bg-dark shadow-sm mb-3 text-light border">
             {% include 'core/post-header.html' with post=post %}
@@ -22,6 +21,10 @@
         </div>
         <div class="d-flex flex-row-reverse">
             <a href="{% url 'post-detail' post.id %}" class="button text-decoration-none h3 me-5 mb-5">Read More</a>
+        </div>
+        {% empty %}
+        <div class="d-flex justify-content-center mt-5">
+            <p class="text-light">You don't have any saved posts.</p>
         </div>
         {% endfor %}
     </div>
