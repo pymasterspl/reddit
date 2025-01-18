@@ -181,5 +181,6 @@ class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
             settings.DEFAULT_FROM_EMAIL,
             [user.email],
         )
+        messages.success(self.request, "Your password has been changed successfully!")
 
         return super().form_valid(form)
