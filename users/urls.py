@@ -2,6 +2,8 @@ from django.contrib.auth import views as auth_views
 from django.urls import include, path
 from django.views.generic import TemplateView
 
+from core.profile_urls import profile_urlpatterns
+
 from .views import (
     AccountDeleteView,
     AccountSettingsView,
@@ -21,6 +23,7 @@ urlpatterns = [
     path("profile/edit/account/", AccountSettingsView.as_view(), name="account_settings"),
     path("profile/edit/password/", CustomPasswordChangeView.as_view(), name="password_change"),
     path("profile/delete-account", AccountDeleteView.as_view(), name="delete_account"),
+    *profile_urlpatterns,
     path("", HomeView.as_view(), name="home"),
     path("login/", LoginUserView.as_view(), name="login"),
     path("logout-confirmation/", TemplateView.as_view(template_name="users/logout.html"), name="logout_confirmation"),

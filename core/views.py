@@ -37,6 +37,16 @@ class PostListView(ListView):
         return Post.objects.filter(parent=None, is_active=True)
 
 
+class SavedPostListView(LoginRequiredMixin, ListView):
+    template_name = "core/post-list-saved.html"
+    context_object_name = "posts"
+
+    def get_queryset(self: "SavedPostListView") -> models.QuerySet:
+        return Post.objects.filter(
+            id__in=SavedPost.objects.filter(user=self.request.user).values("post"), is_active=True
+        )
+
+
 @method_decorator(login_required, name="post")
 class PostDetailView(DetailView):
     model = Post

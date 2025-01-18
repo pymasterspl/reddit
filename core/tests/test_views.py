@@ -607,3 +607,25 @@ def test_remove_non_existing_moderator(client: Client, community: Community, use
 
     messages = list(response.context["messages"])
     assert any("User is not a moderator of this community." in message.message for message in messages)
+
+
+def test_fetch_saved_post_valid(client: Client, user: User, post: Post, community: Community) -> None:
+    data = {
+        "community": community.pk,
+        "title": "Test Post Title",
+        "content": "This is a test post content.",
+    }
+    client.force_login(user)
+    client.post(reverse("post-create"), data=data, follow=True)
+    client.post(reverse("post-save-unsave", kwargs={"pk": post.pk, "action_type": "save"}))
+    response = client.get(reverse("saved_posts"))
+    assert response.status_code == 200
+    assert len(response.context_data["posts"]) == 1
+
+
+def test_fetch_empty_list_of_saved_post_valid(client: Client, user: User, post: Post, community: Community) -> None:
+    client.force_login(user)
+    client.post(reverse("post-save-unsave", kwargs={"pk": post.pk, "action_type": "save"}))
+    client.post(reverse("post-save-unsave", kwargs={"pk": post.pk, "action_type": "unsave"}))
+    response = client.get(reverse("saved_posts"))
+    assert len(response.context_data["posts"]) == 0
