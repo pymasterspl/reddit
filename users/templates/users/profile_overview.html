@@ -28,7 +28,7 @@
                 <p>
                     Awards(gold={{user.profile.gold_awards}}):
                     {% for award in user.awards_received.all %}
-                        <img src="{% static 'core/icons/' %}{{ award.choice }}.png" alt="{{ option.label }}" width="30" height="30">
+                        <img src="{% static 'core/icons/' %}{{ award.choice }}.png" alt="{{ award.label }}" width="30" height="30">
                     {% endfor %}
                 </p>
                 <a href="{% url 'account_settings' %}" class="btn btn-primary">Edit Profile</a>
