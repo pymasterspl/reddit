@@ -43,7 +43,7 @@ class SavedPostListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self: "SavedPostListView") -> models.QuerySet:
         return Post.objects.filter(
-            id__in=SavedPost.objects.filter(user=self.request.user).values("post"), parent=None, is_active=True
+            id__in=SavedPost.objects.filter(user=self.request.user).values("post"), is_active=True
         )
 
 
