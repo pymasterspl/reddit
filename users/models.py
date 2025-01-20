@@ -207,6 +207,8 @@ class User(AbstractUser):
     deactivated_at = models.DateTimeField(null=True, blank=True)
     reactivate_until = models.DateTimeField(null=True, blank=True)
     anonymized_at = models.DateTimeField(null=True, blank=True)
+    pending_email = models.EmailField(null=True, blank=True)  # noqa: DJ001
+    pending_email_created = models.DateTimeField(null=True, blank=True)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: ClassVar[list[str]] = ["nickname"]
 

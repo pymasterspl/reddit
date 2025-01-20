@@ -6,13 +6,16 @@ from django.contrib.auth import logout
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, TemplateView
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
-from django.utils.encoding import force_str
-from django.utils.http import urlsafe_base64_decode
+from django.template.loader import render_to_string
+from django.urls import reverse, reverse_lazy
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.timezone import now
 from django.views import View
 from django.views.generic import DetailView, FormView
 
@@ -20,13 +23,14 @@ from core.models import User
 
 from .forms import (
     ConfirmDeleteAccountForm,
+    EmailChangeForm,
     UserForm,
     UserProfileForm,
     UserRegistrationForm,
     UserSettingsForm,
 )
 from .models import Profile, UserSettings
-from .tokens import account_activation_token
+from .tokens import account_activation_token, email_change_token
 from .utils import user_creation
 
 
@@ -184,3 +188,57 @@ class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
         messages.success(self.request, "Your password has been changed successfully!")
 
         return super().form_valid(form)
+
+
+class EmailChangeView(LoginRequiredMixin, FormView):
+    template_name = "users/email_change.html"
+    success_url = reverse_lazy("account_settings")
+    form_class = EmailChangeForm
+
+    def form_valid(self: "EmailChangeView", form: EmailChangeForm) -> HttpResponse:
+        if form.is_valid():
+            self.request.user.pending_email = form.cleaned_data["new_email"]
+            self.request.user.pending_email_created = now()
+            self.request.user.save()
+            uid = urlsafe_base64_encode(force_bytes(self.request.user.pk))
+            token = email_change_token.make_token(self.request.user)
+            protocol = "https" if self.request.is_secure() else "http"
+            current_site = get_current_site(self.request)
+            activation_link = reverse("confirm-email-change", kwargs={"uidb64": uid, "token": token})
+            full_activation_link = f"{protocol}://{current_site.domain}{activation_link}"
+            send_mail(
+                f"Confirm your email changing to {form.cleaned_data['new_email']} ",
+                f"Please click on the following link to confirm your email change " f"{activation_link}",
+                settings.EMAIL_HOST_USER,
+                [self.request.user.email],
+                fail_silently=False,
+                html_message=render_to_string(
+                    "users/confirm_email_change.html",
+                    {
+                        "user": self.request.user,
+                        "activation_link": full_activation_link,
+                    },
+                ),
+            )
+            messages.success(self.request, "Your email change request processed!")
+            return super().form_valid(form)
+        return self.form_invalid(form)
+
+
+class ConfirmEmailChange(View):
+    def get(self: "ConfirmEmailChange", request: HttpRequest, uidb64: str, token: str) -> HttpResponse:
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+            if email_change_token.check_token(user, token):
+                user.email = user.pending_email
+                user.pending_email = None
+                user.pending_email_created = None
+                user.save()
+                messages.success(request, "Your email has been changed!")
+
+                return redirect("login")
+            return render(request, "users/confirm_email_change_invalid.html")
+        except User.DoesNotExist:
+            messages.error(request, "Invalid confirmation link or email already changed!")
+            return redirect("home-page")

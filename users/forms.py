@@ -61,3 +61,25 @@ class ConfirmDeleteAccountForm(forms.Form):
             error_message = "Incorrect password."
             raise forms.ValidationError(error_message)
         return password
+
+
+class EmailChangeForm(forms.Form):
+    old_email = forms.EmailField(required=True)
+    new_email = forms.EmailField(required=True)
+    new_email_confirmation = forms.EmailField(required=True)
+
+    def is_valid(self: "EmailChangeForm") -> bool:
+        valid = super().is_valid()
+        if not valid:
+            return valid
+        email1 = self.data.get("new_email")
+        email2 = self.data.get("new_email_confirmation")
+        if email1 != email2:
+            error_msg = "Provided emails are not the same"
+            self.add_error("new_email", error_msg)
+            return False
+        if User.objects.filter(email=email1).exists():
+            error_msg = "This email is already in use"
+            self.add_error("new_email", error_msg)
+            return False
+        return True
