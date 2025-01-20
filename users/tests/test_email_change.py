@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.core import mail
@@ -7,6 +9,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.timezone import now
 from faker import Faker
+from freezegun import freeze_time
 
 from users.tokens import account_activation_token, email_change_token
 
@@ -130,3 +133,17 @@ def test_invalid_token_view_response_failed(client: Client, user: User) -> None:
     assert user.pending_email == "changedemail@example.com"
     assert user.pending_email_created
     assert user.email != "changedemail@example.com"
+
+
+@pytest.mark.django_db()
+def test_email_change_token_expiration(user: User) -> None:
+    new_email = fake.email()
+
+    token = email_change_token.make_token(user)
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    with freeze_time(now() + timedelta(hours=73)):
+        client = Client()
+        response = client.get(reverse("confirm-email-change", kwargs={"uidb64": uid, "token": token}))
+        assert response.status_code == 200
+        user.refresh_from_db()
+        assert user.email != new_email

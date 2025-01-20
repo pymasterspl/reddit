@@ -195,6 +195,11 @@ class EmailChangeView(LoginRequiredMixin, FormView):
     success_url = reverse_lazy("account_settings")
     form_class = EmailChangeForm
 
+    def get_form_kwargs(self: "EmailChangeView") -> dict[str, Any]:
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
     def form_valid(self: "EmailChangeView", form: EmailChangeForm) -> HttpResponse:
         if form.is_valid():
             self.request.user.pending_email = form.cleaned_data["new_email"]
@@ -230,7 +235,7 @@ class ConfirmEmailChange(View):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
-            if email_change_token.check_token(user, token):
+            if email_change_token.check_token(user, token) and not email_change_token.is_token_expired(user):
                 user.email = user.pending_email
                 user.pending_email = None
                 user.pending_email_created = None

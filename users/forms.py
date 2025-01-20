@@ -68,12 +68,20 @@ class EmailChangeForm(forms.Form):
     new_email = forms.EmailField(required=True)
     new_email_confirmation = forms.EmailField(required=True)
 
+    def __init__(self: "EmailChangeForm", user: User, *args: str, **kwargs: str) -> None:
+        super().__init__(*args, **kwargs)
+        self.user = user
+
     def is_valid(self: "EmailChangeForm") -> bool:
         valid = super().is_valid()
         if not valid:
             return valid
-        email1 = self.data.get("new_email")
-        email2 = self.data.get("new_email_confirmation")
+        if self.cleaned_data.get("old_email") != self.user.email:
+            error_msg = "Provided old email is incorrect!"
+            self.add_error("old_email", error_msg)
+            return False
+        email1 = self.cleaned_data.get("new_email")
+        email2 = self.cleaned_data.get("new_email_confirmation")
         if email1 != email2:
             error_msg = "Provided emails are not the same"
             self.add_error("new_email", error_msg)
