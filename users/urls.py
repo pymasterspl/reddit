@@ -8,8 +8,10 @@ from .views import (
     AccountDeleteView,
     AccountSettingsView,
     ActivateUser,
+    ConfirmEmailChange,
     CustomLogoutView,
     CustomPasswordChangeView,
+    EmailChangeView,
     HomeView,
     LoginUserView,
     ProfileSettingsView,
@@ -22,6 +24,7 @@ urlpatterns = [
     path("profile/edit/profile/", ProfileSettingsView.as_view(), name="profile_settings"),
     path("profile/edit/account/", AccountSettingsView.as_view(), name="account_settings"),
     path("profile/edit/password/", CustomPasswordChangeView.as_view(), name="password_change"),
+    path("profile/edit/email/", EmailChangeView.as_view(), name="email_change"),
     path("profile/delete-account", AccountDeleteView.as_view(), name="delete_account"),
     *profile_urlpatterns,
     path("", HomeView.as_view(), name="home"),
@@ -30,6 +33,9 @@ urlpatterns = [
     path("logout/", CustomLogoutView.as_view(), name="logout"),
     path("register/", UserRegistrationView.as_view(), name="register"),
     path("activate/<str:uidb64>/<str:token>", ActivateUser.as_view(), name="activate-account"),
+    path(
+        "email-change-confirmation/<str:uidb64>/<str:token>", ConfirmEmailChange.as_view(), name="confirm-email-change"
+    ),
     path(
         "reset_password/",
         auth_views.PasswordResetView.as_view(template_name="users/reset_password.html"),
