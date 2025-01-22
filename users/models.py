@@ -17,9 +17,6 @@ from django.db.models import Model
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from PIL import Image
-
-from reddit.settings import ACCOUNT_EXPIRATION_TIME_IN_DAYS
-
 from .choices import GENDER_CHOICES, get_languages, get_locations
 from .validators import validate_avatar_file, validate_banner_file
 
@@ -273,7 +270,7 @@ class User(AbstractUser):
     def deactivate(self: "User") -> None:
         self.is_active = False
         self.deactivated_at = timezone.now()
-        self.reactivate_until = timezone.now() + timedelta(days=ACCOUNT_EXPIRATION_TIME_IN_DAYS)
+        self.reactivate_until = timezone.now() + timedelta(days=settings.ACCOUNT_EXPIRATION_TIME_IN_DAYS)
         self.save()
 
     def anonymize_account(self: "User") -> None:
