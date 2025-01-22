@@ -3,7 +3,6 @@ from contextlib import suppress
 from datetime import timedelta
 from pathlib import Path
 from typing import ClassVar
-
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
@@ -19,7 +18,7 @@ from django.utils.translation import gettext_lazy as _
 from PIL import Image
 from .choices import GENDER_CHOICES, get_languages, get_locations
 from .validators import validate_avatar_file, validate_banner_file
-
+import pyotp
 
 def user_avatar_path(_: Model, filename: str) -> Path:
     return Path("users_avatars") / filename
@@ -206,6 +205,8 @@ class User(AbstractUser):
     anonymized_at = models.DateTimeField(null=True, blank=True)
     pending_email = models.EmailField(default="", blank=True)
     pending_email_created = models.DateTimeField(null=True, blank=True)
+    totp_secret = models.CharField(max_length=32, null=True, blank=True)
+    backup_codes = models.JSONField(default=list, blank=True)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: ClassVar[list[str]] = ["nickname"]
 
@@ -310,6 +311,15 @@ class User(AbstractUser):
         self.profile.sociallink.all().delete()
         self.profile.save()
 
+    def generate_totp_secret(self: "User") -> str:
+        self.totp_secret = pyotp.random_base32()
+        self.save()
+        return self.totp_secret
+
+    def get_totp_uri(self: "User") -> str:
+        return pyotp.totp.TOTP(self.totp_secret).provisioning_uri(
+            name=self.nickname, issuer_name="reddit"
+        )
 
 class SocialLink(models.Model):
     name = models.CharField(max_length=150)
