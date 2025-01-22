@@ -237,7 +237,7 @@ class ConfirmEmailChange(View):
             user = User.objects.get(pk=uid)
             if email_change_token.check_token(user, token) and not email_change_token.is_token_expired(user):
                 user.email = user.pending_email
-                user.pending_email = None
+                user.pending_email = ""
                 user.pending_email_created = None
                 user.save()
                 messages.success(request, "Your email has been changed!")

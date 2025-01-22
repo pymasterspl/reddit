@@ -74,16 +74,23 @@ def test_confirm_change_email_request_response_success(client: Client, user: Use
 @pytest.mark.django_db()
 def test_double_confirm_change_email_request_view_response_failed(client: Client, user: User) -> None:
     user.pending_email = "changedemail@example.com"
+    print(1)
     assert user.email != user.pending_email
+    print(2)
     user.pending_email_created = now()
+    print(3)
     user.save()
 
     uid = urlsafe_base64_encode(force_bytes(user.pk))
+    print(4)
     token = email_change_token.make_token(user)
-
+    print(5)
     activation_url = reverse("confirm-email-change", kwargs={"uidb64": uid, "token": token})
+    print(6)
     client.get(activation_url)
+    print(7)
     response = client.get(activation_url)
+    print(8)
 
     assert response.status_code == 200
     user.refresh_from_db()
