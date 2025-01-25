@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-Django = "^5.0.4"
+Django = "^5.1.5"
 python-decouple = "^3.8"
 pillow = "^10.3.0"
 django-crispy-forms = "^2.1"
