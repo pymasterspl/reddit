@@ -91,3 +91,6 @@ class EmailChangeForm(forms.Form):
             self.add_error("new_email", error_msg)
             return False
         return True
+
+class Enable2FAForm:
+    pass

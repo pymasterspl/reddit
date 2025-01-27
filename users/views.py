@@ -1,8 +1,7 @@
 from typing import Any
-
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import logout
+from django.contrib.auth import logout, authenticate
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, TemplateView
@@ -28,6 +27,7 @@ from .forms import (
     UserProfileForm,
     UserRegistrationForm,
     UserSettingsForm,
+    Enable2FAForm,
 )
 from .models import Profile, UserSettings
 from .tokens import account_activation_token, email_change_token
@@ -247,3 +247,35 @@ class ConfirmEmailChange(View):
         except User.DoesNotExist:
             messages.error(request, "Invalid confirmation link or email already changed!")
             return redirect("home-page")
+
+class Enable2FAView(LoginRequiredMixin, FormView):
+    form_class = Enable2FAForm
+    template_name = "users/account_settings.html"
+
+    def form_valid(self: "Enable2FAView", form: Enable2FAForm) -> HttpResponse:
+        user = self.request.user
+        if not user.totp_secret:
+            user.generate_totp_secret()
+            return redirect("account_settings")
+
+    def get_context_data(self: "Enable2FAView", **kwargs: dict) -> dict:
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        if not user.totp_secret:
+            user.generate_totp_secret()
+        context["qr_code_url"] = user.get_totp_uri()
+        return context
+
+class Disable2FAView(LoginRequiredMixin, FormView):
+    template_name = "account_settings.html"
+    form_class = PasswordChangeForm
+
+    def form_valid(self: "Disable2FAView", form: PasswordChangeForm) -> HttpResponse:
+        password = form.cleaned_data["old_password"]
+        user = self.request.user
+        if authenticate(username=user.email, password=password):
+            user.totp_secret = None
+            user.save()
+            self.request.session.pop("2fa_verified", None)
+            return redirect("account_settings")
+        return self.form_invalid(form)
