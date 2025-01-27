@@ -47,6 +47,7 @@ class SavedPostListView(LoginRequiredMixin, ListView):
             id__in=SavedPost.objects.filter(user=self.request.user).values("post"), is_active=True
         )
 
+
 class UserPostListView(LoginRequiredMixin, ListView):
     template_name = "core/user-post-list.html"
     context_object_name = "posts"
@@ -62,6 +63,7 @@ class UserPostListView(LoginRequiredMixin, ListView):
             user_post = user_post.filter(is_active=True)
         return user_post
 
+
 class UserPostEditView(LoginRequiredMixin, UpdateView):
     model = Post
     form_class = PostUpdateForm
@@ -73,14 +75,14 @@ class UserPostEditView(LoginRequiredMixin, UpdateView):
         return Post.objects.filter(author=self.request.user)
 
     def form_valid(self: "UserPostEditView", form: PostForm) -> HttpResponse:
-            original = self.get_object()
+        original = self.get_object()
 
-            if (form.cleaned_data["title"] == original.title and
-                form.cleaned_data["content"] == original.content):
-                form.add_error(None, "No changes detected.")
-                return self.form_invalid(form)
+        if form.cleaned_data["title"] == original.title and form.cleaned_data["content"] == original.content:
+            form.add_error(None, "No changes detected.")
+            return self.form_invalid(form)
 
-            return super().form_valid(form)
+        return super().form_valid(form)
+
 
 class UserPostDeleteView(LoginRequiredMixin, DeleteView):
     model = Post
@@ -90,6 +92,7 @@ class UserPostDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_queryset(self: "UserPostDeleteView") -> models.QuerySet:
         return Post.objects.filter(author=self.request.user)
+
 
 @method_decorator(login_required, name="post")
 class PostDetailView(DetailView):

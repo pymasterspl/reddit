@@ -43,6 +43,7 @@ class PostForm(forms.ModelForm):
         self.fields["title"].required = True
         self.fields["content"].required = True
 
+
 class PostUpdateForm(forms.ModelForm):
     class Meta:
         model = Post
