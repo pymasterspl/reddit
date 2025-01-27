@@ -311,15 +311,16 @@ class User(AbstractUser):
         self.profile.sociallink.all().delete()
         self.profile.save()
 
-    def generate_totp_secret(self: "User") -> str:
+    def generate_totp_secret(self: "User") -> None:
         self.totp_secret = pyotp.random_base32()
         self.save()
-        return self.totp_secret
 
     def get_totp_uri(self: "User") -> str:
         return pyotp.totp.TOTP(self.totp_secret).provisioning_uri(
-            name=self.nickname, issuer_name="reddit"
+            name=self.nickname,
+            issuer_name="reddit"
         )
+
 
 class SocialLink(models.Model):
     name = models.CharField(max_length=150)
