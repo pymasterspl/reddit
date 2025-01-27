@@ -13,7 +13,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
-from django.views.generic import CreateView, DetailView, ListView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from .forms import (
     AddModeratorForm,
@@ -23,6 +23,7 @@ from .forms import (
     PostAwardForm,
     PostForm,
     PostReportForm,
+    PostUpdateForm,
     RemoveModeratorForm,
 )
 from .models import AdminAction, Community, CommunityMember, Post, PostAward, PostReport, PostVote, SavedPost
@@ -46,6 +47,49 @@ class SavedPostListView(LoginRequiredMixin, ListView):
             id__in=SavedPost.objects.filter(user=self.request.user).values("post"), is_active=True
         )
 
+class UserPostListView(LoginRequiredMixin, ListView):
+    template_name = "core/user-post-list.html"
+    context_object_name = "posts"
+
+    def get_queryset(self: "UserPostListView") -> models.QuerySet:
+        user_post = Post.objects.filter(author=self.request.user).order_by("-created_at")
+        status = self.request.GET.get("status")
+        if status == "draft":
+            user_post = user_post.filter(is_draft=True)
+        elif status == "archived":
+            user_post = user_post.filter(is_archive=True)
+        elif status == "published":
+            user_post = user_post.filter(is_active=True)
+        return user_post
+
+class UserPostEditView(LoginRequiredMixin, UpdateView):
+    model = Post
+    form_class = PostUpdateForm
+    template_name = "core/post-edit.html"
+    context_object_name = "posts"
+    success_url = reverse_lazy("user_posts")
+
+    def get_queryset(self: "UserPostEditView") -> models.QuerySet:
+        return Post.objects.filter(author=self.request.user)
+
+    def form_valid(self: "UserPostEditView", form: PostForm) -> HttpResponse:
+            original = self.get_object()
+
+            if (form.cleaned_data["title"] == original.title and
+                form.cleaned_data["content"] == original.content):
+                form.add_error(None, "No changes detected.")
+                return self.form_invalid(form)
+
+            return super().form_valid(form)
+
+class UserPostDeleteView(LoginRequiredMixin, DeleteView):
+    model = Post
+    template_name = "core/post-delete.html"
+    context_object_name = "post"
+    success_url = reverse_lazy("user_posts")
+
+    def get_queryset(self: "UserPostDeleteView") -> models.QuerySet:
+        return Post.objects.filter(author=self.request.user)
 
 @method_decorator(login_required, name="post")
 class PostDetailView(DetailView):

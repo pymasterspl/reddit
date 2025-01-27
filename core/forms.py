@@ -43,6 +43,20 @@ class PostForm(forms.ModelForm):
         self.fields["title"].required = True
         self.fields["content"].required = True
 
+class PostUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields: ClassVar[list[str]] = ["title", "content"]
+        widgets: ClassVar[dict[str, forms.Widget]] = {
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "content": forms.Textarea(attrs={"class": "form-control"}),
+        }
+
+    def __init__(self: "PostUpdateForm", *args: tuple, **kwargs: dict) -> None:
+        super().__init__(*args, **kwargs)
+        self.fields["title"].required = True
+        self.fields["content"].required = True
+
 
 class IconRadioSelect(forms.RadioSelect):
     template_name = "core/icon_radio_select.html"

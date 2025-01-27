@@ -1,0 +1,83 @@
+{% extends 'users/profile.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+{% endblock %}
+
+{% block content_profile %}
+<div class="container">
+    <div class="mx-auto col-10 col-md-8 col-lg-8 mt-lg-3">
+
+        <div class="mb-3">
+            <span>Filter as:</span>
+            <form method="get" class="d-inline-block ms-2">
+                <select name="status" onchange="this.form.submit()" class="form-select bg-dark text-light">
+                    <option value="" {% if not request.GET.status %}selected{% endif %}>---</option>
+                    <option value="published" {% if request.GET.status == "published" %}selected{% endif %}>Published</option>
+                    <option value="draft" {% if request.GET.status == "draft" %}selected{% endif %}>Draft</option>
+                    <option value="archived" {% if request.GET.status == "archived" %}selected{% endif %}>Archived</option>
+                </select>
+            </form>
+        </div>
+        
+        {% for post in posts %}
+        <div id="post-{{ post.id }}" class="card bg-dark shadow-sm mb-3 text-light border">
+
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="d-flex flex-column">
+                            <div>
+                                <a href="#"
+                                class="link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-25-hover">
+                                    r/{{ post.community }}
+                                </a>
+                                • <small class="text-secondary">{{ post.created_at }}</small>
+                            </div>
+                            <div class="mt-1">
+                            {% if post.is_active %}
+                            <span class="badge bg-success">Published</span>
+                            {% elif post.is_draft %}
+                            <span class="badge bg-warning">Draft</span>
+                            {% elif post.is_archive %}
+                            <span class="badge bg-secondary">Archived</span>
+                            {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-auto ms-auto">
+                        <div class="dropdown bg-dark">
+                            <a class="btn btn-dark" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-three-dots"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                                {% if request.user.is_authenticated %}
+                                {% if post.author == request.user %}
+                                <li><a class="dropdown-item" href="{% url 'edit_post' post.pk %}"><i class="bi bi-pencil-square"></i> Edit</a></li>
+                                <li><a class="dropdown-item" href="{% url 'delete_post' post.pk %}"><i class="bi bi-trash"></i> Delete</a></li>
+                                {% endif %}
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body text-light border">
+                <h3 class="h3 mx-5">{{ post.title }}</h3>
+                <p class="mx-5">{{ post.content|striptags|truncatechars:100 }}</p>
+            </div>
+            
+        </div>
+        <div class="d-flex flex-row-reverse">
+            <a href="{% url 'post-detail' post.id %}" class="button text-decoration-none h3 me-5 mb-5">Read More</a>
+        </div>
+        {% empty %}
+        <div class="d-flex justify-content-center mt-5">
+            <p class="text-light">You don't have any posts.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content_profile %}

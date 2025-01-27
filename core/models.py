@@ -182,6 +182,8 @@ class Post(GenericModel):
     )
     display_counter = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
+    is_draft = models.BooleanField(default=False)
+    is_archive = models.BooleanField(default=False)
 
     objects = ActivePostManagers()
     all_objects = AllObjectsPostManager()
