@@ -36,7 +36,7 @@
                                 • <small class="text-secondary">{{ post.created_at }}</small>
                             </div>
                             <div class="mt-1">
-                            {% if post.is_active %}
+                            {% if post.is_published %}
                             <span class="badge bg-success">Published</span>
                             {% elif post.is_draft %}
                             <span class="badge bg-warning">Draft</span>

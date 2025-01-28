@@ -184,6 +184,7 @@ class Post(GenericModel):
     is_active = models.BooleanField(default=True)
     is_draft = models.BooleanField(default=False)
     is_archive = models.BooleanField(default=False)
+    is_published = models.BooleanField(default=False)
 
     objects = ActivePostManagers()
     all_objects = AllObjectsPostManager()

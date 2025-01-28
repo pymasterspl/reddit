@@ -60,7 +60,7 @@ class UserPostListView(LoginRequiredMixin, ListView):
         elif status == "archived":
             user_post = user_post.filter(is_archive=True)
         elif status == "published":
-            user_post = user_post.filter(is_active=True)
+            user_post = user_post.filter(is_published=True)
         return user_post
 
 
@@ -69,29 +69,31 @@ class UserPostEditView(LoginRequiredMixin, UpdateView):
     form_class = PostUpdateForm
     template_name = "core/post-edit.html"
     context_object_name = "posts"
-    success_url = reverse_lazy("user_posts")
 
     def get_queryset(self: "UserPostEditView") -> models.QuerySet:
         return Post.objects.filter(author=self.request.user)
 
     def form_valid(self: "UserPostEditView", form: PostForm) -> HttpResponse:
-        original = self.get_object()
-
-        if form.cleaned_data["title"] == original.title and form.cleaned_data["content"] == original.content:
+        if not form.has_changed():
             form.add_error(None, "No changes detected.")
             return self.form_invalid(form)
 
         return super().form_valid(form)
+
+    def get_success_url(self: "UserPostEditView") -> str:
+        return reverse_lazy("post-detail", kwargs={"pk": self.object.pk})
 
 
 class UserPostDeleteView(LoginRequiredMixin, DeleteView):
     model = Post
     template_name = "core/post-delete.html"
     context_object_name = "post"
-    success_url = reverse_lazy("user_posts")
 
     def get_queryset(self: "UserPostDeleteView") -> models.QuerySet:
         return Post.objects.filter(author=self.request.user)
+
+    def get_success_url(self: "UserPostDeleteView") -> str:
+        return reverse_lazy("user_posts")
 
 
 @method_decorator(login_required, name="post")
