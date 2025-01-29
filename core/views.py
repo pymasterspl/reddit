@@ -55,12 +55,13 @@ class UserPostListView(LoginRequiredMixin, ListView):
     def get_queryset(self: "UserPostListView") -> models.QuerySet:
         user_post = Post.objects.filter(author=self.request.user).order_by("-created_at")
         status = self.request.GET.get("status")
-        if status == "draft":
-            user_post = user_post.filter(is_draft=True)
-        elif status == "archived":
-            user_post = user_post.filter(is_archive=True)
-        elif status == "published":
-            user_post = user_post.filter(is_published=True)
+        match status:
+            case "draft":
+                user_post = user_post.filter(is_draft=True)
+            case "archived":
+                user_post = user_post.filter(is_archive=True)
+            case "published":
+                user_post = user_post.filter(is_published=True)
         return user_post
 
 

@@ -181,6 +181,7 @@ class Post(GenericModel):
         help_text="Hash of the title + content to prevent overwriting already saved post",
     )
     display_counter = models.IntegerField(default=0)
+    # 'FIXME': those fields (is_active, is_draft, is...) need to be put into one field to avoid logic hell later on.
     is_active = models.BooleanField(default=True)
     is_draft = models.BooleanField(default=False)
     is_archive = models.BooleanField(default=False)
