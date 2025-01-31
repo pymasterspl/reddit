@@ -53,7 +53,7 @@ class UserPostListView(LoginRequiredMixin, ListView):
     context_object_name = "posts"
 
     def get_queryset(self: "UserPostListView") -> models.QuerySet:
-        user_post = Post.objects.filter(author=self.request.user).order_by("-created_at")
+        user_post = Post.objects.filter(author=self.request.user, parent__isnull=True).order_by("-created_at")
         status = self.request.GET.get("status")
         match status:
             case "draft":
