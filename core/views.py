@@ -13,7 +13,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
-from django.views.generic import CreateView, DetailView, ListView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from .forms import (
     AddModeratorForm,
@@ -23,6 +23,7 @@ from .forms import (
     PostAwardForm,
     PostForm,
     PostReportForm,
+    PostUpdateForm,
     RemoveModeratorForm,
 )
 from .models import AdminAction, Community, CommunityMember, Post, PostAward, PostReport, PostVote, SavedPost
@@ -45,6 +46,55 @@ class SavedPostListView(LoginRequiredMixin, ListView):
         return Post.objects.filter(
             id__in=SavedPost.objects.filter(user=self.request.user).values("post"), is_active=True
         )
+
+
+class UserPostListView(LoginRequiredMixin, ListView):
+    template_name = "core/user-post-list.html"
+    context_object_name = "posts"
+
+    def get_queryset(self: "UserPostListView") -> models.QuerySet:
+        user_post = Post.objects.filter(author=self.request.user, parent__isnull=True).order_by("-created_at")
+        status = self.request.GET.get("status")
+        match status:
+            case "draft":
+                user_post = user_post.filter(is_draft=True)
+            case "archived":
+                user_post = user_post.filter(is_archive=True)
+            case "published":
+                user_post = user_post.filter(is_published=True)
+        return user_post
+
+
+class UserPostEditView(LoginRequiredMixin, UpdateView):
+    model = Post
+    form_class = PostUpdateForm
+    template_name = "core/post-edit.html"
+    context_object_name = "posts"
+
+    def get_queryset(self: "UserPostEditView") -> models.QuerySet:
+        return Post.objects.filter(author=self.request.user)
+
+    def form_valid(self: "UserPostEditView", form: PostForm) -> HttpResponse:
+        if not form.has_changed():
+            form.add_error(None, "No changes detected.")
+            return self.form_invalid(form)
+
+        return super().form_valid(form)
+
+    def get_success_url(self: "UserPostEditView") -> str:
+        return reverse_lazy("post-detail", kwargs={"pk": self.object.pk})
+
+
+class UserPostDeleteView(LoginRequiredMixin, DeleteView):
+    model = Post
+    template_name = "core/post-delete.html"
+    context_object_name = "post"
+
+    def get_queryset(self: "UserPostDeleteView") -> models.QuerySet:
+        return Post.objects.filter(author=self.request.user)
+
+    def get_success_url(self: "UserPostDeleteView") -> str:
+        return reverse_lazy("user_posts")
 
 
 @method_decorator(login_required, name="post")
