@@ -492,3 +492,31 @@ class PostReportedView(UserPassesTestMixin, LoginRequiredMixin, DetailView):
 
     def test_func(self: "PostListReportedView") -> bool:
         return self.request.user.is_staff
+
+
+class UserCommentsListView(LoginRequiredMixin, ListView):
+    template_name = "core/user-comments.html"
+    context_object_name = "comments"
+
+    def get_queryset(self: "UserCommentsListView") -> QuerySet:
+        qs = Post.objects.filter(author=self.request.user, parent__isnull=False)
+
+        filter_val = self.request.GET.get("filter")
+        if filter_val and filter_val.startswith("parent-"):
+            try:
+                parent_id = int(filter_val.split("parent-")[1])
+                qs = qs.filter(parent_id=parent_id)
+            except (IndexError, ValueError):
+                pass
+
+        return qs
+
+    def get_context_data(self: "UserCommentsListView", **kwargs: dict[str, Any]) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        parent_ids = (
+            Post.objects.filter(author=self.request.user, parent__isnull=False)
+            .values_list("parent_id", flat=True)
+            .distinct()
+        )
+        context["parent_posts"] = Post.objects.filter(id__in=parent_ids)
+        return context
