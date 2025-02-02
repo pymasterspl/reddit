@@ -629,3 +629,26 @@ def test_fetch_empty_list_of_saved_post_valid(client: Client, user: User, post: 
     client.post(reverse("post-save-unsave", kwargs={"pk": post.pk, "action_type": "unsave"}))
     response = client.get(reverse("saved_posts"))
     assert len(response.context_data["posts"]) == 0
+
+
+def test_fetch_user_comments_valid(client: Client, user: User, comment: Post) -> None:
+    client.force_login(user)
+    response = client.get(reverse("my_comments"))
+    assert response.status_code == 200
+    assert len(response.context_data["comments"]) == 1
+
+
+def test_fetch_empty_list_no_comments_exist(client: Client, user: User) -> None:
+    client.force_login(user)
+    response = client.get(reverse("my_comments"))
+    assert response.status_code == 200
+    assert len(response.context_data["comments"]) == 0
+
+
+def test_fetch_empty_list_other_user_comments_exist(
+    client: Client, another_user: User, post: Post, comment: Post
+) -> None:
+    client.force_login(another_user)
+    response = client.get(reverse("my_comments"))
+    assert response.status_code == 200
+    assert len(response.context_data["comments"]) == 0
