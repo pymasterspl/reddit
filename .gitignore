@@ -162,8 +162,10 @@ docker-compose.override.yml
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 
+# VSCode config
+.vscode
+
 media/
 
 /media/*
 !/media/users_avatars/default.png
-
