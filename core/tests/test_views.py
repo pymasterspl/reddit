@@ -633,14 +633,14 @@ def test_fetch_empty_list_of_saved_post_valid(client: Client, user: User, post: 
 
 def test_fetch_user_comments_valid(client: Client, user: User, comment: Post) -> None:
     client.force_login(user)
-    response = client.get(reverse("my_comments"))
+    response = client.get(reverse("user_comments"))
     assert response.status_code == 200
     assert len(response.context_data["comments"]) == 1
 
 
 def test_fetch_empty_list_no_comments_exist(client: Client, user: User) -> None:
     client.force_login(user)
-    response = client.get(reverse("my_comments"))
+    response = client.get(reverse("user_comments"))
     assert response.status_code == 200
     assert len(response.context_data["comments"]) == 0
 
@@ -649,6 +649,33 @@ def test_fetch_empty_list_other_user_comments_exist(
     client: Client, another_user: User, post: Post, comment: Post
 ) -> None:
     client.force_login(another_user)
-    response = client.get(reverse("my_comments"))
+    response = client.get(reverse("user_comments"))
     assert response.status_code == 200
     assert len(response.context_data["comments"]) == 0
+
+
+def test_fetch_user_comments_with_valid_parent_filter(
+    client: Client, user: User, post: Post, community: Community
+) -> None:
+    comment1 = Post.objects.create(author=user, content="Test comment 1", parent=post, community=community)
+    other_post = Post.objects.create(author=user, content="Test post 2", community=community)
+    Post.objects.create(author=user, content="Test comment 2", parent=other_post, community=community)
+    client.force_login(user)
+    response = client.get(f"{reverse('user_comments')}?filter=parent-{post.id}")
+    assert response.status_code == 200
+    assert len(response.context_data["comments"]) == 1
+    assert response.context_data["comments"][0] == comment1
+
+
+def test_fetch_user_comments_with_invalid_parent_filter(client: Client, user: User, comment: Post) -> None:
+    client.force_login(user)
+    response = client.get(f"{reverse('user_comments')}?filter=parent-99999")
+    assert response.status_code == 200
+    assert len(response.context_data["comments"]) == 0
+
+
+def test_fetch_user_comments_with_empty_filter(client: Client, user: User, comment: Post) -> None:
+    client.force_login(user)
+    response = client.get(f"{reverse('user_comments')}?filter=")
+    assert response.status_code == 200
+    assert len(response.context_data["comments"]) == 1

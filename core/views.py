@@ -494,11 +494,11 @@ class PostReportedView(UserPassesTestMixin, LoginRequiredMixin, DetailView):
         return self.request.user.is_staff
 
 
-class MyCommentsListView(LoginRequiredMixin, ListView):
-    template_name = "core/my-comments.html"
+class UserCommentsListView(LoginRequiredMixin, ListView):
+    template_name = "core/user-comments.html"
     context_object_name = "comments"
 
-    def get_queryset(self: "MyCommentsListView") -> QuerySet:
+    def get_queryset(self: "UserCommentsListView") -> QuerySet:
         qs = Post.objects.filter(author=self.request.user, parent__isnull=False)
 
         filter_val = self.request.GET.get("filter")
@@ -511,7 +511,7 @@ class MyCommentsListView(LoginRequiredMixin, ListView):
 
         return qs
 
-    def get_context_data(self: "MyCommentsListView", **kwargs: dict[str, Any]) -> dict[str, Any]:
+    def get_context_data(self: "UserCommentsListView", **kwargs: dict[str, Any]) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         parent_ids = (
             Post.objects.filter(author=self.request.user, parent__isnull=False)

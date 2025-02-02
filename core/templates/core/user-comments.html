@@ -8,12 +8,10 @@
 {% block content_profile %}
 <div class="container">
     <div class="mx-auto col-10 col-md-8 col-lg-8 mt-lg-3">
-        <!-- Formularz filtrowania -->
         <div class="mb-3">
             <span>Filter as:</span>
             <form method="get" class="d-inline-block ms-2">
                 <select name="filter" onchange="this.form.submit()" class="form-select bg-dark text-light">
-                    <!-- Opcja domyślna, która pokazuje wszystkie komentarze -->
                     <option value="" {% if not request.GET.filter %}selected{% endif %}>All</option>
                     {% for parent in parent_posts %}
                         <option value="parent-{{ parent.id }}" {% if request.GET.filter == "parent-{{ parent.id }}" %}selected{% endif %}>
@@ -23,8 +21,7 @@
                 </select>
             </form>
         </div>
-        
-        <!-- Lista komentarzy -->
+    
         {% for comment in comments %}
             <div id="post-{{ comment.id }}" class="card bg-dark shadow-sm mb-3 text-light border">
                 {% include 'core/post-header.html' with post=comment %}
