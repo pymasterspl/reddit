@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from core.models import Community, CommunityMember, Post
+from core.models import Community, CommunityMember, Post, PostVote
 
 User = get_user_model()
 
@@ -238,3 +238,21 @@ def authenticated_client(user_credentials: dict[str, str], api_login_url: str) -
     refresh_token = login_response.data["refresh"]
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
     return client, access_token, refresh_token
+
+
+@pytest.fixture()
+def upvote_post(user: User, post: Post) -> PostVote:
+    return PostVote.objects.create(
+        user=user,
+        post=post,
+        choice=PostVote.UPVOTE,
+    )
+
+
+@pytest.fixture()
+def upvote_comment(user: User, comment: Post) -> PostVote:
+    return PostVote.objects.create(
+        user=user,
+        post=comment,
+        choice=PostVote.UPVOTE,
+    )
