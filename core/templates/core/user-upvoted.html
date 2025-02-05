@@ -1,0 +1,98 @@
+{% extends 'users/profile.html' %}
+{% load is_saved %}
+
+{% block content_profile %}
+<div class="container">
+    <div class="mx-auto col-10 col-md-8 col-lg-8 mt-lg-3">
+        <div class="mb-3">
+            <span>Filter as:</span>
+            <form method="get" class="d-inline-block ms-2">
+                <select name="filter" onchange="this.form.submit()" class="form-select bg-dark text-light">
+                    <option value="" {% if not request.GET.filter %}selected{% endif %}>All</option>
+                    <option value="post" {% if request.GET.filter == "post" %}selected{% endif %}>Post</option>
+                    <option value="comment" {% if request.GET.filter == "comment" %}selected{% endif %}>Comment</option>
+                </select>
+            </form>
+        </div>
+
+        {% for post in posts %}
+        <div id="post-{{ post.id }}" class="card bg-dark shadow-sm mb-3 text-light border">
+            
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                         <img src="{{ post.author.profile.avatar_url }}"
+                               alt="{{ post.author }} avatar image"
+                               class="rounded-circle"
+                               style="width: 32px; height: 32px;">
+                    </div>
+                    <div class="col">
+                        <div class="d-flex flex-column">
+                            <div>
+                                <a href="#"
+                                   class="link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-25-hover">
+                                    r/{{ post.community }}
+                                </a>
+                                • <small class="text-secondary">Upvote date: {{ post.post_vote_date }}</small>
+                            </div>
+                            <div>
+                                <a href="#"
+                                   class="link-light link-offset-2 link-underline-opacity-0 link-opacity-75-hover link-underline-opacity-25-hover">
+                                    {{ post.author.nickname }}                        
+                                </a>
+                                <span class="fw-bold ms-3">
+                                    {% if not post.parent %} <span class="badge bg-success">Post</span> {% else %} <span class="badge bg-secondary">Comment</span> {% endif %}
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-auto ms-auto">
+                        <div class="dropdown bg-dark">
+                            <a class="btn btn-dark" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-three-dots"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                                <li>
+                                    {% if post|is_saved:request.user %}
+                                    <form method="POST" class="d-none" id="unsave-form-{{ post.pk }}" action="{% url 'post-save-unsave' pk=post.pk action_type='unsave' %}?next={{ request.path }}#post-{{post.id}}">
+                                        {% csrf_token %}
+                                    </form>
+                                    <a href="#" class="dropdown-item" onclick="event.preventDefault(); document.getElementById('unsave-form-{{ post.pk }}').submit();"><i class="bi bi-bookmark-fill"></i> Unsave</a>
+                                    {% else %}
+                                    <form method="POST" class="d-none" id="save-form-{{ post.pk }}" action="{% url 'post-save-unsave' pk=post.pk action_type='save' %}?next={{ request.path }}#post-{{post.id}}">
+                                        {% csrf_token %}
+                                    </form>
+                                    <a href="#" class="dropdown-item" onclick="event.preventDefault(); document.getElementById('save-form-{{ post.pk }}').submit();"><i class="bi bi-bookmark"></i> Save</a>
+                                    {% endif %}
+                                </li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-eye-slash"></i> Hide</a></li>
+                                <li><a class="dropdown-item" href="{%  url 'post-report' post.id %}"><i class="bi bi-flag"></i> Report</a></li>
+                                {% if post.author == request.user %}
+                                <li><a class="dropdown-item" href="{% url 'edit_post' post.pk %}"><i class="bi bi-pencil-square"></i> Edit</a></li>
+                                <li><a class="dropdown-item" href="{% url 'delete_post' post.pk %}"><i class="bi bi-trash"></i> Delete</a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body text-light border">
+                <h3 class="h3 mx-5">{{ post.title }}</h3>
+                <p class="mx-5">{{ post.content|striptags|truncatechars:100 }}</p>
+            </div>
+
+            {% include 'core/post-footer.html' with post=post %}
+        </div>
+        <div class="d-flex flex-row-reverse">
+            <a href="{% url 'post-detail' post.id %}" class="button text-decoration-none h3 me-5 mb-5">Read More</a>
+        </div>
+        {% empty %}
+        <div class="d-flex justify-content-center mt-5">
+            <p class="text-light">You don't have any upvoted contents.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content_profile %}

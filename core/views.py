@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db import models, transaction
-from django.db.models import Exists, OuterRef, QuerySet
+from django.db.models import Exists, OuterRef, QuerySet, Subquery
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
@@ -520,3 +520,24 @@ class UserCommentsListView(LoginRequiredMixin, ListView):
         )
         context["parent_posts"] = Post.objects.filter(id__in=parent_ids)
         return context
+
+
+class UserUpvotedListView(LoginRequiredMixin, ListView):
+    template_name = "core/user-upvoted.html"
+    context_object_name = "posts"
+
+    def get_queryset(self: "UserUpvotedListView") -> models.QuerySet:
+        upvoted = Post.objects.filter(post_votes__user=self.request.user, post_votes__choice=PostVote.UPVOTE).order_by(
+            "-created_at"
+        )
+        vote_date = PostVote.objects.filter(post=OuterRef("pk"), user=self.request.user, choice=PostVote.UPVOTE).values(
+            "created_at"
+        )
+        post = upvoted.annotate(post_vote_date=Subquery(vote_date))
+        filter_val = self.request.GET.get("filter")
+        match filter_val:
+            case "post":
+                post = post.filter(parent__isnull=True)
+            case "comment":
+                post = post.filter(parent__isnull=False)
+        return post
