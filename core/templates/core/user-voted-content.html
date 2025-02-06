@@ -91,11 +91,7 @@
         </div>
         {% empty %}
         <div class="d-flex justify-content-center mt-5">
-            {% if url == 'user_upvoted' %}
-            <p class="text-light">You don't have any upvoted contents.</p>
-            {% else %}
-            <p class="text-light">You don't have any downvoted contents.</p>
-            {% endif %}
+            <p class="text-light">You don't have any {% if url == 'user_upvoted' %}upvoted{% else %}downvoted{% endif %} contents.</p>  
         </div>
         {% endfor %}
     </div>
