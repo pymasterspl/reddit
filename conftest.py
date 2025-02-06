@@ -256,3 +256,21 @@ def upvote_comment(user: User, comment: Post) -> PostVote:
         post=comment,
         choice=PostVote.UPVOTE,
     )
+
+
+@pytest.fixture()
+def downvote_post(user: User, post: Post) -> PostVote:
+    return PostVote.objects.create(
+        user=user,
+        post=post,
+        choice=PostVote.DOWNVOTE,
+    )
+
+
+@pytest.fixture()
+def downvote_comment(user: User, comment: Post) -> PostVote:
+    return PostVote.objects.create(
+        user=user,
+        post=comment,
+        choice=PostVote.DOWNVOTE,
+    )
