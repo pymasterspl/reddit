@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db import models, transaction
-from django.db.models import Exists, OuterRef, QuerySet, Subquery
+from django.db.models import Exists, Max, OuterRef, QuerySet
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
@@ -522,22 +522,36 @@ class UserCommentsListView(LoginRequiredMixin, ListView):
         return context
 
 
-class UserUpvotedListView(LoginRequiredMixin, ListView):
-    template_name = "core/user-upvoted.html"
+class UserVotedListView(LoginRequiredMixin, ListView):
+    template_name = "core/user-voted-content.html"
     context_object_name = "posts"
+    vote_type = None
 
-    def get_queryset(self: "UserUpvotedListView") -> models.QuerySet:
-        upvoted = Post.objects.filter(post_votes__user=self.request.user, post_votes__choice=PostVote.UPVOTE).order_by(
-            "-created_at"
+    def get_queryset(self: "UserVotedListView") -> models.QuerySet:
+        voted_posts = (
+            Post.objects.filter(post_votes__user=self.request.user, post_votes__choice=self.vote_type)
+            .annotate(post_vote_date=Max("post_votes__created_at"))
+            .order_by("-post_vote_date")
         )
-        vote_date = PostVote.objects.filter(post=OuterRef("pk"), user=self.request.user, choice=PostVote.UPVOTE).values(
-            "created_at"
-        )
-        post = upvoted.annotate(post_vote_date=Subquery(vote_date))
+
         filter_val = self.request.GET.get("filter")
         match filter_val:
             case "post":
-                post = post.filter(parent__isnull=True)
+                voted_posts = voted_posts.filter(parent__isnull=True)
             case "comment":
-                post = post.filter(parent__isnull=False)
-        return post
+                voted_posts = voted_posts.filter(parent__isnull=False)
+
+        return voted_posts
+
+    def get_context_data(self: "UserVotedListView", **kwargs: dict[str, Any]) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["url"] = self.request.resolver_match.url_name
+        return context
+
+
+class UserUpvotedListView(UserVotedListView):
+    vote_type = PostVote.UPVOTE
+
+
+class UserDownvotedListView(UserVotedListView):
+    vote_type = PostVote.DOWNVOTE

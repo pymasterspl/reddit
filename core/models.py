@@ -281,7 +281,7 @@ class PostVote(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="post_votes")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="post_votes")
     choice = models.CharField(max_length=20, choices=VOTE_CHOICES)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together: ClassVar[list[str]] = ["post", "user"]

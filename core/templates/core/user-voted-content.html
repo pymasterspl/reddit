@@ -33,7 +33,8 @@
                                    class="link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-25-hover">
                                     r/{{ post.community }}
                                 </a>
-                                • <small class="text-secondary">Upvote date: {{ post.post_vote_date }}</small>
+                                • <small class="text-secondary">
+                                    {% if url == 'user_upvoted' %} Upvote {% else %} Downvote {% endif %} date: {{ post.post_vote_date }}</small>
                             </div>
                             <div>
                                 <a href="#"
@@ -90,7 +91,11 @@
         </div>
         {% empty %}
         <div class="d-flex justify-content-center mt-5">
+            {% if url == 'user_upvoted' %}
             <p class="text-light">You don't have any upvoted contents.</p>
+            {% else %}
+            <p class="text-light">You don't have any downvoted contents.</p>
+            {% endif %}
         </div>
         {% endfor %}
     </div>
