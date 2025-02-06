@@ -530,7 +530,7 @@ class UserVotedListView(LoginRequiredMixin, ListView):
     def get_queryset(self: "UserVotedListView") -> models.QuerySet:
         voted_posts = (
             Post.objects.filter(post_votes__user=self.request.user, post_votes__choice=self.vote_type)
-            .annotate(post_vote_date=Max("post_votes__created_at"))
+            .annotate(post_vote_date=Max("post_votes__updated_at"))
             .order_by("-post_vote_date")
         )
 
