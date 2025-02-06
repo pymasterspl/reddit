@@ -100,43 +100,23 @@ def test_downvoted_comment(client: Client, user: User, downvote_comment: PostVot
 
 
 @pytest.mark.django_db()
-def test_downvoted_filter_post(client: Client, user: User, downvote_post: PostVote) -> None:
-    url = reverse("user_downvoted") + "?filter=post"
+@pytest.mark.parametrize(
+    "data",
+    [
+        {"filter": "post", "type": "downvote_post", "present": True, "count": 1},
+        {"filter": "post", "type": "downvote_comment", "present": False, "count": 0},
+        {"filter": "comment", "type": "downvote_comment", "present": True, "count": 1},
+        {"filter": "comment", "type": "downvote_post", "present": False, "count": 0},
+    ],
+)
+def test_downvoted_filter(client: Client, user: User, request: pytest.FixtureRequest, data: dict) -> None:
+    url = reverse("user_downvoted") + f"?filter={data['filter']}"
     client.force_login(user)
+    vote = request.getfixturevalue(data["type"])
     response = client.get(url)
     assert response.status_code == 200
-    assert downvote_post.post in response.context["posts"]
-    assert len(response.context["posts"]) == 1
-
-
-@pytest.mark.django_db()
-def test_downvoted_filter_post_empty(client: Client, user: User, downvote_comment: PostVote) -> None:
-    url = reverse("user_downvoted") + "?filter=post"
-    client.force_login(user)
-    response = client.get(url)
-    assert response.status_code == 200
-    assert downvote_comment.post not in response.context["posts"]
-    assert len(response.context["posts"]) == 0
-
-
-@pytest.mark.django_db()
-def test_downvoted_filter_comment(client: Client, user: User, downvote_comment: PostVote) -> None:
-    url = reverse("user_downvoted") + "?filter=comment"
-    client.force_login(user)
-    response = client.get(url)
-    assert response.status_code == 200
-    assert downvote_comment.post in response.context["posts"]
-    assert len(response.context["posts"]) == 1
-
-
-@pytest.mark.django_db()
-def test_downvoted_filter_comment_empty(client: Client, user: User, downvote_post: PostVote) -> None:
-    url = reverse("user_downvoted") + "?filter=comment"
-    client.force_login(user)
-    response = client.get(url)
-    assert response.status_code == 200
-    assert downvote_post.post not in response.context["posts"]
-    assert len(response.context["posts"]) == 0
+    assert (vote.post in response.context["posts"]) == data["present"]
+    assert len(response.context["posts"]) == data["count"]
 
 
 @pytest.mark.django_db()
