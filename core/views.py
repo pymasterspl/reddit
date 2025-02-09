@@ -499,7 +499,7 @@ class UserCommentsListView(LoginRequiredMixin, ListView):
     context_object_name = "comments"
 
     def get_queryset(self: "UserCommentsListView") -> QuerySet:
-        qs = Post.objects.filter(author=self.request.user, parent__isnull=False)
+        qs = Post.objects.filter(author=self.request.user, parent__isnull=False).order_by("-created_at")
 
         filter_val = self.request.GET.get("filter")
         if filter_val and filter_val.startswith("parent-"):
@@ -518,7 +518,9 @@ class UserCommentsListView(LoginRequiredMixin, ListView):
             .values_list("parent_id", flat=True)
             .distinct()
         )
-        context["parent_posts"] = Post.objects.filter(id__in=parent_ids)
+        context["parent_posts"] = (
+            Post.objects.filter(id__in=parent_ids).exclude(title__isnull=True).exclude(title__exact="")
+        )
         return context
 
 
