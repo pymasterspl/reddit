@@ -20,7 +20,7 @@
                     • <small class="text-secondary">{{ post.created_at|timesince }} ago</small>
                 </div>
                 <div>
-                    <a href="#"
+                    <a href="{% url 'user_public_profile' post.author.nickname %}"
                        class="link-light link-offset-2 link-underline-opacity-0 link-opacity-75-hover link-underline-opacity-25-hover">
                         {{ post.author.nickname }}                        
                     </a>

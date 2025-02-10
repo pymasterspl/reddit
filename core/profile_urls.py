@@ -5,6 +5,7 @@ from core.views import (
     UserCommentsListView,
     UserDownvotedListView,
     UserPostListView,
+    UserPublicProfileView,
     UserUpvotedListView,
 )
 
@@ -14,4 +15,5 @@ profile_urlpatterns = [
     path("profile/posts/", UserPostListView.as_view(), name="user_posts"),
     path("profile/upvoted/", UserUpvotedListView.as_view(), name="user_upvoted"),
     path("profile/downvoted/", UserDownvotedListView.as_view(), name="user_downvoted"),
+    path("profile/<str:nickname>/", UserPublicProfileView.as_view(), name="user_public_profile"),
 ]
