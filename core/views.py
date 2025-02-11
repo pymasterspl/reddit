@@ -15,6 +15,8 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
+from users.models import User
+
 from .forms import (
     AddModeratorForm,
     AdminActionForm,
@@ -557,3 +559,19 @@ class UserUpvotedListView(UserVotedListView):
 
 class UserDownvotedListView(UserVotedListView):
     vote_type = PostVote.DOWNVOTE
+
+
+class UserPublicProfileView(DetailView):
+    model = User
+    template_name = "core/user-public-profile.html"
+    context_object_name = "user"
+
+    def get_object(self: "UserPublicProfileView") -> User:
+        return get_object_or_404(User, nickname=self.kwargs["nickname"])
+
+    def get_context_data(self: "UserPublicProfileView", **kwargs: dict[str, Any]) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        user = self.get_object()
+        context["posts"] = Post.objects.filter(author=user, parent__isnull=True).order_by("-created_at")
+        context["previous_url"] = self.request.META.get("HTTP_REFERER")
+        return context
