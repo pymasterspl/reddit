@@ -679,3 +679,22 @@ def test_fetch_user_comments_with_empty_filter(client: Client, user: User, comme
     response = client.get(f"{reverse('user_comments')}?filter=")
     assert response.status_code == 200
     assert len(response.context_data["comments"]) == 1
+
+
+def test_edit_comment_valid(client: Client, user: User, post: Post) -> None:
+    data = {
+        "parent_id": post.pk,
+        "content": "This is a test comment content.",
+    }
+    client.force_login(user)
+    assert post.children_count == 0
+    assert post.get_comments().count() == 0
+    response = client.post(reverse("post-detail", kwargs={"pk": post.pk}), data=data, follow=True)
+    assert response.status_code == 200
+    edit_response = client.post(
+        reverse("edit_comment", kwargs={"pk": response.context["comments"][0].pk}), data={"content": "TEST"}
+    )
+    assert edit_response.status_code == 302
+    post.refresh_from_db()
+    response = client.get(reverse("post-detail", kwargs={"pk": response.context["comments"][0].pk}))
+    assert response.context["post"].content == "TEST"

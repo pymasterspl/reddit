@@ -33,7 +33,7 @@ class CommentUpdateForm(forms.ModelForm):
             "content": forms.Textarea(attrs={"class": "form-control"}),
         }
 
-    def __init__(self: "PostUpdateForm", *args: tuple, **kwargs: dict) -> None:
+    def __init__(self: "CommentUpdateForm", *args: tuple, **kwargs: dict) -> None:
         super().__init__(*args, **kwargs)
         self.fields["content"].required = True
 

@@ -94,17 +94,17 @@ class UserCommentEditView(LoginRequiredMixin, UpdateView):
     template_name = "core/comment-edit.html"
     context_object_name = "posts"
 
-    def get_queryset(self: "UserPostEditView") -> models.QuerySet:
+    def get_queryset(self: "UserCommentEditView") -> models.QuerySet:
         return Post.objects.filter(author=self.request.user)
 
-    def form_valid(self: "UserPostEditView", form: CommentUpdateForm) -> HttpResponse:
+    def form_valid(self: "UserCommentEditView", form: CommentUpdateForm) -> HttpResponse:
         if not form.has_changed():
             form.add_error(None, "No changes detected.")
             return self.form_invalid(form)
 
         return super().form_valid(form)
 
-    def get_success_url(self: "UserPostEditView") -> str:
+    def get_success_url(self: "UserCommentEditView") -> str:
         return reverse_lazy("post-detail", kwargs={"pk": self.object.parent.pk})
 
 
