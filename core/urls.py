@@ -15,6 +15,7 @@ from .views import (
     PostReportView,
     PostSaveView,
     PostVoteView,
+    UserCommentEditView,
     UserPostDeleteView,
     UserPostEditView,
 )
@@ -24,6 +25,7 @@ urlpatterns = [
     path("post-detail/<int:pk>/", PostDetailView.as_view(), name="post-detail"),
     path("post-create/", PostCreateView.as_view(), name="post-create"),
     path("post/edit/<int:pk>/", UserPostEditView.as_view(), name="edit_post"),
+    path("comment/edit/<int:pk>/", UserCommentEditView.as_view(), name="edit_comment"),
     path("post/delete/<int:pk>/", UserPostDeleteView.as_view(), name="delete_post"),
     path("post/<int:pk>/vote/<str:vote_type>/", PostVoteView.as_view(), name="post-vote"),
     path("post/<int:pk>/award/", PostAwardCreateView.as_view(), name="post-award"),

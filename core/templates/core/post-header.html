@@ -13,7 +13,7 @@
             <div class="d-flex flex-column">
                 <!-- TODO: Update links to user public profile and community upon feature released -->
                 <div>
-                    <a href="#"
+                    <a href="{% url 'community-detail' post.community.slug %}"
                        class="link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-25-hover">
                         r/{{ post.community }}
                     </a>
@@ -65,7 +65,11 @@
                     <li><a class="dropdown-item" href="{%  url 'post-report' post.id %}"><i class="bi bi-flag"></i> Report</a></li>
                     {% if request.user.is_authenticated %}
                     {% if post.author == request.user %}
+                    {% if not post.parent %}
                     <li><a class="dropdown-item" href="{% url 'edit_post' post.pk %}"><i class="bi bi-pencil-square"></i> Edit</a></li>
+                    {% else %}
+                    <li><a class="dropdown-item" href="{% url 'edit_comment' post.pk %}"><i class="bi bi-pencil-square"></i> Edit</a></li>
+                    {% endif %}
                     <li><a class="dropdown-item" href="{% url 'delete_post' post.pk %}"><i class="bi bi-trash"></i> Delete</a></li>
                     {% endif %}
                     {% endif %}
