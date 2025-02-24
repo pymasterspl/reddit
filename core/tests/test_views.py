@@ -692,7 +692,6 @@ def test_edit_comment_valid(client: Client, user: User, post: Post, comment: Pos
     client.force_login(user)
     edit_response = client.post(reverse("edit_comment", kwargs={"pk": comment.pk}), data={"content": "TEST"})
     assert edit_response.status_code == 302
-    post.refresh_from_db()
     response = client.get(reverse("post-detail", kwargs={"pk": comment.pk}))
     assert response.context["post"].content == "TEST"
 
