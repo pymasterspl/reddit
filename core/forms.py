@@ -25,6 +25,19 @@ class CommentForm(forms.Form):
     parent_id = forms.IntegerField(required=True, widget=forms.HiddenInput)
 
 
+class CommentUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields: ClassVar[list[str]] = ["content"]
+        widgets: ClassVar[dict[str, forms.Widget]] = {
+            "content": forms.Textarea(attrs={"class": "form-control"}),
+        }
+
+    def __init__(self: "CommentUpdateForm", *args: tuple, **kwargs: dict) -> None:
+        super().__init__(*args, **kwargs)
+        self.fields["content"].required = True
+
+
 class PostUpdateForm(forms.ModelForm):
     class Meta:
         model = Post

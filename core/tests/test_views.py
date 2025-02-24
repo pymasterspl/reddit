@@ -127,6 +127,13 @@ def restricted_community(user: User) -> Community:
     return Community.objects.create(name="Restricted Community", is_active=True, author=user)
 
 
+@pytest.fixture()
+def comment(post: Post, community: Community, user: User) -> Post:
+    return Post.objects.create(
+        parent_id=post.pk, community=community, author=user, content="This is a test comment content."
+    )
+
+
 def test_add_post_valid(client: Client, user: User, community: Community) -> None:
     data = {
         "community": community.pk,
@@ -679,3 +686,18 @@ def test_fetch_user_comments_with_empty_filter(client: Client, user: User, comme
     response = client.get(f"{reverse('user_comments')}?filter=")
     assert response.status_code == 200
     assert len(response.context_data["comments"]) == 1
+
+
+def test_edit_comment_valid(client: Client, user: User, post: Post, comment: Post) -> None:
+    client.force_login(user)
+    edit_response = client.post(reverse("edit_comment", kwargs={"pk": comment.pk}), data={"content": "TEST"})
+    assert edit_response.status_code == 302
+    response = client.get(reverse("post-detail", kwargs={"pk": comment.pk}))
+    assert response.context["post"].content == "TEST"
+
+
+def test_edit_comment_empty_content_invalid(client: Client, user: User, post: Post, comment: Post) -> None:
+    client.force_login(user)
+    edit_response = client.post(reverse("edit_comment", kwargs={"pk": comment.pk}), data={"content": ""})
+    assert edit_response.status_code == 200
+    assert edit_response.context_data["form"].errors == {"content": ["This field is required."]}

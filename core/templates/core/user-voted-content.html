@@ -29,10 +29,10 @@
                     <div class="col">
                         <div class="d-flex flex-column">
                             <div>
-                                <a href="#"
-                                   class="link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-25-hover">
-                                    r/{{ post.community }}
-                                </a>
+                            <a href="{% url 'community-detail' post.community.slug %}"
+                                class="link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-25-hover">
+                                 r/{{ post.community }}
+                             </a>
                                 • <small class="text-secondary">
                                     {% if url == 'user_upvoted' %} Upvote {% else %} Downvote {% endif %} date: {{ post.post_vote_date }}</small>
                             </div>
