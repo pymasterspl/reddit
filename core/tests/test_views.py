@@ -127,6 +127,13 @@ def restricted_community(user: User) -> Community:
     return Community.objects.create(name="Restricted Community", is_active=True, author=user)
 
 
+@pytest.fixture()
+def comment(post: Post, community: Community, user: User) -> Post:
+    return Post.objects.create(
+        parent_id=post.pk, community=community, author=user, content="This is a test comment content."
+    )
+
+
 def test_add_post_valid(client: Client, user: User, community: Community) -> None:
     data = {
         "community": community.pk,
@@ -681,20 +688,17 @@ def test_fetch_user_comments_with_empty_filter(client: Client, user: User, comme
     assert len(response.context_data["comments"]) == 1
 
 
-def test_edit_comment_valid(client: Client, user: User, post: Post) -> None:
-    data = {
-        "parent_id": post.pk,
-        "content": "This is a test comment content.",
-    }
+def test_edit_comment_valid(client: Client, user: User, post: Post, comment: Post) -> None:
     client.force_login(user)
-    assert post.children_count == 0
-    assert post.get_comments().count() == 0
-    response = client.post(reverse("post-detail", kwargs={"pk": post.pk}), data=data, follow=True)
-    assert response.status_code == 200
-    edit_response = client.post(
-        reverse("edit_comment", kwargs={"pk": response.context["comments"][0].pk}), data={"content": "TEST"}
-    )
+    edit_response = client.post(reverse("edit_comment", kwargs={"pk": comment.pk}), data={"content": "TEST"})
     assert edit_response.status_code == 302
     post.refresh_from_db()
-    response = client.get(reverse("post-detail", kwargs={"pk": response.context["comments"][0].pk}))
+    response = client.get(reverse("post-detail", kwargs={"pk": comment.pk}))
     assert response.context["post"].content == "TEST"
+
+
+def test_edit_comment_empty_content_invalid(client: Client, user: User, post: Post, comment: Post) -> None:
+    client.force_login(user)
+    edit_response = client.post(reverse("edit_comment", kwargs={"pk": comment.pk}), data={"content": ""})
+    assert edit_response.status_code == 200
+    assert edit_response.context_data["form"].errors == {"content": ["This field is required."]}
