@@ -236,8 +236,8 @@ class Post(GenericModel):
     def vote(self: "Post", user: User, choice: str) -> None:
         vote, _ = PostVote.objects.get_or_create(user=user, post=self)
 
-        if (vote.choice == '10_UPVOTE' and choice == '20_DOWNVOTE') or (vote.choice == '20_DOWNVOTE' and choice == '10_UPVOTE'):
-            vote.choice = ''
+        if (vote.choice == PostVote.UPVOTE and choice == PostVote.DOWNVOTE) or (vote.choice == PostVote.DOWNVOTE and choice == PostVote.UPVOTE):
+            vote.choice = PostVote.NOVOTE
         else:
             vote.choice = choice
 
@@ -278,9 +278,11 @@ class Post(GenericModel):
 class PostVote(models.Model):
     UPVOTE = "10_UPVOTE"
     DOWNVOTE = "20_DOWNVOTE"
+    NOVOTE = "30_NOVOTE"
     VOTE_CHOICES: ClassVar[list[tuple[str, str]]] = [
         (UPVOTE, "Up Vote"),
         (DOWNVOTE, "Down Vote"),
+        (NOVOTE, "No Vote"),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="post_votes")
