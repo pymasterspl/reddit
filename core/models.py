@@ -237,11 +237,12 @@ class Post(GenericModel):
         vote, _ = PostVote.objects.get_or_create(user=user, post=self)
 
         if (vote.choice == PostVote.UPVOTE and choice == PostVote.DOWNVOTE) or (vote.choice == PostVote.DOWNVOTE and choice == PostVote.UPVOTE):
-            vote.choice = PostVote.NOVOTE
+            vote.delete()
         else:
             vote.choice = choice
+            vote.save()
 
-        vote.save()
+        vote.calc_vote_score()
 
     def get_images(self: "Post") -> QuerySet:
         return Image.objects.filter(post=self)
@@ -278,11 +279,9 @@ class Post(GenericModel):
 class PostVote(models.Model):
     UPVOTE = "10_UPVOTE"
     DOWNVOTE = "20_DOWNVOTE"
-    NOVOTE = "30_NOVOTE"
     VOTE_CHOICES: ClassVar[list[tuple[str, str]]] = [
         (UPVOTE, "Up Vote"),
         (DOWNVOTE, "Down Vote"),
-        (NOVOTE, "No Vote"),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="post_votes")
@@ -297,13 +296,11 @@ class PostVote(models.Model):
     def __str__(self: "PostVote") -> str:
         return f"@{self.user}: {self.choice} for post: {self.post}"
 
-    def save(self: "PostVote", *args: int, **kwargs: int) -> None:
-        super().save(*args, **kwargs)
+    def calc_vote_score(self) -> None:
         post_votes = PostVote.objects.filter(post=self.post)
         up_votes = post_votes.filter(choice=PostVote.UPVOTE).count()
         down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
         Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
-
 
 class PostAward(models.Model):
     REWARD_POINTS: ClassVar[dict[str, int]] = {
