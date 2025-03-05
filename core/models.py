@@ -235,7 +235,12 @@ class Post(GenericModel):
 
     def vote(self: "Post", user: User, choice: str) -> None:
         vote, _ = PostVote.objects.get_or_create(user=user, post=self)
-        vote.choice = choice
+
+        if (vote.choice == '10_UPVOTE' and choice == '20_DOWNVOTE') or (vote.choice == '20_DOWNVOTE' and choice == '10_UPVOTE'):
+            vote.choice = ''
+        else:
+            vote.choice = choice
+
         vote.save()
 
     def get_images(self: "Post") -> QuerySet:
