@@ -302,6 +302,7 @@ class PostVote(models.Model):
         down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
         Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
 
+
 class PostAward(models.Model):
     REWARD_POINTS: ClassVar[dict[str, int]] = {
         "1": 15,
