@@ -236,10 +236,7 @@ class Post(GenericModel):
     def vote(self: "Post", user: User, choice: str) -> None:
         vote, _ = PostVote.objects.get_or_create(user=user, post=self)
 
-        if (
-            (vote.choice == PostVote.UPVOTE and choice == PostVote.DOWNVOTE) or
-              (vote.choice == PostVote.DOWNVOTE and choice == PostVote.UPVOTE)
-              ):
+        if vote.choice == choice:
             vote.delete()
         else:
             vote.choice = choice
