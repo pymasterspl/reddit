@@ -32,6 +32,7 @@ Good reading on working with code changes and pull request is https://google.git
         - when work is started, task is moved into "IN PROGRESS", and stays in this state until **pull request is merged to dev**
         - **when creating pull request put link to ClickUp task in the first line of pull request**
         - after pull request is merged, status of the task is changed to "READY FOR QA"
+           - It is author responsibility to watch over pull request, bump if there is no code review done, fix issues and *merge pull request*.
         - after QA is done, the person who is performing QA is setting the task as "DONE". 
             - if issues are found the task is moved back to "TO DO" with comments or new task is created to address those issues.
 2. Do not commit directly to `master` or `dev`. Both branches are protected.
