@@ -50,8 +50,6 @@ def test_vote_toggle_upvote_to_none(user: User, post: Post):
     post.vote(user, PostVote.UPVOTE)
     assert not PostVote.objects.filter(user=user, post=post).exists()
 
-
-
 @pytest.mark.django_db()
 def test_post_score_mixed_votes(post: Post, user: User, another_user: User) -> None:
     post.vote(user=user, choice=PostVote.UPVOTE)
@@ -59,9 +57,6 @@ def test_post_score_mixed_votes(post: Post, user: User, another_user: User) -> N
 
     post.refresh_from_db()
     assert post.score == 0
-
-
-
 
 @pytest.mark.django_db()
 def test_tags_created_on_post_save(user: User, community: Community) -> None:
