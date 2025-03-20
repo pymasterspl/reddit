@@ -276,10 +276,10 @@ class Post(GenericModel):
         return CommentForm(initial={"parent_id": self.pk})
 
     def calc_vote_score(self: "PostVote") -> None:
-        post_votes = PostVote.objects.filter(post=self.post)
+        post_votes = PostVote.objects.filter(post=self)
         up_votes = post_votes.filter(choice=PostVote.UPVOTE).count()
         down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
-        Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
+        Post.objects.filter(pk=self.pk).update(up_votes=up_votes, down_votes=down_votes)
 
 
 class PostVote(models.Model):
