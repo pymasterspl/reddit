@@ -303,8 +303,6 @@ class PostVote(models.Model):
         return f"@{self.user}: {self.choice} for post: {self.post}"
 
 
-
-
 class PostAward(models.Model):
     REWARD_POINTS: ClassVar[dict[str, int]] = {
         "1": 15,
