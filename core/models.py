@@ -102,7 +102,7 @@ class Community(GenericModel):
 
     def generate_unique_slug(self: "Community") -> str:
         base_slug = slugify(self.name)
-        unique_slug = base_slug
+        nique_slug = base_slug
         counter = 1
         while Community.all_objects.filter(slug=unique_slug).exists():
             unique_slug = f"{base_slug}-{counter}"
@@ -242,7 +242,7 @@ class Post(GenericModel):
             vote.choice = choice
             vote.save()
 
-        vote.calc_vote_score()
+        self.calc_vote_score()
 
     def get_images(self: "Post") -> QuerySet:
         return Image.objects.filter(post=self)
@@ -275,6 +275,12 @@ class Post(GenericModel):
 
         return CommentForm(initial={"parent_id": self.pk})
 
+    def calc_vote_score(self: "PostVote") -> None:
+        post_votes = PostVote.objects.filter(post=self.post)
+        up_votes = post_votes.filter(choice=PostVote.UPVOTE).count()
+        down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
+        Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
+
 
 class PostVote(models.Model):
     UPVOTE = "10_UPVOTE"
@@ -296,11 +302,7 @@ class PostVote(models.Model):
     def __str__(self: "PostVote") -> str:
         return f"@{self.user}: {self.choice} for post: {self.post}"
 
-    def calc_vote_score(self: "PostVote") -> None:
-        post_votes = PostVote.objects.filter(post=self.post)
-        up_votes = post_votes.filter(choice=PostVote.UPVOTE).count()
-        down_votes = post_votes.filter(choice=PostVote.DOWNVOTE).count()
-        Post.objects.filter(pk=self.post.pk).update(up_votes=up_votes, down_votes=down_votes)
+
 
 
 class PostAward(models.Model):
