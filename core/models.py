@@ -102,7 +102,7 @@ class Community(GenericModel):
 
     def generate_unique_slug(self: "Community") -> str:
         base_slug = slugify(self.name)
-        nique_slug = base_slug
+        unique_slug = base_slug
         counter = 1
         while Community.all_objects.filter(slug=unique_slug).exists():
             unique_slug = f"{base_slug}-{counter}"
