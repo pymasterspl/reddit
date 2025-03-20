@@ -439,6 +439,12 @@ def test_restricted_community_access(client: Client, restricted_community: Commu
     assert response.status_code == 200
 
 
+def test_community_view(client: Client, community: Community) -> None:
+    response = client.get(reverse("community-list"))
+    assert response.status_code == 200
+    assert len(response.context["communities"]) == 1
+
+
 def test_create_community_view(client: Client, user: User) -> None:
     client.force_login(user)
     url = reverse("community-create")

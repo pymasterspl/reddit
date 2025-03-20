@@ -274,7 +274,7 @@ class CommunityListView(ListView):
             super()
             .get_queryset()
             .prefetch_related("members")
-            .annotate(has_access=Exists(CommunityMember.objects.filter(community=OuterRef("pk"), user=user)))
+            .annotate(has_access=Exists(CommunityMember.objects.filter(community=OuterRef("pk"), user=user.id)))
         )
 
     def get_context_data(self: "CommunityListView", **kwargs: any) -> dict[str, any]:
