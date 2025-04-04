@@ -13,7 +13,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 
 from users.models import User
 
@@ -441,26 +441,24 @@ class PostReportView(LoginRequiredMixin, CreateView):
         return context
 
 
-class PostListReportedView(UserPassesTestMixin, LoginRequiredMixin, ListView):
-    model = PostReport
-    template_name = "core/reported-posts.html"
-    context_object_name = "reports"
-    paginate_by = 10
+class ModeratorDashboardView(UserPassesTestMixin, LoginRequiredMixin, TemplateView):
+    template_name = "core/moderator_dashboard.html"
 
-    def get_queryset(self: "PostListReportedView") -> QuerySet:
-        if not self.request.user.is_staff:
-            messages.error(self.request, "You do not have permission to view this page.")
-            return redirect("home")
-        return PostReport.objects.filter(verified=False)
-
-    def test_func(self: "PostListReportedView") -> bool:
+    def test_func(self: "ModeratorDashboardView") -> bool:
         return self.request.user.is_staff
 
-    def handle_no_permission(self: "PostListReportedView") -> HttpResponse | None:
+    def handle_no_permission(self: "ModeratorDashboardView") -> HttpResponse | None:
         if self.request.user.is_authenticated:
             messages.error(self.request, "You do not have permission to view this page.")
             return redirect("home")
         return super().handle_no_permission()
+
+    def get_context_data(self: "ModeratorDashboardView", **kwargs: dict[str, Any]) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["active_posts"] = Post.objects.filter(is_active=True).count()
+        context["reported_posts"] = PostReport.objects.filter(verified=False).count()
+        context["active_users"] = User.objects.filter(is_active=True).count()
+        return context
 
 
 class PostReportedView(UserPassesTestMixin, LoginRequiredMixin, DetailView):
@@ -513,7 +511,7 @@ class PostReportedView(UserPassesTestMixin, LoginRequiredMixin, DetailView):
     def get_object(self: "PostReportedView", queryset: QuerySet | None = None) -> PostReport:
         return super().get_object(queryset)
 
-    def test_func(self: "PostListReportedView") -> bool:
+    def test_func(self: "PostReportedView") -> bool:
         return self.request.user.is_staff
 
 

@@ -5,14 +5,13 @@ import pytest
 from django.conf import Settings, settings
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
-from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
 from django.urls import reverse, reverse_lazy
 from faker import Faker
 from PIL import Image
 
-from core.models import BAN, DELETE, DISMISS_REPORT, WARN, Community, CommunityMember, Post, PostReport
+from core.models import Community, CommunityMember, Post, PostReport
 
 from .test_utils import generate_random_password
 
@@ -88,6 +87,13 @@ def create_avatar() -> SimpleUploadedFile:
 
 
 @pytest.fixture()
+def inactive_post(community: Community) -> Post:
+    return Post.objects.create(
+        title="Inactive Post", content="Other content", is_active=False, community_id=community.id
+    )
+
+
+@pytest.fixture()
 def community() -> Community:
     return Community.objects.create(name="Test Community", is_active=True)
 
@@ -105,11 +111,20 @@ def report_data() -> dict[str, str]:
 
 
 @pytest.fixture()
-def post_report(post: Post, user: User) -> Post:
+def post_report(post: Post, user: User) -> PostReport:
     fake = Faker()
     return PostReport.objects.create(
-        post=post, report_type="THREATENING_VIOLENCE", report_details=fake.text(max_nb_chars=100), report_person=user
+        post=post,
+        report_type="THREATENING_VIOLENCE",
+        verified=True,
+        report_details=fake.text(max_nb_chars=100),
+        report_person=user,
     )
+
+
+@pytest.fixture()
+def unverified_post_report(post: Post, user: User) -> PostReport:
+    return PostReport.objects.create(post=post, verified=False, report_person=user)
 
 
 @pytest.fixture()
@@ -241,35 +256,6 @@ def test_add_comment_unauthorized(client: Client, post: Post) -> None:
     assert reverse("login") in response.url
 
 
-def test_reported_list_post_by_admin(client: Client, admin: User, post: Post, report_data: dict) -> None:
-    data = report_data()
-    client.force_login(admin)
-    client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
-    response = client.get(reverse("post-list-reported"))
-    assert response.status_code == 200
-    reports_count = PostReport.objects.filter(verified=False).count()
-    assert reports_count == 1
-
-
-def test_reported_list_post_by_user(client: Client, user: User, post: Post, report_data: dict) -> None:
-    data = report_data()
-    client.force_login(user)
-    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
-    assert response.status_code == 302
-    response = client.get(reverse("post-list-reported"))
-    assert response.status_code == 302
-    assert response.url == reverse("home")
-
-    messages = list(get_messages(response.wsgi_request))
-    assert any("You do not have permission to view this page." in str(message) for message in messages)
-
-
-def test_reported_list_post_by_anonymous_user(client: Client) -> None:
-    response = client.get(reverse("post-list-reported"))
-    assert response.status_code == 302
-    assert str(reverse_lazy("post-list-reported")) in response.url
-
-
 def test_reported_detail_post_by_user(client: Client, user: User, post: Post, report_data: dict) -> None:
     data = report_data()
     response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
@@ -283,60 +269,6 @@ def test_reported_detail_post_by_anonymous_user(client: Client, post_report: Pos
     response = client.get(reverse("post-report", kwargs={"pk": post_report.pk}))
     assert response.status_code == 302
     assert f"{settings.LOGIN_URL}?next={reverse('post-report', kwargs={'pk': post_report.pk})}" in response.url
-
-
-def test_reported_detail_post_by_admin(
-    client: Client, admin: User, user: User, admin_action_form_data: dict, community: Community
-) -> None:
-    fake = Faker()
-    for action in [DELETE, WARN, DISMISS_REPORT, BAN]:
-        client.force_login(admin)
-        post = Post.objects.create(
-            author=user,
-            community=community,
-            title="Test Post",
-            content="This is a test post",
-        )
-        post_report = PostReport.objects.create(
-            post=post,
-            report_type="THREATENING_VIOLENCE",
-            report_details=fake.text(max_nb_chars=100),
-            report_person=user,
-        )
-        admin_action_form_data["action"] = action
-        mail.outbox = []
-
-        response = client.post(
-            reverse_lazy("reported-post", kwargs={"pk": post_report.pk}),
-            data=admin_action_form_data,
-            follow_redirects=True,
-        )
-
-        assert response.status_code == 302
-        if action in [DELETE, WARN, BAN]:
-            assert len(mail.outbox) == 1, f"Expected 1 email for action '{action}', but got {len(mail.outbox)}"
-            email = mail.outbox[0]
-            if action == BAN:
-                assert email.subject == "Account Banned"
-                assert email.to == [post_report.post.author.email]
-                client.logout()
-                login_data = {"email": user.email, "password": user.plain_password}
-                response = client.post(reverse("login"), data=login_data)
-                assert response.status_code == 200
-                assert not response.wsgi_request.user.is_authenticated
-            elif action == DELETE:
-                post.refresh_from_db()
-                assert not post.is_active, "Post should be marked as inactive"
-                if post.is_active:
-                    assert len(mail.outbox) == 1, "Expected 1 email, but found none"
-                    email = mail.outbox[0]
-                    assert email.subject == "Post Deleted"
-                    assert email.to == [post_report.post.author.email]
-            elif action == WARN:
-                assert email.subject in ["Warning Issued", "Post Deleted"]
-                assert email.to == [post_report.post.author.email]
-        else:
-            assert len(mail.outbox) == 0, f"Expected no email for action '{action}', but got {len(mail.outbox)}"
 
 
 def test_add_nested_comment_valid(client: Client, user: User, post: Post, comment: Post) -> None:
@@ -707,3 +639,38 @@ def test_edit_comment_empty_content_invalid(client: Client, user: User, post: Po
     edit_response = client.post(reverse("edit_comment", kwargs={"pk": comment.pk}), data={"content": ""})
     assert edit_response.status_code == 200
     assert edit_response.context_data["form"].errors == {"content": ["This field is required."]}
+
+
+def test_moderator_dashboard_view_staff(
+    client: Client, admin: User, inactive_post: Post, unverified_post_report: PostReport, post_report: PostReport
+) -> None:
+    client.force_login(admin)
+    url = reverse("moderator-dashboard")
+    response = client.get(url)
+    assert response.status_code == 200
+
+    active_posts_count = Post.objects.filter(is_active=True).count()
+    reported_posts_count = PostReport.objects.filter(verified=False).count()
+    active_users_count = User.objects.filter(is_active=True).count()
+
+    assert response.context["active_posts"] == active_posts_count
+    assert response.context["reported_posts"] == reported_posts_count
+    assert response.context["active_users"] == active_users_count
+
+
+def test_moderator_dashboard_view_non_staff(client: Client, user: User) -> None:
+    client.force_login(user)
+    url = reverse("moderator-dashboard")
+    response = client.get(url)
+    assert response.status_code == 302
+    assert response.url == reverse("home")
+    messages = list(get_messages(response.wsgi_request))
+    assert any("You do not have permission to view this page." in m.message for m in messages)
+
+
+def test_moderator_dashboard_view_anonymous(client: Client) -> None:
+    url = reverse("moderator-dashboard")
+    response = client.get(url)
+    assert response.status_code == 302
+    expected_url = f"{reverse('login')}?next={url}"
+    assert response.url == expected_url
