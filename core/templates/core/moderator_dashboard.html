@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="jumbotron">
+        <h1 class="display-4">Welcome, Moderator!</h1>
+        <p class="lead">This is your admin panel where you can manage posts, users, and reports.</p>
+        <hr class="my-4">
+        <p>You can access the full functionality from the top navigation menu.</p>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Total Posts</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ active_posts }}</h5>
+                    <p class="card-text">Total number of posts published on the platform.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Active Users</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ active_users }}</h5>
+                    <p class="card-text">Number of users active.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-header">Reported Posts</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ reported_posts }}</h5>
+                    <p class="card-text">Number of posts reported for review.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
