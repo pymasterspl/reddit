@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import models, transaction
 from django.db.models import Exists, Max, OuterRef, QuerySet
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
@@ -456,7 +457,19 @@ class ModeratorDashboardView(UserPassesTestMixin, LoginRequiredMixin, TemplateVi
     def get_context_data(self: "ModeratorDashboardView", **kwargs: dict[str, Any]) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["active_posts"] = Post.objects.filter(is_active=True).count()
-        context["reported_posts"] = PostReport.objects.filter(verified=False)
+
+        reported_posts_queryset = PostReport.objects.filter(verified=False)
+        page = self.request.GET.get("page", 1)
+        paginator = Paginator(reported_posts_queryset, 10)
+
+        try:
+            reported_posts = paginator.page(page)
+        except PageNotAnInteger:
+            reported_posts = paginator.page(1)
+        except EmptyPage:
+            reported_posts = paginator.page(paginator.num_pages)
+
+        context["reported_posts"] = reported_posts
         context["active_users"] = User.objects.filter(is_active=True).count()
         return context
 

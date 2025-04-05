@@ -680,3 +680,17 @@ def test_moderator_dashboard_view_anonymous(client: Client) -> None:
     assert response.status_code == 302
     expected_url = f"{reverse('login')}?next={url}"
     assert response.url == expected_url
+
+
+def test_view_edge_cases_no_reported_posts(client: Client, post: Post) -> None:
+    PostReport.objects.all().update(verified=True)
+    url = reverse("moderator-dashboard")
+    response = client.get(url)
+    assert response.context is None
+
+
+def test_view_edge_cases_all_verified_reported_posts(client: Client, post: Post, user: User) -> None:
+    url = reverse("moderator-dashboard")
+    PostReport.objects.create(post=post, verified=True, report_person=user)
+    response = client.get(url)
+    assert response.context is None
