@@ -14,7 +14,7 @@
         <hr class="my-4">
         <p>You can access the full functionality from the top navigation menu.</p>
     </div>
-    
+
     <div class="row">
         <div class="col-md-4">
             <div class="card text-white bg-primary mb-3">
@@ -25,7 +25,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-4">
             <div class="card text-white bg-success mb-3">
                 <div class="card-header">Active Users</div>
@@ -35,15 +35,33 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-4">
             <div class="card text-white bg-danger mb-3">
                 <div class="card-header">Reported Posts</div>
                 <div class="card-body">
-                    <h5 class="card-title">{{ reported_posts }}</h5>
+                    <h5 class="card-title">{{ reported_posts | length }}</h5>
                     <p class="card-text">Number of posts reported for review.</p>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <h2>Reported Posts List</h2>
+        <div class="list-group">
+            {% for report in reported_posts %}
+                <a href="{% url 'reported-post' report.id %}" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ report.post.title|default:"Comment" }}</h5>
+                        <small>{{ report.created_at|date:"Y-m-d H:i" }}</small>
+                    </div>
+                    <p class="mb-1">{{ report.report_details }}</p>
+                    <small>Reported by: {{ report.report_person.nickname }}</small>
+                </a>
+            {% empty %}
+                <p>No reported posts available.</p>
+            {% endfor %}
         </div>
     </div>
 </div>

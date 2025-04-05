@@ -456,7 +456,7 @@ class ModeratorDashboardView(UserPassesTestMixin, LoginRequiredMixin, TemplateVi
     def get_context_data(self: "ModeratorDashboardView", **kwargs: dict[str, Any]) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["active_posts"] = Post.objects.filter(is_active=True).count()
-        context["reported_posts"] = PostReport.objects.filter(verified=False).count()
+        context["reported_posts"] = PostReport.objects.filter(verified=False)
         context["active_users"] = User.objects.filter(is_active=True).count()
         return context
 
@@ -494,7 +494,7 @@ class PostReportedView(UserPassesTestMixin, LoginRequiredMixin, DetailView):
             admin_action.save()
 
             handle_admin_action(action, report, user, request)
-            return redirect(reverse_lazy("post-list-reported"))
+            return redirect(reverse_lazy("moderator-dashboard"))
 
         context = self.get_context_data(**kwargs)
         context["form"] = form

@@ -650,11 +650,17 @@ def test_moderator_dashboard_view_staff(
     assert response.status_code == 200
 
     active_posts_count = Post.objects.filter(is_active=True).count()
-    reported_posts_count = PostReport.objects.filter(verified=False).count()
+    expected_reported_posts = list(PostReport.objects.filter(verified=False))
+    reported_posts_count = len(expected_reported_posts)
     active_users_count = User.objects.filter(is_active=True).count()
 
     assert response.context["active_posts"] == active_posts_count
-    assert response.context["reported_posts"] == reported_posts_count
+
+    reported_posts_context = list(response.context["reported_posts"])
+    assert len(reported_posts_context) == reported_posts_count
+    for report in reported_posts_context:
+        assert report.verified is False
+
     assert response.context["active_users"] == active_users_count
 
 
