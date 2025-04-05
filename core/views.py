@@ -470,6 +470,7 @@ class ModeratorDashboardView(UserPassesTestMixin, LoginRequiredMixin, TemplateVi
             reported_posts = paginator.page(paginator.num_pages)
 
         context["reported_posts"] = reported_posts
+        context["reported_posts_count"] = len(reported_posts)
         context["active_users"] = User.objects.filter(is_active=True).count()
         return context
 
