@@ -127,8 +127,6 @@ def unverified_post_report(post: Post, user: User) -> PostReport:
     return PostReport.objects.create(post=post, verified=False, report_person=user)
 
 
-
-
 @pytest.fixture()
 def admin_action_form_data() -> dict:
     return {"action": "20_DELETE", "comment": "This post violates the guidelines."}
@@ -735,6 +733,7 @@ def test_moderator_dashboard_filter_by_author(
     assert response.status_code == 200
     for report in response.context["reported_posts"]:
         assert report.post.author.nickname == "distinct_author"
+
 
 def test_moderator_dashboard_filter_empty_author(
     client: Client,
