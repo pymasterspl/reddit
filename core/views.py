@@ -458,8 +458,7 @@ class ModeratorDashboardView(UserPassesTestMixin, LoginRequiredMixin, TemplateVi
     def get_context_data(self: "ModeratorDashboardView", **kwargs: dict[str, Any]) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["active_posts"] = Post.objects.filter(is_active=True).count()
-        filter_val = self.request.GET.get("author_filter")
-        if filter_val:
+        if filter_val := self.request.GET.get("author_filter"):
             reported_posts_queryset = PostReport.objects.filter(
                 verified=False, post__author__nickname__exact=filter_val
             )
@@ -483,17 +482,19 @@ class ModeratorDashboardView(UserPassesTestMixin, LoginRequiredMixin, TemplateVi
 
     def post(self: "ModeratorDashboardView", request: HttpRequest) -> HttpResponse:
         form = GroupAdminActionForm(request.POST)
-        selected_ids = self.request.POST.getlist("selected_reports", [])
-        reports = PostReport.objects.filter(id__in=selected_ids)
-        action = self.request.POST.get("action_for_selected")
-        for report in reports:
-            if form.is_valid():
-                post = report.post
-                user = post.author
-                admin_action = AdminAction(post_report=report, action=action, performed_by=request.user)
-                admin_action.save()
-                handle_admin_action(action, report, user, request)
+        if not form.is_valid():
+            messages.error(request, "Invalid form submission.")
+            return redirect("home")
 
+        selected_ids = request.POST.getlist("selected_reports", [])
+        reports = PostReport.objects.filter(id__in=selected_ids)
+        action = request.POST.get("action_for_selected")
+        for report in reports:
+            post = report.post
+            user = post.author
+            admin_action = AdminAction(post_report=report, action=action, performed_by=request.user)
+            admin_action.save()
+            handle_admin_action(action, report, user, request)
         return redirect("home")
 
 

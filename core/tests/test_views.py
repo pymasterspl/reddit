@@ -127,6 +127,8 @@ def unverified_post_report(post: Post, user: User) -> PostReport:
     return PostReport.objects.create(post=post, verified=False, report_person=user)
 
 
+
+
 @pytest.fixture()
 def admin_action_form_data() -> dict:
     return {"action": "20_DELETE", "comment": "This post violates the guidelines."}
@@ -733,3 +735,57 @@ def test_moderator_dashboard_filter_by_author(
     assert response.status_code == 200
     for report in response.context["reported_posts"]:
         assert report.post.author.nickname == "distinct_author"
+
+def test_moderator_dashboard_filter_empty_author(
+    client: Client,
+    admin: User,
+    post: Post,
+    unverified_post_report: PostReport,
+) -> None:
+    post.author.nickname = "author_one"
+    post.author.save()
+    unverified_post_report.post = post
+    unverified_post_report.verified = False
+    unverified_post_report.save()
+
+    client.force_login(admin)
+    url = reverse("moderator-dashboard") + "?author_filter="
+    response = client.get(url)
+    assert response.status_code == 200
+    reported = response.context["reported_posts"]
+    assert any(report.post.author.nickname == "author_one" for report in reported)
+
+
+def test_moderator_dashboard_filter_special_characters(
+    client: Client, admin: User, post: Post, unverified_post_report: PostReport
+) -> None:
+    special_name = "Spéçïål!@#"
+    post.author.nickname = special_name
+    post.author.save()
+    unverified_post_report.post = post
+    unverified_post_report.verified = False
+    unverified_post_report.save()
+
+    client.force_login(admin)
+    url = reverse("moderator-dashboard") + f"?author_filter={special_name}"
+    response = client.get(url)
+    assert response.status_code == 200
+    for report in response.context["reported_posts"]:
+        assert report.post.author.nickname == special_name
+
+
+def test_moderator_dashboard_filter_no_matching_authors(
+    client: Client, admin: User, post: Post, unverified_post_report: PostReport
+) -> None:
+    post.author.nickname = "existing_author"
+    post.author.save()
+    unverified_post_report.post = post
+    unverified_post_report.verified = False
+    unverified_post_report.save()
+
+    client.force_login(admin)
+    url = reverse("moderator-dashboard") + "?author_filter=non_existent_author"
+    response = client.get(url)
+    assert response.status_code == 200
+    reported = response.context["reported_posts"]
+    assert len(reported) == 0

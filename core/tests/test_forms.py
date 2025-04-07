@@ -48,6 +48,7 @@ def test_community_form(data: dict, expected_valid: bool) -> None:
         ({"action_for_selected": DELETE}, True),
         ({"action_for_selected": ""}, False),
         ({"action_for_selected": "invalid_action"}, False),
+        ({}, False),
     ],
 )
 def test_group_admin_action_form(data: dict, expected_valid: bool) -> None:
