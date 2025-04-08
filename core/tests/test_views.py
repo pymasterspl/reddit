@@ -11,7 +11,7 @@ from django.urls import reverse, reverse_lazy
 from faker import Faker
 from PIL import Image
 
-from core.models import Community, CommunityMember, Post, PostReport
+from core.models import BAN, AdminAction, Community, CommunityMember, Post, PostReport
 
 from .test_utils import generate_random_password
 
@@ -694,3 +694,97 @@ def test_view_edge_cases_all_verified_reported_posts(client: Client, post: Post,
     PostReport.objects.create(post=post, verified=True, report_person=user)
     response = client.get(url)
     assert response.context is None
+
+
+def test_moderator_dashboard_post_valid_action(client: Client, admin: User, post_report: PostReport) -> None:
+    client.force_login(admin)
+    url = reverse("moderator-dashboard")
+    data = {"selected_reports": [post_report.id], "action_for_selected": BAN}
+    response = client.post(url, data)
+    assert response.status_code == 302
+    assert response.url == reverse("home")
+    actions = AdminAction.objects.filter(post_report__in=[post_report])
+    assert actions.count() == 1
+
+
+def test_moderator_dashboard_post_no_selected(client: Client, admin: User) -> None:
+    client.force_login(admin)
+    url = reverse("moderator-dashboard")
+    data = {"selected_reports": [], "action_for_selected": "approve"}
+    response = client.post(url, data)
+    assert response.status_code == 302
+    assert response.url == reverse("home")
+
+    actions = AdminAction.objects.all()
+    assert actions.count() == 0
+
+
+def test_moderator_dashboard_filter_by_author(
+    client: Client, admin: User, post: Post, unverified_post_report: PostReport
+) -> None:
+    post.author.nickname = "distinct_author"
+    post.author.save()
+    unverified_post_report.post = post
+    unverified_post_report.verified = False
+    unverified_post_report.save()
+    client.force_login(admin)
+    url = reverse("moderator-dashboard") + "?author_filter=distinct_author"
+    response = client.get(url)
+    assert response.status_code == 200
+    for report in response.context["reported_posts"]:
+        assert report.post.author.nickname == "distinct_author"
+
+
+def test_moderator_dashboard_filter_empty_author(
+    client: Client,
+    admin: User,
+    post: Post,
+    unverified_post_report: PostReport,
+) -> None:
+    post.author.nickname = "author_one"
+    post.author.save()
+    unverified_post_report.post = post
+    unverified_post_report.verified = False
+    unverified_post_report.save()
+
+    client.force_login(admin)
+    url = reverse("moderator-dashboard") + "?author_filter="
+    response = client.get(url)
+    assert response.status_code == 200
+    reported = response.context["reported_posts"]
+    assert any(report.post.author.nickname == "author_one" for report in reported)
+
+
+def test_moderator_dashboard_filter_special_characters(
+    client: Client, admin: User, post: Post, unverified_post_report: PostReport
+) -> None:
+    special_name = "Spéçïål!@#"
+    post.author.nickname = special_name
+    post.author.save()
+    unverified_post_report.post = post
+    unverified_post_report.verified = False
+    unverified_post_report.save()
+
+    client.force_login(admin)
+    url = reverse("moderator-dashboard") + f"?author_filter={special_name}"
+    response = client.get(url)
+    assert response.status_code == 200
+    for report in response.context["reported_posts"]:
+        assert report.post.author.nickname == special_name
+
+
+def test_moderator_dashboard_filter_no_matching_authors(
+    client: Client, admin: User, post: Post, unverified_post_report: PostReport
+) -> None:
+    post.author.nickname = "existing_author"
+    post.author.save()
+    unverified_post_report.post = post
+    unverified_post_report.verified = False
+    unverified_post_report.save()
+
+    client.force_login(admin)
+    url = reverse("moderator-dashboard") + "?author_filter=non_existent_author"
+    response = client.get(url)
+    assert response.status_code == 200
+    reported = response.context["reported_posts"]
+    assert len(reported) == 0

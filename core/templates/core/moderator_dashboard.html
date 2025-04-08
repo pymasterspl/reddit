@@ -47,21 +47,58 @@
         </div>
     </div>
 
-    <div class="mt-5">
-        <h2>Reported Posts List</h2>
-        <div class="list-group">
-{% for report in reported_posts %}
-  <a href="{% url 'reported-post' report.id %}" class="list-group-item list-group-item-action">
-    <div class="d-flex w-100 justify-content-between">
-      <h5 class="mb-1">{{ report.post.title|default:"Comment" }}</h5>
-      <small>{{ report.created_at|date:"Y-m-d H:i" }}</small>
+<div class="mt-5 d-flex justify-content-between align-items-center">
+  <h2>Reported Posts List</h2>
+  <form method="get" action="">
+    <div class="form-inline">
+      <label for="author_filter" class="mr-2">Filter by Author:</label>
+<select name="author_filter" id="author_filter" class="form-control mr-2">
+  <option value="">All Authors</option>
+  {% for author in authors %}
+    <option value="{{ author }}" {% if request.GET.author_filter == author|stringformat:"s" %}selected{% endif %}>{{ author }}</option>
+  {% endfor %}
+</select>
+      <button type="submit" class="btn btn-secondary">Filter</button>
     </div>
-    <p class="mb-1">{{ report.report_details }}</p>
-    <small>Reported by: {{ report.report_person.nickname }}</small>
-  </a>
-{% empty %}
-  <p>No reported posts available.</p>
-{% endfor %}
+  </form>
+</div>
+<form method="post" action="#">
+  {% csrf_token %}
+  <div class="list-group mt-3">
+    {% for report in reported_posts %}
+      <div class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <input type="checkbox" name="selected_reports" value="{{ report.id }}" id="report-{{ report.id }}">
+            <label for="report-{{ report.id }}">
+              <strong>{{ report.post.title|default:"Comment" }}</strong>
+            </label>
+            <small class="text-muted">({{ report.created_at|date:"Y-m-d H:i" }})</small>
+            <p>{{ report.report_details }}</p>
+            <small>Reported by: {{ report.report_person.nickname }}</small>
+          </div>
+          <div>
+            <a href="{% url 'reported-post' report.id %}" class="btn btn-outline-secondary btn-sm">
+              Details
+            </a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p>No reported posts available.</p>
+    {% endfor %}
+  </div>
+
+                <div class="mb-3">
+                    <div class="checkbox-container">
+                        {{ form.action_for_selected|as_crispy_field }}
+                    </div>
+                </div>
+
+  <button type="submit" class="btn btn-primary mt-3">Submit</button>
+</form>
+
+
 
 {% if reported_posts.has_other_pages %}
   <nav aria-label="Page navigation">

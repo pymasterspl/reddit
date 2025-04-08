@@ -151,3 +151,9 @@ class RemoveModeratorForm(forms.Form):
         except User.DoesNotExist as err:
             raise ValidationError(user_not_found_message) from err
         return user
+
+
+class GroupAdminActionForm(forms.Form):
+    action_for_selected: forms.ChoiceField = forms.ChoiceField(
+        choices=ACTION_CHOICES, widget=forms.Select(attrs={"class": "form-control"})
+    )
