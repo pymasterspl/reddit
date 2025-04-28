@@ -88,6 +88,12 @@ class Community(GenericModel):
     members = models.ManyToManyField(User, through="CommunityMember", related_name="communities")
     privacy = models.CharField(max_length=15, choices=PRIVACY_CHOICES, default=RESTRICTED)
     is_18_plus = models.BooleanField(default=False)
+    avatar = models.ImageField(
+        upload_to="community_avatars/", null=True, blank=True, help_text="Square image, min 256×256px"
+    )
+    background = models.ImageField(
+        upload_to="community_backgrounds/", null=True, blank=True, help_text="Recommended 1920×384px"
+    )
 
     class Meta:
         verbose_name_plural = "Communities"
