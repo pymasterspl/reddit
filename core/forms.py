@@ -95,15 +95,18 @@ class PostAwardForm(forms.ModelForm):
 class CommunityForm(forms.ModelForm):
     class Meta:
         model = Community
-        fields: ClassVar[list[str]] = ["name", "privacy", "is_18_plus"]
+        fields: ClassVar[list[str]] = ["name", "privacy", "is_18_plus", "avatar", "background"]
 
     def __init__(self: "CommunityForm", *args: list, **kwargs: dict) -> None:
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = "post"
+        self.helper.enctype = "multipart/form-data"
         self.helper.add_input(Submit("submit", "Create Community"))
         self.fields["is_18_plus"].widget = forms.CheckboxInput()
         self.fields["is_18_plus"].label = "Mature (18+) - only users over 18 can view and contribute"
+        self.fields["avatar"].widget.attrs.update({"accept": "image/jpeg,image/png,image/gif"})
+        self.fields["background"].widget.attrs.update({"accept": "image/jpeg,image/png"})
 
 
 class PostReportForm(forms.ModelForm):
