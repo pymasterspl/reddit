@@ -15,7 +15,7 @@
                     <h3 class="h3">Update Community: {{ community.name }}</h3>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         {% if form.non_field_errors %}
                         <div class="alert alert-danger" role="alert">
