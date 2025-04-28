@@ -26,10 +26,31 @@
                         {% endif %}
 
                         {% for field in form %}
-                        <div class="form-group">
-                            {{ field|as_crispy_field }}
-                        </div>
+                            <div class="form-group mb-4">
+                            {% if field.name == "avatar" or field.name == "background" %}
+                                <label class="form-label">{{ field.label }}</label>
+                                    {% if field.value %}
+                                        <div class="mb-3">
+                                        <img src="{{ field.value.url }}" alt="Current Image" class="img-thumbnail" style="max-height: 200px;">
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input type="checkbox" name="{{ field.html_name }}-clear" id="{{ field.auto_id }}_clear" class="form-check-input">
+                                            <label class="form-check-label text-danger" for="{{ field.auto_id }}_clear">
+                                              Clear {{ field.label }}
+                                            </label>
+                                          </div>
+                                    {% endif %}
+
+                                <input type="{{ field.field.widget.input_type }}" name="{{ field.html_name }}" id="{{ field.auto_id }}" class="form-control">
+                                {% if field.help_text %}
+                                    <small class="form-text">{{ field.help_text }}</small>
+                                {% endif %}
+                            {% else %}
+                                {{ field|as_crispy_field }}
+                            {% endif %}
+                            </div>
                         {% endfor %}
+                        
                         <button class="btn btn-sm btn-success" type="submit">Update Community</button>
                     </form>
                 </div>
