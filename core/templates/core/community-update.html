@@ -51,11 +51,18 @@
                             </div>
                         {% endfor %}
                         
-                        <button class="btn btn-sm btn-success" type="submit">Update Community</button>
+                        <button class="btn btn-sm btn-success" type="button" onclick="confirmSubmit()">Update Community</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<script>
+    function confirmSubmit() {
+        if (confirm("Are you sure you want to update this community?")) {
+            document.querySelector("form").submit();
+        }
+    }
+</script>
 {% endblock content %}
