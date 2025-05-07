@@ -92,6 +92,9 @@
     function confirmSubmit() {
         if (confirm("Are you sure you want to update this community?")) {
             document.querySelector("form").submit();
+        } else {
+            previewAvatar.src = origAvatar;
+            previewBackground.src = origBackground;
         }
     }
 </script>
