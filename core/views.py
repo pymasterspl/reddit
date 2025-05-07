@@ -343,10 +343,10 @@ class CommunityDetailView(CommunityMixin, DetailView):
             community=community, role=CommunityMember.MODERATOR
         ).select_related("user")
         context["community_avatar_url"] = (
-            community.avatar.url if community.avatar else "/static/user_avatars/default.jpg"
+            community.avatar.url if community.avatar else "/media/community_avatars/default.jpg"
         )
         context["community_background_url"] = (
-            community.background.url if community.background else "/static/user_avatars/default_banner.jpg"
+            community.background.url if community.background else "/media/community_backgrounds/default.jpg"
         )
         return context
 
