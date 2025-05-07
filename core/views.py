@@ -342,6 +342,12 @@ class CommunityDetailView(CommunityMixin, DetailView):
         context["moderators"] = CommunityMember.objects.filter(
             community=community, role=CommunityMember.MODERATOR
         ).select_related("user")
+        context["community_avatar_url"] = (
+            community.avatar.url if community.avatar else "/static/user_avatars/default.jpg"
+        )
+        context["community_background_url"] = (
+            community.background.url if community.background else "/static/user_avatars/default_banner.jpg"
+        )
         return context
 
     def post_add_moderator(self: "CommunityDetailView", request: "HttpRequest", *args: any, **kwargs: any) -> any:
