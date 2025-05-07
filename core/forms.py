@@ -1,4 +1,3 @@
-from io import BytesIO
 from typing import ClassVar
 
 from crispy_forms.helper import FormHelper
@@ -7,9 +6,9 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import UploadedFile
-from PIL import Image
 
 from .models import ACTION_CHOICES, REPORT_CHOICES, Community, Post, PostAward, PostReport, User
+from .utils.image_helpers import process_image, validate_avatar
 
 
 class CommentForm(forms.Form):
@@ -112,34 +111,10 @@ class CommunityForm(forms.ModelForm):
         self.fields["avatar"].widget.attrs.update({"accept": "image/jpeg,image/png,image/gif"})
         self.fields["background"].widget.attrs.update({"accept": "image/jpeg,image/png"})
 
-    def clean_avatar(self: "CommunityForm") -> UploadedFile:
+    def clean_avatar(self: "CommunityForm") -> ContentFile:
         avatar = self.cleaned_data.get("avatar")
         if avatar:
-            valid_mime_types = ["image/jpeg", "image/png", "image/gif"]
-            if avatar.content_type not in valid_mime_types:
-                msg = "Unsupported file type. Use JPEG, PNG, or GIF."
-                raise ValidationError(msg)
-
-            max_size = 2 * 1024 * 1024  # 2 MB
-            if avatar.size > max_size:
-                msg = "Avatar file size must not exceed 2MB."
-                raise ValidationError(msg)
-
-            try:
-                img = Image.open(avatar)
-                width, height = img.size
-            except Exception as err:
-                msg = "Invalid image file."
-                raise ValidationError(msg) from err
-
-            req_size = 256
-            if width < req_size or height < req_size:
-                msg = "Avatar must be at least 256x256 pixels."
-                raise ValidationError(msg)
-            if width != height:
-                msg = "Avatar must be square."
-                raise ValidationError(msg)
-
+            return validate_avatar(avatar)
         return avatar
 
     def clean_background(self: "CommunityForm") -> UploadedFile:
@@ -153,29 +128,12 @@ class CommunityForm(forms.ModelForm):
 
     def save(self: "CommunityForm", *, commit: bool = True) -> Community:
         instance = super().save(commit=False)
-
-        def process_image(field_file: UploadedFile, max_size: int, quality: int) -> ContentFile:
-            def get_image_format(content_type: str) -> str:
-                return {"image/jpeg": "JPEG", "image/png": "PNG", "image/gif": "GIF"}[content_type]
-
-            img = Image.open(field_file)
-            img_format = get_image_format(field_file.content_type)
-            img = img.convert("RGBA" if img_format in ["PNG", "GIF"] else "RGB")
-            img.thumbnail((max_size, max_size), Image.LANCZOS)
-            buffer = BytesIO()
-            img.save(buffer, format=img_format)
-            name = field_file.name.rsplit(".", 1)[0]
-            ext = img_format.lower()
-            return ContentFile(buffer.getvalue(), name=f"{name}.{ext}")
-
         avatar = self.cleaned_data.get("avatar")
         if avatar:
             instance.avatar = process_image(avatar, max_size=512, quality=75)
-
         bg = self.cleaned_data.get("background")
         if bg:
             instance.background = process_image(bg, max_size=1920, quality=80)
-
         if commit:
             instance.save()
         return instance
