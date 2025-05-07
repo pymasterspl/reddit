@@ -1,9 +1,11 @@
+from io import BytesIO
 from typing import ClassVar
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import UploadedFile
 from PIL import Image
 
@@ -139,6 +141,29 @@ class CommunityForm(forms.ModelForm):
                 raise ValidationError(msg)
 
         return avatar
+
+    def save(self: "CommunityForm", *, commit: bool = True) -> Community:
+        instance = super().save(commit=False)
+
+        def process_image(field_file: UploadedFile, max_size: int, quality: int) -> ContentFile:
+            img = Image.open(field_file)
+            img = img.convert("RGB")
+            img.thumbnail((max_size, max_size), Image.LANCZOS)
+            buffer = BytesIO()
+            img.save(buffer, format="JPEG", quality=quality)
+            return ContentFile(buffer.getvalue(), name=f"{field_file.name.rsplit('.',1)[0]}.jpg")
+
+        avatar = self.cleaned_data.get("avatar")
+        if avatar:
+            instance.avatar = process_image(avatar, max_size=512, quality=75)
+
+        bg = self.cleaned_data.get("background")
+        if bg:
+            instance.background = process_image(bg, max_size=1920, quality=80)
+
+        if commit:
+            instance.save()
+        return instance
 
 
 class PostReportForm(forms.ModelForm):
