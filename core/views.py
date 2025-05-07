@@ -268,7 +268,7 @@ class CommunityListView(ListView):
     model = Community
     template_name = "core/community-list.html"
     context_object_name = "communities"
-    paginate_by = 10
+    paginate_by = 12
 
     def get_queryset(self: "CommunityListView") -> models.QuerySet:
         user = self.request.user
