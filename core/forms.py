@@ -142,16 +142,31 @@ class CommunityForm(forms.ModelForm):
 
         return avatar
 
+    def clean_background(self: "CommunityForm") -> UploadedFile:
+        background = self.cleaned_data.get("background")
+        if background:
+            valid_mime_types = ["image/jpeg", "image/png"]
+            if background.content_type not in valid_mime_types:
+                msg = "Unsupported background image format. Use JPEG or PNG."
+                raise ValidationError(msg)
+        return background
+
     def save(self: "CommunityForm", *, commit: bool = True) -> Community:
         instance = super().save(commit=False)
 
         def process_image(field_file: UploadedFile, max_size: int, quality: int) -> ContentFile:
+            def get_image_format(content_type: str) -> str:
+                return {"image/jpeg": "JPEG", "image/png": "PNG", "image/gif": "GIF"}[content_type]
+
             img = Image.open(field_file)
-            img = img.convert("RGB")
+            img_format = get_image_format(field_file.content_type)
+            img = img.convert("RGBA" if img_format in ["PNG", "GIF"] else "RGB")
             img.thumbnail((max_size, max_size), Image.LANCZOS)
             buffer = BytesIO()
-            img.save(buffer, format="JPEG", quality=quality)
-            return ContentFile(buffer.getvalue(), name=f"{field_file.name.rsplit('.',1)[0]}.jpg")
+            img.save(buffer, format=img_format)
+            name = field_file.name.rsplit(".", 1)[0]
+            ext = img_format.lower()
+            return ContentFile(buffer.getvalue(), name=f"{name}.{ext}")
 
         avatar = self.cleaned_data.get("avatar")
         if avatar:
