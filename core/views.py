@@ -409,6 +409,24 @@ class CommunityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return redirect("community-detail", slug=self.get_object().slug)
 
     def form_valid(self: "CommunityUpdateView", form: forms.ModelForm) -> HttpResponseRedirect:
+        old = Community.objects.get(pk=self.get_object().pk)
+
+        if self.request.POST.get("avatar-clear"):
+            if old.avatar:
+                old.avatar.delete(save=False)
+            form.instance.avatar = None
+        elif form.cleaned_data.get("avatar"):
+            if old.avatar and old.avatar.name != form.cleaned_data["avatar"].name:
+                old.avatar.delete(save=False)
+
+        if self.request.POST.get("background-clear"):
+            if old.background:
+                old.background.delete(save=False)
+            form.instance.background = None
+        elif form.cleaned_data.get("background"):
+            if old.background and old.background.name != form.cleaned_data["background"].name:
+                old.background.delete(save=False)
+
         response = super().form_valid(form)
         messages.success(self.request, "Community updated successfully.")
         return response
