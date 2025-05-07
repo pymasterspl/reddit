@@ -44,6 +44,11 @@
                             {% if field.help_text %}
                             <small class="form-text">{{ field.help_text }}</small>
                             {% endif %}
+                            {% if field.errors %}
+                            {% for err in field.errors %}
+                            <div class="invalid-feedback d-block">{{ err }}</div>
+                            {% endfor %}
+                            {% endif %}
                             {% else %}
                             {{ field|as_crispy_field }}
                             {% endif %}
