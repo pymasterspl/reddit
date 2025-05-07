@@ -4,6 +4,8 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
 from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import UploadedFile
+from PIL import Image
 
 from .models import ACTION_CHOICES, REPORT_CHOICES, Community, Post, PostAward, PostReport, User
 
@@ -107,6 +109,36 @@ class CommunityForm(forms.ModelForm):
         self.fields["is_18_plus"].label = "Mature (18+) - only users over 18 can view and contribute"
         self.fields["avatar"].widget.attrs.update({"accept": "image/jpeg,image/png,image/gif"})
         self.fields["background"].widget.attrs.update({"accept": "image/jpeg,image/png"})
+
+    def clean_avatar(self: "CommunityForm") -> UploadedFile:
+        avatar = self.cleaned_data.get("avatar")
+        if avatar:
+            valid_mime_types = ["image/jpeg", "image/png", "image/gif"]
+            if avatar.content_type not in valid_mime_types:
+                msg = "Unsupported file type. Use JPEG, PNG, or GIF."
+                raise ValidationError(msg)
+
+            max_size = 2 * 1024 * 1024  # 2 MB
+            if avatar.size > max_size:
+                msg = "Avatar file size must not exceed 2MB."
+                raise ValidationError(msg)
+
+            try:
+                img = Image.open(avatar)
+                width, height = img.size
+            except Exception as err:
+                msg = "Invalid image file."
+                raise ValidationError(msg) from err
+
+            req_size = 256
+            if width < req_size or height < req_size:
+                msg = "Avatar must be at least 256x256 pixels."
+                raise ValidationError(msg)
+            if width != height:
+                msg = "Avatar must be square."
+                raise ValidationError(msg)
+
+        return avatar
 
 
 class PostReportForm(forms.ModelForm):
