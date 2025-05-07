@@ -113,13 +113,13 @@ class CommunityForm(forms.ModelForm):
 
     def clean_avatar(self: "CommunityForm") -> ContentFile:
         avatar = self.cleaned_data.get("avatar")
-        if avatar:
+        if avatar and hasattr(avatar, "content_type"):
             return validate_avatar(avatar)
         return avatar
 
     def clean_background(self: "CommunityForm") -> UploadedFile:
         background = self.cleaned_data.get("background")
-        if background:
+        if background and hasattr(background, "content_type"):
             valid_mime_types = ["image/jpeg", "image/png"]
             if background.content_type not in valid_mime_types:
                 msg = "Unsupported background image format. Use JPEG or PNG."
@@ -128,12 +128,19 @@ class CommunityForm(forms.ModelForm):
 
     def save(self: "CommunityForm", *, commit: bool = True) -> Community:
         instance = super().save(commit=False)
-        avatar = self.cleaned_data.get("avatar")
-        if avatar:
-            instance.avatar = process_image(avatar, max_size=512, quality=75)
-        bg = self.cleaned_data.get("background")
-        if bg:
-            instance.background = process_image(bg, max_size=1920, quality=80)
+        if self.data.get("avatar-clear") == "on":
+            instance.avatar = None
+        else:
+            avatar = self.cleaned_data.get("avatar")
+            if avatar and hasattr(avatar, "content_type"):
+                instance.avatar = process_image(avatar, max_size=512, quality=75)
+
+        if self.data.get("background-clear") == "on":
+            instance.background = None
+        else:
+            bg = self.cleaned_data.get("background")
+            if bg and hasattr(bg, "content_type"):
+                instance.background = process_image(bg, max_size=1920, quality=80)
         if commit:
             instance.save()
         return instance
