@@ -408,24 +408,26 @@ class CommunityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         messages.error(self.request, "You do not have permission to update this community.")
         return redirect("community-detail", slug=self.get_object().slug)
 
+    def _handle_image_update(
+        self: "CommunityUpdateView", form: forms.ModelForm, old_instance: models.Model, field_name: str
+    ) -> None:
+        clear_flag = self.request.POST.get(f"{field_name}-clear")
+        new_image = form.cleaned_data.get(field_name)
+        old_image = getattr(old_instance, field_name)
+
+        if clear_flag:
+            if old_image:
+                old_image.delete(save=False)
+            setattr(form.instance, field_name, None)
+        elif new_image:
+            if old_image and old_image.name != new_image.name:
+                old_image.delete(save=False)
+
     def form_valid(self: "CommunityUpdateView", form: forms.ModelForm) -> HttpResponseRedirect:
         old = Community.objects.get(pk=self.get_object().pk)
 
-        if self.request.POST.get("avatar-clear"):
-            if old.avatar:
-                old.avatar.delete(save=False)
-            form.instance.avatar = None
-        elif form.cleaned_data.get("avatar"):
-            if old.avatar and old.avatar.name != form.cleaned_data["avatar"].name:
-                old.avatar.delete(save=False)
-
-        if self.request.POST.get("background-clear"):
-            if old.background:
-                old.background.delete(save=False)
-            form.instance.background = None
-        elif form.cleaned_data.get("background"):
-            if old.background and old.background.name != form.cleaned_data["background"].name:
-                old.background.delete(save=False)
+        self._handle_image_update(form, old, "avatar")
+        self._handle_image_update(form, old, "background")
 
         response = super().form_valid(form)
         messages.success(self.request, "Community updated successfully.")
