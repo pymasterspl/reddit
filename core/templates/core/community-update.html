@@ -15,7 +15,7 @@
                     <h3 class="h3">Update Community: {{ community.name }}</h3>
                 </div>
                 <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
+                    <form method="post" id="updateCommunityForm" enctype="multipart/form-data">
                         {% csrf_token %}
                         {% if form.non_field_errors %}
                         <div class="alert alert-danger">
@@ -91,7 +91,7 @@
 <script>
     function confirmSubmit() {
         if (confirm("Are you sure you want to update this community?")) {
-            document.querySelector("form").submit();
+            document.querySelector("#updateCommunityForm").submit();
         } else {
             previewAvatar.src = origAvatar;
             previewBackground.src = origBackground;

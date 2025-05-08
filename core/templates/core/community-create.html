@@ -15,7 +15,7 @@
                     <h3>Create a New Community</h3>
                 </div>
                 <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
+                    <form method="post" id="createCommunityForm" enctype="multipart/form-data">
                         {% csrf_token %}
                         {% if form.non_field_errors %}
                         <div class="alert alert-danger">
@@ -57,7 +57,7 @@
 <script>
     function confirmSubmit() {
         if (confirm("Are you sure you want to create this community?")) {
-            document.querySelector("form").submit();
+            document.querySelector("#createCommunityForm").submit();
         }
     }
 </script>
