@@ -33,6 +33,7 @@ from .forms import (
 )
 from .models import AdminAction, Community, CommunityMember, Post, PostAward, PostReport, PostVote, SavedPost
 from .services import handle_admin_action
+from .utils.image_helpers import process_image, validate_avatar
 
 
 class PostListView(ListView):
@@ -296,6 +297,14 @@ class CommunityCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self: "CommunityCreateView", form: forms.ModelForm) -> HttpResponseRedirect:
         form.instance.author = self.request.user
+        avatar = self.request.FILES.get("avatar")
+        if avatar:
+            form.instance.avatar = process_image(validate_avatar(avatar), max_size=512, quality=75)
+
+        background = self.request.FILES.get("background")
+        if background:
+            form.instance.background = process_image(background, max_size=1920, quality=80)
+
         response = super().form_valid(form)
         CommunityMember.objects.create(
             community=self.object,
