@@ -871,3 +871,26 @@ def test_get_context_data_includes_required_variables(client: Client, user: User
     assert "community_avatar_url" in response.context
     assert "community_background_url" in response.context
     assert "is_admin_or_moderator" in response.context
+
+
+def test_community_create_view_processes_images(client: Client, user: User) -> None:
+    client.force_login(user)
+    url = reverse("community-create")
+    avatar = generate_test_image(size=(1024, 1024))
+    background = generate_test_image(size=(2048, 1024))
+
+    response = client.post(
+        url,
+        {
+            "name": "Test Community",
+            "privacy": "10_PUBLIC",
+        },
+        files={"avatar": avatar, "background": background},
+        follow=True,
+    )
+
+    assert response.status_code == 200
+    community = Community.objects.get(name="Test Community")
+    assert community.avatar
+    assert community.background
+    assert CommunityMember.objects.filter(community=community, user=user, role=CommunityMember.ADMIN).exists()
