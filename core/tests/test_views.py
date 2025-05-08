@@ -894,3 +894,37 @@ def test_community_create_view_processes_images(client: Client, user: User) -> N
     assert community.avatar
     assert community.background
     assert CommunityMember.objects.filter(community=community, user=user, role=CommunityMember.ADMIN).exists()
+
+
+@pytest.mark.django_db()
+def test_updating_avatar_and_background_replaces_old_images(client: Client, user: User, community: Community) -> None:
+    client.force_login(user)
+
+    old_avatar = generate_test_image()
+    old_background = generate_test_image()
+    community.avatar.save("old_avatar.jpg", old_avatar, save=True)
+    community.background.save("old_background.jpg", old_background, save=True)
+    community.author = user
+    community.save()
+
+    new_avatar = generate_test_image()
+    new_background = generate_test_image()
+
+    url = reverse("community-update", kwargs={"slug": community.slug})
+    response = client.post(
+        url,
+        {
+            "name": community.name,
+            "privacy": community.privacy,
+        },
+        files={"avatar": new_avatar, "background": new_background},
+        follow=True,
+    )
+
+    assert response.status_code == 200
+    community.refresh_from_db()
+
+    assert community.avatar
+    assert community.background
+    assert community.avatar.name != "old_avatar.jpg"
+    assert community.background.name != "old_background.jpg"
