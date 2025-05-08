@@ -418,10 +418,8 @@ class CommunityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
                 old_image.delete(save=False)
 
     def form_valid(self: "CommunityUpdateView", form: forms.ModelForm) -> HttpResponseRedirect:
-        old = Community.objects.get(pk=self.get_object().pk)
-
-        self._handle_image_update(form, old, "avatar")
-        self._handle_image_update(form, old, "background")
+        community = form.instance
+        community.update_images_from_form_data(self.request.POST, self.request.FILES)
 
         response = super().form_valid(form)
         messages.success(self.request, "Community updated successfully.")

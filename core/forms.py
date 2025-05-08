@@ -8,7 +8,7 @@ from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import UploadedFile
 
 from .models import ACTION_CHOICES, REPORT_CHOICES, Community, Post, PostAward, PostReport, User
-from .utils.image_helpers import process_image, validate_avatar
+from .utils.image_helpers import validate_avatar
 
 
 class CommentForm(forms.Form):
@@ -126,32 +126,8 @@ class CommunityForm(forms.ModelForm):
                 raise ValidationError(msg)
         return background
 
-    def process_image_field(
-        self: "CommunityForm",
-        field_name: str,
-        *,
-        clear_flag: bool,
-        max_size: int,
-        quality: int,
-    ) -> ContentFile | None:
-        if clear_flag:
-            return None
-        image = self.cleaned_data.get(field_name)
-        if image and hasattr(image, "content_type"):
-            return process_image(image, max_size=max_size, quality=quality)
-        return image
-
     def save(self: "CommunityForm", *, commit: bool = True) -> Community:
         instance = super().save(commit=False)
-
-        remove_avatar = self.data.get("avatar-clear") == "on"
-        remove_background = self.data.get("background-clear") == "on"
-
-        instance.avatar = self.process_image_field("avatar", clear_flag=remove_avatar, max_size=512, quality=75)
-        instance.background = self.process_image_field(
-            "background", clear_flag=remove_background, max_size=1920, quality=80
-        )
-
         if commit:
             instance.save()
         return instance
