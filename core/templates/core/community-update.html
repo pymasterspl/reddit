@@ -18,9 +18,9 @@
                     <form method="post" id="updateCommunityForm" enctype="multipart/form-data">
                         {% csrf_token %}
                         {% if form.non_field_errors %}
-                        <div class="alert alert-danger">
+                        <div class="alert alert-danger" role="alert">
                             {% for err in form.non_field_errors %}
-                            <p>{{ err }}</p>
+                            <p class="form-error">{{ err }}</p>
                             {% endfor %}
                         </div>
                         {% endif %}
@@ -46,7 +46,9 @@
                             {% endif %}
                             {% if field.errors %}
                             {% for err in field.errors %}
-                            <div class="invalid-feedback d-block">{{ err }}</div>
+                            <div class="alert alert-danger" role="alert">
+                                <p class="form-error">{{ err }}</p>
+                            </div>
                             {% endfor %}
                             {% endif %}
                             {% else %}
