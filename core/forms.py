@@ -126,21 +126,32 @@ class CommunityForm(forms.ModelForm):
                 raise ValidationError(msg)
         return background
 
+    def process_image_field(
+        self: "CommunityForm",
+        field_name: str,
+        *,
+        clear_flag: bool,
+        max_size: int,
+        quality: int,
+    ) -> ContentFile | None:
+        if clear_flag:
+            return None
+        image = self.cleaned_data.get(field_name)
+        if image and hasattr(image, "content_type"):
+            return process_image(image, max_size=max_size, quality=quality)
+        return image
+
     def save(self: "CommunityForm", *, commit: bool = True) -> Community:
         instance = super().save(commit=False)
-        if self.data.get("avatar-clear") == "on":
-            instance.avatar = None
-        else:
-            avatar = self.cleaned_data.get("avatar")
-            if avatar and hasattr(avatar, "content_type"):
-                instance.avatar = process_image(avatar, max_size=512, quality=75)
 
-        if self.data.get("background-clear") == "on":
-            instance.background = None
-        else:
-            bg = self.cleaned_data.get("background")
-            if bg and hasattr(bg, "content_type"):
-                instance.background = process_image(bg, max_size=1920, quality=80)
+        remove_avatar = self.data.get("avatar-clear") == "on"
+        remove_background = self.data.get("background-clear") == "on"
+
+        instance.avatar = self.process_image_field("avatar", clear_flag=remove_avatar, max_size=512, quality=75)
+        instance.background = self.process_image_field(
+            "background", clear_flag=remove_background, max_size=1920, quality=80
+        )
+
         if commit:
             instance.save()
         return instance
