@@ -133,6 +133,14 @@ class Community(GenericModel):
             or self.author == user
         )
 
+    @property
+    def avatar_url(self: "Community") -> str:
+        return self.avatar.url if self.avatar else "/media/community_avatars/default.jpg"
+
+    @property
+    def background_url(self: "Community") -> str:
+        return self.background.url if self.background else "/media/community_backgrounds/default.jpg"
+
 
 class CommunityService:
     @staticmethod
