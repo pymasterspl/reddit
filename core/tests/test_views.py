@@ -827,6 +827,13 @@ def test_save_method_processes_images_correctly(user: User) -> None:
     assert community.avatar
     assert community.background
 
+    avatar_image = Image.open(community.avatar.path)
+    background_image = Image.open(community.background.path)
+    assert avatar_image.format in ["JPEG", "PNG"]
+    assert background_image.format in ["JPEG", "PNG"]
+    assert max(avatar_image.size) <= 512
+    assert max(background_image.size) <= 1920
+
 
 @pytest.mark.django_db()
 def test_image_clear_flags_functionality(client: Client, user: User, community: Community) -> None:
