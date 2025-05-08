@@ -149,7 +149,7 @@
                 if (clearAvatar.checked) {
                     previewAvatar.src = '/media/community_avatars/default.jpg';
                 } else {
-                    previewAvatar.src = avatarInput.files.length ? previewAvatar.src : origAvatar;
+                    previewAvatar.src = origAvatar;
                 }
             });
         }
@@ -159,7 +159,7 @@
                 if (clearBackground.checked) {
                     previewBackground.src = '/media/community_backgrounds/default.jpg';
                 } else {
-                    previewBackground.src = bgInput.files.length ? previewBackground.src : origBackground;
+                    previewBackground.src = origBackground;
                 }
             });
         }
