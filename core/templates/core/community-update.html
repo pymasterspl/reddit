@@ -66,21 +66,10 @@
         <div class="col-lg-6">
             <div class="card bg-dark text-light mb-4" id="previewCard">
                 <div class="card-header position-relative p-0" style="height: 200px; overflow: visible;">
-                    <img id="previewBackground" src="
-                      {% if form.instance.background %}
-                        {{ form.instance.background.url }}
-                      {% else %}
-                        /media/community_backgrounds/default.jpg
-                      {% endif %}
-                    " alt="Banner preview" class="w-100 h-100" style="object-fit: cover;">
-
-                    <img id="previewAvatar" src="
-                      {% if form.instance.avatar %}
-                        {{ form.instance.avatar.url }}
-                      {% else %}
-                        /media/community_avatars/default.jpg
-                      {% endif %}
-                    " alt="Avatar preview" class="rounded-circle border border-3 border-dark position-absolute"
+                    <img id="previewBackground" src="{{ form.instance.background.url }}" alt="Banner preview"
+                        class="w-100 h-100" style="object-fit: cover;">
+                    <img id="previewAvatar" src="{{ form.instance.avatar.url }}" alt="Avatar preview"
+                        class="rounded-circle border border-3 border-dark position-absolute"
                         style="width:96px; height:96px; bottom:-48px; left:16px; object-fit: cover; z-index:10;">
                 </div>
                 <div class="card-body pt-5">
