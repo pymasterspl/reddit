@@ -126,12 +126,6 @@ class CommunityForm(forms.ModelForm):
                 raise ValidationError(msg)
         return background
 
-    def save(self: "CommunityForm", *, commit: bool = True) -> Community:
-        instance = super().save(commit=False)
-        if commit:
-            instance.save()
-        return instance
-
 
 class PostReportForm(forms.ModelForm):
     report_type: forms.ChoiceField = forms.ChoiceField(
