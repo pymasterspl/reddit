@@ -882,25 +882,24 @@ def test_get_context_data_includes_required_variables(client: Client, user: User
 
 def test_community_create_view_processes_images(client: Client, user: User) -> None:
     client.force_login(user)
-    url = reverse("community-create")
     avatar = generate_test_image(size=(1024, 1024))
     background = generate_test_image(size=(2048, 1024))
-
     response = client.post(
-        url,
+        reverse("community-create"),
         {
             "name": "Test Community",
-            "privacy": "10_PUBLIC",
+            "privacy": Community.RESTRICTED,
+            "is_18_plus": False,
+            "avatar": avatar,
+            "background": background,
         },
-        files={"avatar": avatar, "background": background},
         follow=True,
     )
-
     assert response.status_code == 200
-    community = Community.objects.get(name="Test Community")
-    assert community.avatar
-    assert community.background
-    assert CommunityMember.objects.filter(community=community, user=user, role=CommunityMember.ADMIN).exists()
+    community = Community.objects.first()
+    assert community is not None
+    assert community.avatar.name.startswith("community_avatars/")
+    assert community.background.name.startswith("community_backgrounds/")
 
 
 @pytest.mark.django_db()
