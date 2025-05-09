@@ -297,11 +297,11 @@ class CommunityCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self: "CommunityCreateView", form: forms.ModelForm) -> HttpResponseRedirect:
         form.instance.author = self.request.user
-        avatar = self.request.FILES.get("avatar")
+        avatar = form.cleaned_data.get("avatar")
         if avatar:
-            form.instance.avatar = process_image(validate_avatar(avatar), max_size=512, quality=75)
+            form.instance.avatar = process_image(avatar, max_size=512, quality=75)
 
-        background = self.request.FILES.get("background")
+        background = form.cleaned_data.get("background")
         if background:
             form.instance.background = process_image(background, max_size=1920, quality=80)
 
