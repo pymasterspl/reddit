@@ -66,9 +66,9 @@
         <div class="col-lg-6">
             <div class="card bg-dark text-light mb-4" id="previewCard">
                 <div class="card-header position-relative p-0" style="height: 200px; overflow: visible;">
-                    <img id="previewBackground" src="{{ form.instance.background.url }}" alt="Banner preview"
+                    <img id="previewBackground" src="{{ form.instance.background_url }}" alt="Banner preview"
                         class="w-100 h-100" style="object-fit: cover;">
-                    <img id="previewAvatar" src="{{ form.instance.avatar.url }}" alt="Avatar preview"
+                    <img id="previewAvatar" src="{{ form.instance.avatar_url }}" alt="Avatar preview"
                         class="rounded-circle border border-3 border-dark position-absolute"
                         style="width:96px; height:96px; bottom:-48px; left:16px; object-fit: cover; z-index:10;">
                 </div>
@@ -101,8 +101,8 @@
         const previewAvatar = document.getElementById('previewAvatar');
         const previewBackground = document.getElementById('previewBackground');
 
-        const origAvatar = "{% if form.instance.avatar %}{{ form.instance.avatar.url }}{% else %}/media/community_avatars/default.jpg{% endif %}";
-        const origBackground = "{% if form.instance.background %}{{ form.instance.background.url }}{% else %}/media/community_backgrounds/default.jpg{% endif %}";
+        const origAvatar = "{{ form.instance.avatar_url }}";
+        const origBackground = "{{ form.instance.background_url }}";
 
         previewName.textContent = nameInput.value || "{{ community.name }}";
         previewAvatar.src = origAvatar;
