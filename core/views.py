@@ -352,8 +352,8 @@ class CommunityDetailView(CommunityMixin, DetailView):
             community=community, role=CommunityMember.MODERATOR
         ).select_related("user")
 
-        context["community_avatar_url"] = community.avatar.url if community.avatar else None
-        context["community_background_url"] = community.background.url if community.background else None
+        context["community_avatar_url"] = community.avatar_url
+        context["community_background_url"] = community.background_url
 
         return context
 
