@@ -415,21 +415,6 @@ class CommunityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         messages.error(self.request, "You do not have permission to update this community.")
         return redirect("community-detail", slug=self.get_object().slug)
 
-    def _handle_image_update(
-        self: "CommunityUpdateView", form: forms.ModelForm, old_instance: models.Model, field_name: str
-    ) -> None:
-        clear_flag = self.request.POST.get(f"{field_name}-clear")
-        new_image = form.cleaned_data.get(field_name)
-        old_image = getattr(old_instance, field_name)
-
-        if clear_flag:
-            if old_image:
-                old_image.delete(save=False)
-            setattr(form.instance, field_name, None)
-        elif new_image:
-            if old_image and old_image.name != new_image.name:
-                old_image.delete(save=False)
-
     def form_valid(self: "CommunityUpdateView", form: forms.ModelForm) -> HttpResponseRedirect:
         community = form.instance
         community.update_images_from_form_data(self.request.POST, self.request.FILES)
