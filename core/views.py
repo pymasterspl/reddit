@@ -33,7 +33,7 @@ from .forms import (
 )
 from .models import AdminAction, Community, CommunityMember, Post, PostAward, PostReport, PostVote, SavedPost
 from .services import handle_admin_action
-from .utils.image_helpers import process_image, validate_avatar
+from .utils.image_helpers import process_image
 
 
 class PostListView(ListView):
