@@ -4,7 +4,6 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
-<link rel="stylesheet" href="{% static 'core/css/help.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -13,12 +12,11 @@
         <h1 class="display-4">Welcome, Moderator!</h1>
         <p class="lead">This is your admin panel where you can manage posts, users, and reports.</p>
         <hr class="my-4">
-        <p>You can access the full functionality from the top navigation menu.</p>
     </div>
 
     <div class="row">
         <div class="col-md-4">
-            <div class="card text-white bg-primary mb-3" data-tooltip="Shows the total number of posts on the platform.">
+            <div class="card text-white bg-primary mb-3">
                 <div class="card-header">Total Posts</div>
                 <div class="card-body">
                     <h5 class="card-title">{{ active_posts }}</h5>
@@ -28,7 +26,7 @@
         </div>
 
         <div class="col-md-4">
-            <div class="card text-white bg-success mb-3" data-tooltip="Shows the count of users who have been active recently.">
+            <div class="card text-white bg-success mb-3">
                 <div class="card-header">Active Users</div>
                 <div class="card-body">
                     <h5 class="card-title">{{ active_users }}</h5>
@@ -38,7 +36,7 @@
         </div>
 
         <div class="col-md-4">
-            <div class="card text-white bg-danger mb-3" data-tooltip="Shows how many posts have been reported and need review.">
+            <div class="card text-white bg-danger mb-3">
                 <div class="card-header">Reported Posts</div>
                 <div class="card-body">
                     <h5 class="card-title">{{ reported_posts_count }}</h5>
@@ -52,7 +50,7 @@
       <form method="get" action="">
         <div class="form-inline">
           <label for="author_filter" class="mr-2">Filter by Author:</label>
-          <select name="author_filter" id="author_filter" class="form-control mr-2" data-tooltip="Filter the list by the original author of the posts.">
+          <select name="author_filter" id="author_filter" class="form-control mr-2">
             <option value="">All Authors</option>
             {% for author in authors %}
               <option value="{{ author }}" {% if request.GET.author_filter == author|stringformat:"s" %}selected{% endif %}>{{ author }}</option>
@@ -66,7 +64,7 @@
       {% csrf_token %}
       <div class="list-group mt-3">
         {% for report in reported_posts %}
-          <div class="list-group-item" data-tooltip="Select reports to perform bulk actions.">
+          <div class="list-group-item">
             <div class="d-flex justify-content-between align-items-center">
               <div>
                 <input type="checkbox" name="selected_reports" value="{{ report.id }}" id="report-{{ report.id }}">
@@ -78,7 +76,7 @@
                 <small>Reported by: {{ report.report_person.nickname }}</small>
               </div>
               <div>
-                <a href="{% url 'reported-post' report.id %}" class="btn btn-outline-secondary btn-sm" data-tooltip="View full report details and post context.">
+                <a href="{% url 'reported-post' report.id %}" class="btn btn-outline-secondary btn-sm">
                   Details
                 </a>
               </div>
