@@ -521,6 +521,14 @@ def test_report_post_harassment(client: Client, user: User, admin: User, post: P
     assert len(mail.outbox) == 1
 
 
+def test_report_post_harassment_no_superusers(client: Client, user: User, post: Post, report_data: dict) -> None:
+    data = report_data("30_HARASSMENT")
+    client.force_login(user)
+    response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
+    assert response.status_code == 302
+    assert len(mail.outbox) == 0
+
+
 def test_add_non_existing_moderator(client: Client, community: Community, user: User) -> None:
     admin_password = generate_random_password()
 
