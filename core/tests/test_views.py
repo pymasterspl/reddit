@@ -185,7 +185,7 @@ def test_add_post_unauthorized(client: Client, community: Community) -> None:
     assert reverse("login") in response.url
 
 
-def test_report_post(client: Client, user: User, post: Post, report_data: dict) -> None:
+def test_report_post(client: Client, admin: User, user: User, post: Post, report_data: dict) -> None:
     data = report_data()
     client.force_login(user)
     response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
