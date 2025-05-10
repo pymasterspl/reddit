@@ -4,8 +4,11 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import UploadedFile
 
 from .models import ACTION_CHOICES, REPORT_CHOICES, Community, Post, PostAward, PostReport, User
+from .utils.image_helpers import validate_avatar
 
 
 class CommentForm(forms.Form):
@@ -95,15 +98,33 @@ class PostAwardForm(forms.ModelForm):
 class CommunityForm(forms.ModelForm):
     class Meta:
         model = Community
-        fields: ClassVar[list[str]] = ["name", "privacy", "is_18_plus"]
+        fields: ClassVar[list[str]] = ["name", "privacy", "is_18_plus", "avatar", "background"]
 
     def __init__(self: "CommunityForm", *args: list, **kwargs: dict) -> None:
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = "post"
+        self.helper.enctype = "multipart/form-data"
         self.helper.add_input(Submit("submit", "Create Community"))
         self.fields["is_18_plus"].widget = forms.CheckboxInput()
         self.fields["is_18_plus"].label = "Mature (18+) - only users over 18 can view and contribute"
+        self.fields["avatar"].widget.attrs.update({"accept": "image/jpeg,image/png,image/gif"})
+        self.fields["background"].widget.attrs.update({"accept": "image/jpeg,image/png"})
+
+    def clean_avatar(self: "CommunityForm") -> ContentFile:
+        avatar = self.cleaned_data.get("avatar")
+        if avatar and hasattr(avatar, "content_type"):
+            return validate_avatar(avatar)
+        return avatar
+
+    def clean_background(self: "CommunityForm") -> UploadedFile:
+        background = self.cleaned_data.get("background")
+        if background and hasattr(background, "content_type"):
+            valid_mime_types = ["image/jpeg", "image/png"]
+            if background.content_type not in valid_mime_types:
+                msg = "Unsupported background image format. Use JPEG or PNG."
+                raise ValidationError(msg)
+        return background
 
 
 class PostReportForm(forms.ModelForm):

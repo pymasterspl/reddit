@@ -2,16 +2,33 @@
 {% load static %}
 
 {% block content %}
-<div class="container">
-    <h1>Communities</h1>
-    <div class="list-group">
+<div class="container my-4">
+    <h1 class="mb-4">Communities</h1>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         {% for community in communities %}
-        <a href="{% url 'community-detail' community.slug %}" class="list-group-item list-group-item-action">
-            {{ community.name }}
-            {% if not community.has_access %}
-            <span class="private-community" title="Private Community - No Access">🔒</span>
-            {% endif %}
-        </a>
+        <div class="col">
+            <a href="{% url 'community-detail' community.slug %}" class="text-decoration-none">
+                <div class="card bg-dark text-light shadow-sm h-100 border">
+                    <img src="{% if community.background %}{{ community.background.url }}{% else %}/media/community_backgrounds/default.jpg{% endif %}"
+                        class="card-img-top" alt="Banner of {{ community.name }}"
+                        style="height: 150px; object-fit: cover;">
+                    <div class="card-body d-flex align-items-center">
+                        <img src="{% if community.avatar %}{{ community.avatar.url }}{% else %}/media/community_avatars/default.jpg{% endif %}"
+                            alt="Avatar of {{ community.name }}" class="rounded-circle me-3" width="50" height="50"
+                            style="object-fit: cover;">
+                        <div>
+                            <h5 class="card-title mb-0">
+                                {{ community.name }}
+                                {% if not community.has_access %}
+                                <span class="text-muted ms-1" title="Private Community - No Access">🔒</span>
+                                {% endif %}
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
         {% empty %}
         <p>No communities available.</p>
         {% endfor %}

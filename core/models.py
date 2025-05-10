@@ -8,10 +8,14 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.core.files.base import ContentFile
 from django.db import models
 from django.db.models import Case, F, QuerySet, Value, When
+from django.http import QueryDict
 from django.utils import timezone
 from django.utils.text import slugify
+
+from core.utils.image_helpers import process_image, validate_avatar
 
 User = get_user_model()
 
@@ -88,6 +92,12 @@ class Community(GenericModel):
     members = models.ManyToManyField(User, through="CommunityMember", related_name="communities")
     privacy = models.CharField(max_length=15, choices=PRIVACY_CHOICES, default=RESTRICTED)
     is_18_plus = models.BooleanField(default=False)
+    avatar = models.ImageField(
+        upload_to="community_avatars/", null=True, blank=True, help_text="Square image, min 256x256px"
+    )
+    background = models.ImageField(
+        upload_to="community_backgrounds/", null=True, blank=True, help_text="Recommended 1920x384px"
+    )
 
     class Meta:
         verbose_name_plural = "Communities"
@@ -126,6 +136,44 @@ class Community(GenericModel):
             ).exists()
             or self.author == user
         )
+
+    @property
+    def avatar_url(self: "Community") -> str:
+        return self.avatar.url if self.avatar else "/media/community_avatars/default.jpg"
+
+    @property
+    def background_url(self: "Community") -> str:
+        return self.background.url if self.background else "/media/community_backgrounds/default.jpg"
+
+    def update_images_from_form_data(
+        self: "Community",
+        form_data: QueryDict,
+        files_data: QueryDict,
+        *,
+        avatar_field: str = "avatar",
+        background_field: str = "background",
+    ) -> None:
+        def handle_field(field_name: str, *, clear_flag: bool, max_size: int, quality: int) -> ContentFile | None:
+            if clear_flag:
+                old_image = getattr(self, field_name)
+                if old_image:
+                    old_image.delete(save=False)
+                return None
+
+            uploaded = files_data.get(field_name)
+            if not uploaded:
+                return getattr(self, field_name)
+
+            if field_name == avatar_field:
+                uploaded = validate_avatar(uploaded)
+
+            return process_image(uploaded, max_size=max_size, quality=quality)
+
+        clear_avatar = form_data.get(f"{avatar_field}-clear") == "on"
+        clear_background = form_data.get(f"{background_field}-clear") == "on"
+
+        self.avatar = handle_field(avatar_field, clear_flag=clear_avatar, max_size=512, quality=75)
+        self.background = handle_field(background_field, clear_flag=clear_background, max_size=1920, quality=80)
 
 
 class CommunityService:

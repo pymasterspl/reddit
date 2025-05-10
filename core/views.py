@@ -33,6 +33,7 @@ from .forms import (
 )
 from .models import AdminAction, Community, CommunityMember, Post, PostAward, PostReport, PostVote, SavedPost
 from .services import handle_admin_action
+from .utils.image_helpers import process_image
 
 
 class PostListView(ListView):
@@ -296,6 +297,14 @@ class CommunityCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self: "CommunityCreateView", form: forms.ModelForm) -> HttpResponseRedirect:
         form.instance.author = self.request.user
+        avatar = form.cleaned_data.get("avatar")
+        if avatar:
+            form.instance.avatar = process_image(avatar, max_size=512, quality=75)
+
+        background = form.cleaned_data.get("background")
+        if background:
+            form.instance.background = process_image(background, max_size=1920, quality=80)
+
         response = super().form_valid(form)
         CommunityMember.objects.create(
             community=self.object,
@@ -342,6 +351,10 @@ class CommunityDetailView(CommunityMixin, DetailView):
         context["moderators"] = CommunityMember.objects.filter(
             community=community, role=CommunityMember.MODERATOR
         ).select_related("user")
+
+        context["community_avatar_url"] = community.avatar_url
+        context["community_background_url"] = community.background_url
+
         return context
 
     def post_add_moderator(self: "CommunityDetailView", request: "HttpRequest", *args: any, **kwargs: any) -> any:
@@ -403,6 +416,9 @@ class CommunityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return redirect("community-detail", slug=self.get_object().slug)
 
     def form_valid(self: "CommunityUpdateView", form: forms.ModelForm) -> HttpResponseRedirect:
+        community = form.instance
+        community.update_images_from_form_data(self.request.POST, self.request.FILES)
+
         response = super().form_valid(form)
         messages.success(self.request, "Community updated successfully.")
         return response

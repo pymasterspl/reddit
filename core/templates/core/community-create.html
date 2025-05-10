@@ -7,23 +7,15 @@
 {% endblock %}
 
 {% block content %}
-<style>
-    .hidden {
-        display: none;
-    }
-
-
-</style>
-
-<div class="container">
-    <div class="d-flex justify-content-center text-light">
-        <div class="mx-auto col-10 col-md-8 col-lg-8 mt-lg-3">
-            <div class="card bg-dark shadow-sm mb-3 text-light">
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card bg-dark text-light mb-4">
                 <div class="card-header">
                     <h3 class="h3">Create a New Community</h3>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" id="createCommunityForm" enctype="multipart/form-data">
                         {% csrf_token %}
                         {% if form.non_field_errors %}
                         <div class="alert alert-danger" role="alert">
@@ -32,16 +24,80 @@
                             {% endfor %}
                         </div>
                         {% endif %}
+
                         {% for field in form %}
-                        <div class="form-group">
+                        <div class="mb-3">
                             {{ field|as_crispy_field }}
                         </div>
                         {% endfor %}
-                        <button class="btn btn-sm btn-success" type="submit">Create Community</button>
+
+                        <button type="button" class="btn btn-success" onclick="confirmSubmit()">Create
+                            Community</button>
                     </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card bg-dark text-light mb-4" id="previewCard">
+                <div class="card-header position-relative p-0" style="height: 200px; overflow: visible;">
+                    <img id="previewBackground" src="/media/community_backgrounds/default.jpg" alt="Banner preview"
+                        class="w-100 h-100" style="object-fit: cover;">
+                    <img id="previewAvatar" src="/media/community_avatars/default.jpg" alt="Avatar preview"
+                        class="rounded-circle border border-3 border-dark position-absolute"
+                        style="width:96px; height:96px; bottom: -48px; left:16px; object-fit: cover; z-index:10;">
+                </div>
+                <div class="card-body pt-5">
+                    <h3 id="previewName">Community Name</h3>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<script>
+    function confirmSubmit() {
+        if (confirm("Are you sure you want to create this community?")) {
+            document.querySelector("#createCommunityForm").submit();
+        }
+    }
+</script>
+<script>
+    function setupPreview() {
+        const nameInput = document.getElementById('id_name');
+        const avatarInput = document.getElementById('id_avatar');
+        const backgroundInput = document.getElementById('id_background');
+
+        const previewName = document.getElementById('previewName');
+        const previewAvatar = document.getElementById('previewAvatar');
+        const previewBackground = document.getElementById('previewBackground');
+
+        nameInput.addEventListener('input', () => {
+            previewName.textContent = nameInput.value || 'Community Name';
+        });
+
+        avatarInput.addEventListener('change', () => {
+            const file = avatarInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => previewAvatar.src = e.target.result;
+                reader.readAsDataURL(file);
+            } else {
+                previewAvatar.src = '/media/community_avatars/default.jpg';
+            }
+        });
+
+        backgroundInput.addEventListener('change', () => {
+            const file = backgroundInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => previewBackground.src = e.target.result;
+                reader.readAsDataURL(file);
+            } else {
+                previewBackground.src = '/media/community_backgrounds/default.jpg';
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', setupPreview);
+</script>
 {% endblock content %}

@@ -7,15 +7,15 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="d-flex justify-content-center text-light">
-        <div class="mx-auto col-10 col-md-8 col-lg-8 mt-lg-3">
-            <div class="card bg-dark shadow-sm mb-3 text-light">
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card bg-dark text-light mb-4">
                 <div class="card-header">
                     <h3 class="h3">Update Community: {{ community.name }}</h3>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" id="updateCommunityForm" enctype="multipart/form-data">
                         {% csrf_token %}
                         {% if form.non_field_errors %}
                         <div class="alert alert-danger" role="alert">
@@ -26,15 +26,133 @@
                         {% endif %}
 
                         {% for field in form %}
-                        <div class="form-group">
+                        <div class="form-group mb-4">
+                            {% if field.name == "avatar" or field.name == "background" %}
+                            <label class="form-label">{{ field.label }}</label>
+                            {% if field.value %}
+                            <div class="form-check mb-2">
+                                <input type="checkbox" name="{{ field.html_name }}-clear" id="{{ field.auto_id }}_clear"
+                                    class="form-check-input">
+                                <label class="form-check-label text-danger" for="{{ field.auto_id }}_clear">
+                                    Clear {{ field.label }}
+                                </label>
+                            </div>
+                            {% endif %}
+
+                            <input type="{{ field.field.widget.input_type }}" name="{{ field.html_name }}"
+                                id="{{ field.auto_id }}" class="form-control">
+                            {% if field.help_text %}
+                            <small class="form-text">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% if field.errors %}
+                            {% for err in field.errors %}
+                            <div class="alert alert-danger" role="alert">
+                                <p class="form-error">{{ err }}</p>
+                            </div>
+                            {% endfor %}
+                            {% endif %}
+                            {% else %}
                             {{ field|as_crispy_field }}
+                            {% endif %}
                         </div>
                         {% endfor %}
-                        <button class="btn btn-sm btn-success" type="submit">Update Community</button>
+
+                        <button class="btn btn-success" type="button" onclick="confirmSubmit()">Update
+                            Community</button>
                     </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card bg-dark text-light mb-4" id="previewCard">
+                <div class="card-header position-relative p-0" style="height: 200px; overflow: visible;">
+                    <img id="previewBackground" src="{{ form.instance.background_url }}" alt="Banner preview"
+                        class="w-100 h-100" style="object-fit: cover;">
+                    <img id="previewAvatar" src="{{ form.instance.avatar_url }}" alt="Avatar preview"
+                        class="rounded-circle border border-3 border-dark position-absolute"
+                        style="width:96px; height:96px; bottom:-48px; left:16px; object-fit: cover; z-index:10;">
+                </div>
+                <div class="card-body pt-5">
+                    <h3 id="previewName">Community Name</h3>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<script>
+    function confirmSubmit() {
+        if (confirm("Are you sure you want to update this community?")) {
+            document.querySelector("#updateCommunityForm").submit();
+        } else {
+            previewAvatar.src = origAvatar;
+            previewBackground.src = origBackground;
+        }
+    }
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const nameInput = document.getElementById('id_name');
+        const avatarInput = document.getElementById('id_avatar');
+        const bgInput = document.getElementById('id_background');
+        const clearAvatar = document.getElementById('id_avatar_clear');
+        const clearBackground = document.getElementById('id_background_clear');
+
+        const previewName = document.getElementById('previewName');
+        const previewAvatar = document.getElementById('previewAvatar');
+        const previewBackground = document.getElementById('previewBackground');
+
+        const origAvatar = "{{ form.instance.avatar_url }}";
+        const origBackground = "{{ form.instance.background_url }}";
+
+        previewName.textContent = nameInput.value || "{{ community.name }}";
+        previewAvatar.src = origAvatar;
+        previewBackground.src = origBackground;
+
+        nameInput.addEventListener('input', () => {
+            previewName.textContent = nameInput.value || "{{ community.name }}";
+        });
+
+        function fileToPreview(inputEl, previewEl, fallback) {
+            const f = inputEl.files[0];
+            if (f) {
+                const reader = new FileReader();
+                reader.onload = e => previewEl.src = e.target.result;
+                reader.readAsDataURL(f);
+            } else {
+                previewEl.src = fallback;
+            }
+        }
+
+        avatarInput.addEventListener('change', () => {
+            fileToPreview(avatarInput, previewAvatar, origAvatar);
+            if (clearAvatar) clearAvatar.checked = false;
+        });
+
+        bgInput.addEventListener('change', () => {
+            fileToPreview(bgInput, previewBackground, origBackground);
+            if (clearBackground) clearBackground.checked = false;
+        });
+
+        if (clearAvatar) {
+            clearAvatar.addEventListener('change', () => {
+                if (clearAvatar.checked) {
+                    previewAvatar.src = '/media/community_avatars/default.jpg';
+                } else {
+                    previewAvatar.src = origAvatar;
+                }
+            });
+        }
+
+        if (clearBackground) {
+            clearBackground.addEventListener('change', () => {
+                if (clearBackground.checked) {
+                    previewBackground.src = '/media/community_backgrounds/default.jpg';
+                } else {
+                    previewBackground.src = origBackground;
+                }
+            });
+        }
+    });
+</script>
+
 {% endblock content %}

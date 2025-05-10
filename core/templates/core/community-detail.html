@@ -10,8 +10,15 @@
     <div class="d-flex justify-content-center text-light">
         <div class="mx-auto col-10 col-md-8 col-lg-8 mt-lg-3">
             <div class="card bg-dark shadow-sm mb-3 text-light">
-                <div class="card-header">
-                    <h3 class="h3">{{ community.name }}</h3>
+                <div class="card-header position-relative p-0" style="height: 200px; overflow: visible;">
+                    <img src="{{ community.background_url }}" class="w-100 h-100" style="object-fit: cover;">
+                    <img src="{{ community.avatar_url }}" alt="{{ community.name }} avatar"
+                        class="rounded-circle border border-3 border-dark position-absolute"
+                        style="width:96px; height:96px; bottom: -48px; left:16px; object-fit: cover; z-index:10;">
+                    <div class="pt-5 ps-3 pb-2" style="margin-top: 48px;"></div>
+                </div>
+                <div class="card-body pt-5">
+                    <h3 class="h3 text-white mt-1">{{ community.name }}</h3>
                 </div>
                 <div>
                     {% if community.is_18_plus %}
@@ -100,4 +107,3 @@
     </div>
 </div>
 {% endblock content %}
-

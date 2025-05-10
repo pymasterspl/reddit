@@ -788,3 +788,149 @@ def test_moderator_dashboard_filter_no_matching_authors(
     assert response.status_code == 200
     reported = response.context["reported_posts"]
     assert len(reported) == 0
+
+
+def generate_test_image(
+    file_format: str = "JPEG", size: tuple = (300, 300), color: tuple = (255, 0, 0)
+) -> SimpleUploadedFile:
+    image = Image.new("RGB", size, color)
+    byte_io = io.BytesIO()
+    image.save(byte_io, file_format)
+    byte_io.seek(0)
+    return SimpleUploadedFile("test_image.jpg", byte_io.read(), content_type="image/jpeg")
+
+
+@pytest.mark.django_db()
+def test_avatar_validation_rejects_invalid_dimensions() -> None:
+    from core.forms import CommunityForm
+
+    invalid_avatar = generate_test_image(size=(100, 100))
+    form = CommunityForm(data={"name": "test", "privacy": "10_PUBLIC"}, files={"avatar": invalid_avatar})
+    assert not form.is_valid()
+    assert "avatar" in form.errors
+
+
+@pytest.mark.django_db()
+def test_save_method_processes_images_correctly(user: User) -> None:
+    from core.forms import CommunityForm
+
+    avatar = generate_test_image(size=(300, 300))
+    background = generate_test_image(size=(1920, 384))
+    form = CommunityForm(
+        data={"name": "Test Community", "privacy": "10_PUBLIC"},
+        files={"avatar": avatar, "background": background},
+    )
+    assert form.is_valid()
+    community = form.save(commit=False)
+    community.author = user
+    community.save()
+    assert community.avatar
+    assert community.background
+
+    avatar_image = Image.open(community.avatar.path)
+    background_image = Image.open(community.background.path)
+    assert avatar_image.format in ["JPEG", "PNG"]
+    assert background_image.format in ["JPEG", "PNG"]
+    assert max(avatar_image.size) <= 512
+    assert max(background_image.size) <= 1920
+
+
+@pytest.mark.django_db()
+def test_image_clear_flags_functionality(client: Client, user: User, community: Community) -> None:
+    client.force_login(user)
+
+    image = generate_test_image()
+    community.avatar.save("avatar.jpg", image, save=False)
+    community.background.save("bg.jpg", image, save=False)
+    community.save()
+
+    community.author = user
+    community.save()
+
+    url = reverse("community-update", kwargs={"slug": community.slug})
+
+    response = client.post(
+        url,
+        {
+            "name": community.name,
+            "privacy": community.privacy,
+            "avatar-clear": "on",
+            "background-clear": "on",
+        },
+        follow=True,
+    )
+
+    assert response.status_code == 200
+
+    community.refresh_from_db()
+
+    assert community.avatar.name == ""
+    assert community.background.name == ""
+
+
+@pytest.mark.django_db()
+def test_get_context_data_includes_required_variables(client: Client, user: User, community: Community) -> None:
+    client.force_login(user)
+    url = reverse("community-detail", kwargs={"slug": community.slug})
+    response = client.get(url)
+
+    assert response.status_code == 200
+    assert "community_avatar_url" in response.context
+    assert "community_background_url" in response.context
+    assert "is_admin_or_moderator" in response.context
+
+
+def test_community_create_view_processes_images(client: Client, user: User) -> None:
+    client.force_login(user)
+    avatar = generate_test_image(size=(1024, 1024))
+    background = generate_test_image(size=(2048, 1024))
+    response = client.post(
+        reverse("community-create"),
+        {
+            "name": "Test Community",
+            "privacy": Community.RESTRICTED,
+            "is_18_plus": False,
+            "avatar": avatar,
+            "background": background,
+        },
+        follow=True,
+    )
+    assert response.status_code == 200
+    community = Community.objects.first()
+    assert community is not None
+    assert community.avatar.name.startswith("community_avatars/")
+    assert community.background.name.startswith("community_backgrounds/")
+
+
+@pytest.mark.django_db()
+def test_updating_avatar_and_background_replaces_old_images(client: Client, user: User, community: Community) -> None:
+    client.force_login(user)
+
+    old_avatar = generate_test_image()
+    old_background = generate_test_image()
+    community.avatar.save("old_avatar.jpg", old_avatar, save=True)
+    community.background.save("old_background.jpg", old_background, save=True)
+    community.author = user
+    community.save()
+
+    new_avatar = generate_test_image()
+    new_background = generate_test_image()
+
+    url = reverse("community-update", kwargs={"slug": community.slug})
+    response = client.post(
+        url,
+        {
+            "name": community.name,
+            "privacy": community.privacy,
+        },
+        files={"avatar": new_avatar, "background": new_background},
+        follow=True,
+    )
+
+    assert response.status_code == 200
+    community.refresh_from_db()
+
+    assert community.avatar
+    assert community.background
+    assert community.avatar.name != "old_avatar.jpg"
+    assert community.background.name != "old_background.jpg"
