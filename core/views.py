@@ -1,17 +1,20 @@
 from typing import Any
 
 from django import forms
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from django.core.mail import send_mail
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import models, transaction
 from django.db.models import Exists, Max, OuterRef, QuerySet
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
@@ -440,6 +443,16 @@ class PostReportView(LoginRequiredMixin, CreateView):
         post_report.post = post
         post_report.report_person = report_person
         post_report.save()
+        protocol = "https" if self.request.is_secure() else "http"
+        current_site = get_current_site(self.request)
+        reported_post_link = reverse("reported-post", kwargs={"pk": post.id})
+        full_activation_link = f"{protocol}://{current_site.domain}{reported_post_link}"
+        send_mail(
+            "New reported post",
+            f"A new post has been reported and is awaiting your review here: {full_activation_link}.",
+            settings.DEFAULT_FROM_EMAIL,
+            User.objects.filter(is_superuser=True).values_list("email", flat=True),
+        )
         messages.success(self.request, "Your post has been reported.")
         return super().form_valid(form)
 

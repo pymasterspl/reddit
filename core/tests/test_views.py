@@ -5,6 +5,7 @@ import pytest
 from django.conf import Settings, settings
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
+from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
 from django.urls import reverse, reverse_lazy
@@ -498,7 +499,7 @@ def test_remove_moderator(client: Client, user: User, community: Community) -> N
     assert not CommunityMember.objects.filter(community=community, user=user, role=CommunityMember.MODERATOR).exists()
 
 
-def test_report_post_breaks_rules(client: Client, user: User, post: Post, report_data: dict) -> None:
+def test_report_post_breaks_rules(client: Client, user: User, admin: User, post: Post, report_data: dict) -> None:
     data = report_data("10_BREAKS_RULES")
     client.force_login(user)
     response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
@@ -506,9 +507,10 @@ def test_report_post_breaks_rules(client: Client, user: User, post: Post, report
     messages = list(get_messages(response.wsgi_request))
     assert len(messages) == 1
     assert str(messages[0]) == "Your post has been reported."
+    assert len(mail.outbox) == 1
 
 
-def test_report_post_harassment(client: Client, user: User, post: Post, report_data: dict) -> None:
+def test_report_post_harassment(client: Client, user: User, admin: User, post: Post, report_data: dict) -> None:
     data = report_data("30_HARASSMENT")
     client.force_login(user)
     response = client.post(reverse("post-report", kwargs={"pk": post.pk}), data=data)
@@ -516,6 +518,7 @@ def test_report_post_harassment(client: Client, user: User, post: Post, report_d
     messages = list(get_messages(response.wsgi_request))
     assert len(messages) == 1
     assert str(messages[0]) == "Your post has been reported."
+    assert len(mail.outbox) == 1
 
 
 def test_add_non_existing_moderator(client: Client, community: Community, user: User) -> None:
