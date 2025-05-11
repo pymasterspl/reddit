@@ -448,9 +448,9 @@ class PostReportView(LoginRequiredMixin, CreateView):
             f"A new post has been reported and is awaiting your review here: {full_activation_link}.",
             settings.DEFAULT_FROM_EMAIL,
             User.objects.filter(is_superuser=True).values_list("email", flat=True),
-            fail_silently=False,  # possible in weird cases and when we implement more robust error handling
+            fail_silently=False,
         )
-        if mail_status == 0:
+        if mail_status == 0:  # possible in weird cases and when we implement more robust error handling
             messages.error(self.request, "Failed to send email notification for reported post")
         messages.success(self.request, "Your post has been reported.")
         return super().form_valid(form)
