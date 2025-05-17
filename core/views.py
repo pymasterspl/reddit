@@ -512,7 +512,7 @@ class ModeratorDashboardView(UserPassesTestMixin, LoginRequiredMixin, TemplateVi
         form = GroupAdminActionForm(request.POST)
         if not form.is_valid():
             messages.error(request, "Invalid form submission.")
-            return redirect("home")
+            return redirect("moderator-dashboard")
 
         selected_ids = request.POST.getlist("selected_reports", [])
         reports = PostReport.objects.filter(id__in=selected_ids)
@@ -523,7 +523,7 @@ class ModeratorDashboardView(UserPassesTestMixin, LoginRequiredMixin, TemplateVi
             admin_action = AdminAction(post_report=report, action=action, performed_by=request.user)
             admin_action.save()
             handle_admin_action(action, report, user, request)
-        return redirect("home")
+        return redirect("moderator-dashboard")
 
 
 class PostReportedView(UserPassesTestMixin, LoginRequiredMixin, DetailView):
