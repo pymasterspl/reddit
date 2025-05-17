@@ -19,7 +19,7 @@ def handle_admin_action(action: str, report: PostReport, user: User, request: Ht
     elif action == WARN:
         warn_user(request, report, user)
     elif action == DISMISS_REPORT:
-        dismiss_report(report)
+        dismiss_report(request, report)
 
 
 def ban_user(request: HttpRequest, report: PostReport, user: User) -> None:
@@ -84,6 +84,7 @@ def warn_user(request: HttpRequest, report: PostReport, user: User) -> None:
         messages.success(request, "User has been warned successfully.")
 
 
-def dismiss_report(report: PostReport) -> None:
+def dismiss_report(request: HttpRequest, report: PostReport) -> None:
     report.verified = True
     report.save()
+    messages.success(request, "Post report has been dismissed successfully.")

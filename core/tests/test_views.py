@@ -713,7 +713,7 @@ def test_moderator_dashboard_post_valid_action(client: Client, admin: User, post
     data = {"selected_reports": [post_report.id], "action_for_selected": BAN}
     response = client.post(url, data)
     assert response.status_code == 302
-    assert response.url == reverse("home")
+    assert response.url == reverse("moderator-dashboard")
     actions = AdminAction.objects.filter(post_report__in=[post_report])
     assert actions.count() == 1
 
@@ -724,7 +724,7 @@ def test_moderator_dashboard_post_no_selected(client: Client, admin: User) -> No
     data = {"selected_reports": [], "action_for_selected": "approve"}
     response = client.post(url, data)
     assert response.status_code == 302
-    assert response.url == reverse("home")
+    assert response.url == reverse("moderator-dashboard")
 
     actions = AdminAction.objects.all()
     assert actions.count() == 0
