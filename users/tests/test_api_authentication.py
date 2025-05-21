@@ -94,6 +94,7 @@ def test_api_logout_invalid_data_response_failed(
     assert response.status_code == 400
     assert response.data["message"] == "Token is invalid"
 
+
 @pytest.mark.django_db()
 def test_api_logout_unauthenticated_user_response_failed(
     client: Client, authenticated_client: tuple[APIClient, str, str], api_logout_url: str
